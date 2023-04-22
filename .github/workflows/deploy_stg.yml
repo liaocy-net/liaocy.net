@@ -1,8 +1,8 @@
 name: Deploy Stg Lambda Laravel Function
-on: [workflow_dispatch]
-  # push:
-  #   branches:
-  #     - 'main'     # excludes the main branch
+on: 
+  push:
+    branches:
+      - 'main'     # excludes the main branch
 concurrency:
   group: deploy-stg-app
   cancel-in-progress: true
@@ -82,7 +82,7 @@ jobs:
           php-version: "8.2"
       - name: Install PHP dependencies
         run: composer install
-      - name: Migrate Database
-        run: php artisan migrate
+      # - name: Migrate Database
+      #   run: php artisan migrate
       - name: Severless Deploy
         run: serverless deploy --stage=${{env.APP_ENV}}
