@@ -24,7 +24,7 @@ jobs:
       DB_PORT: ${{secrets.DB_PORT}}
       DB_DATABASE: charing_stg
       DB_USERNAME: ${{secrets.DB_USERNAME}}
-      DB_PASSWORD: ${secrets.DB_PASSWORD}}
+      DB_PASSWORD: ${{secrets.DB_PASSWORD}}
       BROADCAST_DRIVER: log
       CACHE_DRIVER: file
       FILESYSTEM_DISK: local
@@ -82,7 +82,7 @@ jobs:
           php-version: "8.2"
       - name: Install PHP dependencies
         run: composer install
-      # - name: Migrate Database
-      #   run: php artisan migrate
+      - name: Migrate Database
+        run: php artisan migrate
       - name: Severless Deploy
         run: serverless deploy --stage=${{env.APP_ENV}}
