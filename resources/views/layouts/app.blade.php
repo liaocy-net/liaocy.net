@@ -48,79 +48,7 @@
     @yield('style')
 </head>
 
-{{--  
-    <i class="fas fa-plus me-1"></i> or <span class="ti-xs ti ti-plus me-1"></span>
-    <i class="fas fa-search me-1"></i>
-    <i class="fas fa-pencil me-1"></i>
-    <i class="fas fa-trash me-1"></i> or <i class="ti ti-trash"></i>
-    <i class="fas fa-save me-1"></i>
-    <i class="fas fa-file me-1"></i>
-    <i class="fas fa-upload me-1"></i>
-    <i class="fas fa-download me-1"></i>
-    <i class="fas fa-calendar me-1"></i>
-    <i class="fas fa-message me-1"></i>
-    <i class="fas fa-file-import me-1"></i>
---}}
-
 <body>
-    @php
-        $active_parent_menu = "";
-        $active_menu = request()->path();
-    @endphp
-    @switch(request()->path())
-        @case("exhibit")
-            @php
-                $title = "出品";
-            @endphp
-            @break
-        @case("exhibit_history")
-            @php
-                $title = "出品履歴";
-            @endphp
-            @break
-        @case("exhibit_history_detail")
-            @php
-                $title = "出品履歴詳細";
-                $active_menu = "exhibit_history";
-            @endphp
-            @break
-        @case("price_history")
-            @php
-                $title = "価格改定履歴";
-            @endphp
-            @break
-        @case("amazon_info")
-            @php
-                $title = "Amazon情報取得";
-            @endphp
-            @break
-        @case("black_list")
-            @php
-                $title = "ブラックリスト";
-            @endphp
-            @break
-        @case("white_list")
-            @php
-                $title = "ホワイトリスト";
-            @endphp
-            @break
-        @case("setting")
-            @php
-                $title = "設定";
-            @endphp
-            @break
-        @case("users")
-            @php
-                $title = "ユーザー管理";
-            @endphp
-            @break
-        @case("/")
-        @default
-            @php
-                $title = "Title";
-            @endphp
-    @endswitch
-    
 <!-- Layout wrapper -->
 <div class="layout-wrapper layout-horizontal layout-content-navbar">
     <div class="layout-container">
@@ -143,75 +71,49 @@
 
             <ul class="menu-inner py-1">
                 <!-- Page -->
-                {{--                  
-                <li class="menu-item @if($active_parent_menu == 'agenda') open active @endif">
-                    <a href="javascript:void(0);" class="menu-link menu-toggle">
-                        <i class="menu-icon tf-icons ti ti-layout-board"></i>
-                        <div data-i18n="案件ボード">案件ボード</div>
-                    </a>
-                    <ul class="menu-sub">
-                        <li class="menu-item @if($active_menu == 'agenda_new') active @endif">
-                            <a href="{{url('/')}}" class="menu-link">
-                                <div data-i18n="新規">新規</div>
-                            </a>
-                        </li>
-                        <li class="menu-item @if($active_menu == 'agenda_change') active @endif">
-                            <a href="{{url('/agenda_change')}}" class="menu-link">
-                                <div data-i18n="更改">更改</div>
-                            </a>
-                        </li>
-                        <li class="menu-item @if($active_menu == 'agenda_customer') active @endif">
-                            <a href="{{url('/agenda_customer')}}" class="menu-link">
-                                <div data-i18n="顧客の声">顧客の声</div>
-                            </a>
-                        </li>
-                    </ul>
-                </li>  
-                --}}
-
-                <li class="menu-item @if($active_menu == 'exhibit') active @endif">
+                <li class="menu-item @if(request()->is('exhibit')) active @endif">
                     <a href="{{url('/exhibit')}}" class="menu-link">
                         <i class="menu-icon tf-icons ti ti-file-description"></i>
                         <div data-i18n="出品">出品</div>
                     </a>
                 </li>
-                <li class="menu-item @if($active_menu == 'exhibit_history') open active @endif">
+                <li class="menu-item @if(request()->is('exhibit_history*')) active @endif">
                     <a href="{{url('/exhibit_history')}}" class="menu-link">
                         <i class="menu-icon tf-icons ti ti-table"></i>
                         <div data-i18n="出品履歴">出品履歴</div>
                     </a>
                 </li>
-                <li class="menu-item @if($active_menu == 'price_history') active @endif">
+                <li class="menu-item @if(request()->is('price_history')) active @endif">
                     <a href="{{url('/price_history')}}" class="menu-link">
                         <i class="menu-icon tf-icons ti ti-file-dollar"></i>
                         <div data-i18n="価格改定履歴">価格改定履歴</div>
                     </a>
                 </li>
-                <li class="menu-item  @if($active_menu == 'amazon_info') active @endif">
+                <li class="menu-item  @if(request()->is('amazon_info')) active @endif">
                     <a href="{{url('/amazon_info')}}" class="menu-link">
                         <i class="menu-icon tf-icons ti ti-brand-amazon"></i>
                         <div data-i18n="Amazon情報取得">Amazon情報取得</div>
                     </a>
                 </li>
-                <li class="menu-item @if($active_menu == 'black_list') open active @endif">
+                <li class="menu-item @if(request()->is('black_list')) open active @endif">
                     <a href="{{url('/black_list')}}" class="menu-link">
                         <i class="menu-icon tf-icons ti ti-id"></i>
                         <div data-i18n="ブラックリスト">ブラックリスト</div>
                     </a>
                 </li>
-                <li class="menu-item @if($active_menu == 'white_list') active @endif">
+                <li class="menu-item @if(request()->is('white_list')) active @endif">
                     <a href="{{url('/white_list')}}" class="menu-link">
                         <i class="menu-icon tf-icons ti ti-id"></i>
                         <div data-i18n="ホワイトリスト">ホワイトリスト</div>
                     </a>
                 </li>
-                <li class="menu-item @if($active_parent_menu == 'setting') open active @endif">
+                <li class="menu-item @if(request()->is('setting')) active @endif">
                     <a href="{{url('/setting')}}" class="menu-link">
                         <i class="menu-icon tf-icons ti ti-settings"></i>
                         <div data-i18n="設定">設定</div>
                     </a>
                 </li>
-                <li class="menu-item @if($active_menu == 'users') active @endif">
+                <li class="menu-item @if(request()->is('users')) active @endif">
                     <a href="{{url('/users')}}" class="menu-link">
                         <i class="menu-icon tf-icons ti ti-users"></i>
                         <div data-i18n="ユーザー管理">ユーザー管理</div>

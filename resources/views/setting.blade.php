@@ -347,7 +347,8 @@
                             <input type="text" id="yahoo_api_secret" name="yahoo_api_secret" class="form-control" />
                         </div>
                         <div class="col-12 mb-3">
-                            <button type="button" class="btn btn-primary me-sm-2 me-1 waves-effect waves-light"><i class="ti ti-xs ti-brand-yahoo me-1"></i>ログイン</button>
+                            <button type="button" class="btn btn-danger me-sm-2 me-1 waves-effect waves-light">
+                                <i class="ti ti-xs ti-brand-yahoo me-1"></i>ログイン認証</button>
                             <span class="text-warning">✖未認証</span>
                         </div>
                     </div>
