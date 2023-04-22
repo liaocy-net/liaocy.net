@@ -1,0 +1,118 @@
+service: sharing
+
+provider:
+    name: aws
+    # The AWS region in which to deploy (us-east-1 is the default)
+    region: ap-northeast-1
+    # Environment variables
+    environment:
+        APP_NAME: ${env:APP_NAME}
+        APP_ENV: ${env:APP_ENV} # Or use ${sls:stage} if you want the environment to match the stage
+        APP_KEY: ${env:APP_KEY}
+        APP_DEBUG: ${env:APP_ENV}
+        APP_URL: ${env:APP_URL}
+        LOG_CHANNEL: ${env:LOG_CHANNEL}
+        LOG_DEPRECATIONS_CHANNEL: ${env:LOG_DEPRECATIONS_CHANNEL}
+        LOG_LEVEL: ${env:LOG_LEVEL}
+        DB_CONNECTION: ${env:DB_CONNECTION}
+        DB_HOST: ${env:DB_HOST}
+        DB_PORT: ${env:DB_PORT}
+        DB_DATABASE: ${env:DB_DATABASE}
+        DB_USERNAME: ${env:DB_USERNAME}
+        DB_PASSWORD: ${env:DB_PASSWORD}
+        BROADCAST_DRIVER: ${env:BROADCAST_DRIVER}
+        CACHE_DRIVER: ${env:CACHE_DRIVER}
+        FILESYSTEM_DISK: ${env:FILESYSTEM_DISK}
+        QUEUE_CONNECTION: ${env:QUEUE_CONNECTION}
+        SESSION_DRIVER: ${env:SESSION_DRIVER}
+        SESSION_LIFETIME: ${env:SESSION_LIFETIME}
+        MEMCACHED_HOST: ${env:MEMCACHED_HOST}
+        REDIS_HOST: ${env:REDIS_HOST}
+        REDIS_PASSWORD: ${env:REDIS_PASSWORD}
+        REDIS_PORT: ${env:REDIS_PORT}
+        MAIL_MAILER: ${env:MAIL_MAILER}
+        MAIL_HOST: ${env:MAIL_HOST}
+        MAIL_PORT: ${env:MAIL_PORT}
+        MAIL_USERNAME: ${env:MAIL_USERNAME}
+        MAIL_PASSWORD: ${env:MAIL_PASSWORD}
+        MAIL_ENCRYPTION: ${env:MAIL_ENCRYPTION}
+        MAIL_FROM_ADDRESS: ${env:MAIL_FROM_ADDRESS}
+        MAIL_FROM_NAME: ${env:MAIL_FROM_NAME}
+        AWS_BUCKET: ${env:AWS_BUCKET}
+        AWS_USE_PATH_STYLE_ENDPOINT: ${env:AWS_USE_PATH_STYLE_ENDPOINT}
+        PUSHER_APP_ID: ${env:PUSHER_APP_ID}
+        PUSHER_APP_KEY: ${env:PUSHER_APP_KEY}
+        PUSHER_APP_SECRET: ${env:PUSHER_APP_SECRET}
+        PUSHER_HOST: ${env:PUSHER_HOST}
+        PUSHER_PORT: ${env:PUSHER_PORT}
+        PUSHER_SCHEME: ${env:PUSHER_SCHEME}
+        PUSHER_APP_CLUSTER: ${env:PUSHER_APP_CLUSTER}
+        VITE_PUSHER_APP_KEY: ${env:VITE_PUSHER_APP_KEY}
+        VITE_PUSHER_HOST: ${env:VITE_PUSHER_HOST}
+        VITE_PUSHER_PORT: ${env:VITE_PUSHER_PORT}
+        VITE_PUSHER_SCHEME: ${env:VITE_PUSHER_SCHEME}
+        VITE_PUSHER_APP_CLUSTER: ${env:VITE_PUSHER_APP_CLUSTER}
+    ecr:
+        images:
+            laravel-web:
+                path: ./
+                file: DockerfileWeb
+            laravel-artisan:
+                path: ./
+                file: DockerfileArtisan
+package:
+    # Files and directories to exclude from deployment
+    patterns:
+        - "!node_modules/**"
+        - "!public/storage"
+        - "!public/ui"
+        - "!resources/assets/**"
+        - "!storage/**"
+        - "!tests/**"
+
+functions:
+    # This function runs the Laravel website/API
+    web:
+        memorySize: 256
+        timeout: 28 # in seconds (API Gateway has a timeout of 29 seconds)
+        destination: "Maintained by GitHub Actions"
+        # provisionedConcurrency: 3 # optional, Count of provisioned lambda instances
+        # reservedConcurrency: 5 # optional, reserved concurrency limit for this function. By default, AWS uses account concurrency limit
+        tracing: PassThrough # optional, overwrite, can be 'Active' or 'PassThrough'
+        image:
+            name: laravel-web
+            command:
+                - public/index.php
+        events:
+            - httpApi: "*"
+
+    # This function lets us run artisan commands in Lambda
+    artisan:
+        memorySize: 256
+        timeout: 720 # in seconds
+        destination: "Maintained by GitHub Actions"
+        # provisionedConcurrency: 3 # optional, Count of provisioned lambda instances
+        reservedConcurrency: 1 # optional, reserved concurrency limit for this function. By default, AWS uses account concurrency limit
+        tracing: PassThrough # optional, overwrite, can be 'Active' or 'PassThrough'
+        # Uncomment to also run the scheduler every minute
+        image:
+            name: laravel-artisan
+            command:
+                - artisan
+        # events:
+        #   - schedule:
+        #       rate: rate(1 minute)
+        #       input: '"schedule:run"'
+
+plugins:
+  - ./vendor/bref/bref
+  - serverless-lift
+constructs:
+  website:
+    type: server-side-website
+    assets:
+      '/js/*': public/js
+      '/css/*': public/css
+      '/images/*': public/images
+      '/favicon.ico': public/favicon.ico
+      '/robots.txt': public/robots.txt

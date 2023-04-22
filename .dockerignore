@@ -1,0 +1,11 @@
+**/.git
+**/.env
+**/venv
+**/__pycache__
+**/node_modules
+**/public/css
+**/public/js
+**/public/images
+**/public/favicon.ico
+**/public/robots.txt
+**/public/ui

@@ -1,0 +1,4 @@
+FROM bref/php-80-fpm
+COPY . /var/task
+CMD [ "artisan" ]
+# ENTRYPOINT ["/bin/bash"]
