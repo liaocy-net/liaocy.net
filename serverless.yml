@@ -116,3 +116,4 @@ constructs:
       '/images/*': public/images
       '/favicon.ico': public/favicon.ico
       '/robots.txt': public/robots.txt
+      '/ui/*': public/ui
