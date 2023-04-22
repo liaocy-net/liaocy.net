@@ -1,0 +1,67 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Web Routes
+|--------------------------------------------------------------------------
+|
+| Here is where you can register web routes for your application. These
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
+|
+*/
+
+Route::get('/', function () {
+    return view('login');
+});
+Route::get('/forgot_password', function () {
+    return view('forgot-password');
+});
+Route::post('/forgot-password', function () {
+    return view('forgot-password');
+})->name('password.email');
+
+/* 出品 */
+Route::get('/exhibit', function () {
+    return view('exhibit');
+});
+
+/* 出品履歴 */
+Route::get('/exhibit_history', function () {
+    return view('exhibit_history/index');
+});
+Route::get('/exhibit_history_detail', function () {
+    return view('exhibit_history/detail');
+});
+
+/* 価格改定履歴 */
+Route::get('/price_history', function () {
+    return view('price_history');
+});
+
+/* Amazon情報取得 */
+Route::get('/amazon_info', function () {
+    return view('amazon_info');
+});
+
+/* ブラックリスト */
+Route::get('/black_list', function () {
+    return view('black_list');
+});
+
+/* ホワイトリスト */
+Route::get('/white_list', function () {
+    return view('white_list');
+});
+
+/* 設定 */
+Route::get('/setting', function () {
+    return view('setting');
+});
+
+/* ユーザー管理 */
+Route::get('/users', function () {
+    return view('users');
+});

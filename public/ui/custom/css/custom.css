@@ -1,0 +1,163 @@
+/*
+* admin.css
+******************************************************************************/
+@charset "UTF-8";
+
+.min-w-px-14 {
+    min-width: 14px !important;
+}
+
+.min-w-px-18 {
+    min-width: 18px !important;
+}
+
+.min-w-px-20 {
+    min-width: 20px !important;
+}
+
+.min-w-px-30 {
+    min-width: 30px !important;
+}
+
+.min-w-px-40 {
+    min-width: 40px !important;
+}
+
+.min-w-px-50 {
+    min-width: 50px !important;
+}
+
+.min-w-px-75 {
+    min-width: 75px !important;
+}
+
+.min-w-px-100 {
+    min-width: 100px !important;
+}
+
+.min-w-px-150 {
+    min-width: 150px !important;
+}
+
+.min-w-px-200 {
+    min-width: 200px !important;
+}
+
+.min-w-px-250 {
+    min-width: 250px !important;
+}
+
+.min-w-px-300 {
+    min-width: 300px !important;
+}
+
+.min-w-px-350 {
+    min-width: 350px !important;
+}
+
+.min-w-px-400 {
+    min-width: 400px !important;
+}
+
+.min-w-px-500 {
+    min-width: 500px !important;
+}
+
+.min-w-px-600 {
+    min-width: 600px !important;
+}
+
+.w-80 {
+    width: 80% !important;
+}
+.w-85 {
+    width: 85% !important;
+}
+
+.dl-table {
+    width: 100%;
+}
+.dl-table .row {
+    margin: 0;
+}
+
+dl,
+dt,
+dd {
+  box-sizing: border-box;
+}
+
+.dl-table dt{
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    --bs-bg-opacity: 1;
+    background-color: rgba(var(--bs-light-rgb), var(--bs-bg-opacity)) !important;
+    font-size: 0.8125rem;
+}
+.dl-table dd{
+    display: flex;
+    align-items: center;
+    padding: 0.5rem;
+    margin: 0;
+}
+
+.dl-borderd dl {
+    border-right: 1px solid #c1c0c8;
+    border-bottom: 1px solid #c1c0c8;
+    border-left: 1px solid #c1c0c8;
+}
+.dl-borderd dl:first-child {
+    border-top: 1px solid #c1c0c8;
+}
+@media (max-width: 575.98px) {
+    .dl-borderd dl {
+        border-bottom: 0px;
+    }
+
+    .dl-borderd dt,
+    .dl-borderd dd {
+        border-bottom: 1px solid #c1c0c8;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .nav {
+        --bs-nav-link-padding-x: 0.6rem;
+        --bs-nav-link-padding-y: 0.48rem;
+    }
+    .nav-link {
+        font-size: 0.76rem;
+    }
+}
+
+@media (min-width: 576px) and (max-width: 991.98px) {
+    
+}
+@media (min-width: 992px) and (max-width: 1199.98px) {
+    .nav {
+        --bs-nav-link-padding-x: 0.6rem;
+        --bs-nav-link-padding-y: 0.48rem;
+    }
+    .nav-link {
+        font-size: 0.76rem;
+    }
+}
+
+.print_content {
+    display: none;
+}
+@media print{
+    body *:not(.print_content):not(.print_content *){
+        display: none;
+    }
+
+    body,
+    .print_content {
+        background-color: #fff;
+    }
+
+    .print_content{
+        display: block;
+    }
+}
