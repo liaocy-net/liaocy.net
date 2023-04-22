@@ -13,7 +13,7 @@ jobs:
       ROLE_ARN: ${{secrets.ROLE_ARN}}
       APP_NAME: charing
       APP_ENV: stg
-      APP_KEY: base64:FFRSNGQyGxGACmqTdBrZBpZfjCwHnGmUFfp8p3MQiPI=
+      APP_KEY: ${{secrets.APP_KEY_STG}}
       APP_DEBUG: 'true'
       APP_URL: 'http://localhost'
       LOG_CHANNEL: stack
