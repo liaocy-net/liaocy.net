@@ -1,3 +1,53 @@
+# Charing
+
+
+## Commands
+
+- Start Development Server
+```bash
+php artisan serve
+```
+
+- Generate APP Key
+```bash
+php artisan key:generate
+```
+
+- Generate Controller
+```bash
+php artisan make:controller <ControllerName>
+```
+
+- Database Migration
+```bash
+php artisan migrate
+```
+
+- Create User in CLI
+```bash
+php artisan tinker
+```
+```php
+$user = new App\Models\User();
+$user->password = Hash::make('123456');
+$user->email = 'test@test.com';
+$user->name = 'Test User';
+$user->save();
+```
+
+## References
+
+- Auth
+  - [Authentication](https://laravel.com/docs/10.x/authentication)
+  - [Laravel 8.x 認証](https://readouble.com/laravel/8.x/ja/authentication.html)
+
+- Route
+  - [リダイレクトの書き方メモ](https://qiita.com/manbolila/items/767e1dae399de16813fb)
+
+- Others
+  - [Laravel:419|PAGE EXPIREDエラーの解決方法](https://qiita.com/taka_no_okapi/items/fb4bbe59c18eeaf5a043)
+# Laravel 8.x
+
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
 
 <p align="center">

@@ -1,6 +1,8 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
 
 /*
 |--------------------------------------------------------------------------
@@ -12,13 +14,32 @@ use Illuminate\Support\Facades\Route;
 | contains the "web" middleware group. Now create something great!
 |
 */
-
-Route::get('/', function () {
-    return view('login');
+Route::get('/phpinfo', function () {
+    phpinfo();
 });
+
+Route::get('/', function() {
+    if (Auth::check()) {
+        // ユーザーはログイン済み
+        return redirect()->route('exhibit');
+    } else {
+        // ユーザーはログインしていない
+        return redirect()->route('login');
+    }
+});
+
+Route::get('/login', function () {
+    return view('login');
+})->name('login');
+
+Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+
+Route::get('/logout', [AuthenticatedSessionController::class, 'destroy']);
+
 Route::get('/forgot_password', function () {
     return view('forgot-password');
 });
+
 Route::post('/forgot-password', function () {
     return view('forgot-password');
 })->name('password.email');
@@ -26,7 +47,7 @@ Route::post('/forgot-password', function () {
 /* 出品 */
 Route::get('/exhibit', function () {
     return view('exhibit');
-});
+})->name('exhibit')->middleware('auth');
 
 /* 出品履歴 */
 Route::get('/exhibit_history', function () {
