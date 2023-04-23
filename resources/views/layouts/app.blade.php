@@ -113,12 +113,14 @@
                         <div data-i18n="設定">設定</div>
                     </a>
                 </li>
+                @admin
                 <li class="menu-item @if(request()->is('users')) active @endif">
                     <a href="{{url('/users')}}" class="menu-link">
                         <i class="menu-icon tf-icons ti ti-users"></i>
                         <div data-i18n="ユーザー管理">ユーザー管理</div>
                     </a>
                 </li>
+                @endadmin
             </ul>
         </aside>
         <!-- / Menu -->

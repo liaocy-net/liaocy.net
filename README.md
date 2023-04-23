@@ -23,7 +23,7 @@ php artisan make:controller <ControllerName>
 php artisan migrate
 ```
 
-- Create User in CLI
+- Create Admin in CLI
 ```bash
 php artisan tinker
 ```
@@ -32,7 +32,13 @@ $user = new App\Models\User();
 $user->password = Hash::make('123456');
 $user->email = 'test@test.com';
 $user->name = 'Test User';
+$user->role = 'admin';
 $user->save();
+```
+
+- Add Column to User Model
+```bash
+php artisan make:migration add_role_to_users --table="users"
 ```
 
 ## References
@@ -40,9 +46,14 @@ $user->save();
 - Auth
   - [Authentication](https://laravel.com/docs/10.x/authentication)
   - [Laravel 8.x 認証](https://readouble.com/laravel/8.x/ja/authentication.html)
+  - [middlewareを追加して管理者権限ユーザーのみアクセスを許可する](https://ohta412.jp/laravel-middleware/)
+  - [Create Custom Laravel Blade Directive & Middleware Easily](https://mahekarim.medium.com/create-custom-laravel-blade-directive-middleware-easily-75155bf00cc9)
 
 - Route
   - [リダイレクトの書き方メモ](https://qiita.com/manbolila/items/767e1dae399de16813fb)
+
+- Models
+  - [Add new field to user profile in Laravel 8](https://dev.to/arifiqbal/add-new-field-to-user-profile-in-laravel-8-49ck)
 
 - Others
   - [Laravel:419|PAGE EXPIREDエラーの解決方法](https://qiita.com/taka_no_okapi/items/fb4bbe59c18eeaf5a043)

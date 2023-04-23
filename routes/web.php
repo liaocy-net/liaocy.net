@@ -85,4 +85,4 @@ Route::get('/setting', function () {
 /* ユーザー管理 */
 Route::get('/users', function () {
     return view('users');
-});
+})->middleware(['auth', 'admin']);
