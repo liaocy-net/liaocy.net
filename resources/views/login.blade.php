@@ -7,9 +7,9 @@
                 <!-- Login -->
                 <div class="card">
                     <div class="card-body">
-                        @if (session('status'))
+                        @if (request('status'))
                             <div class="alert alert-success" role="alert">
-                                {{ session('status') }}
+                                {{ request('status') }}
                             </div>
                         @endif
                         <!-- Logo -->
@@ -21,7 +21,8 @@
                         <!-- /Logo -->
                         <h5 class="mb-3 pt-2">ログイン</h5>
                         {{--  <form id="formAuthentication" class="mb-3" action="" method="POST">  --}}
-                        <form id="formAuthentication" class="mb-3" action="{{url('/exhibit')}}" method="get">
+                        <form id="formAuthentication" class="mb-3" action="{{url('/login')}}" method="post">
+                            @csrf
                             <div class="mb-3">
                                 <label for="email" class="form-label">メールアドレス</label>
                                 <input type="text" class="form-control" id="email" name="email" placeholder="メールアドレス" autofocus value="test@test.com"/>
@@ -50,7 +51,7 @@
                             </div>
                             <div class="mb-3">
                                 <div class="form-check">
-                                    <input class="form-check-input" type="checkbox" id="remember-me" />
+                                    <input class="form-check-input" type="checkbox" id="remember-me" name="remember" value="1"/>
                                     <label class="form-check-label" for="remember-me">次回から自動ログイン</label>
                                 </div>
                             </div>

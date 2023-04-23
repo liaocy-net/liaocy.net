@@ -145,7 +145,7 @@
                                     <a class="" href="javascript:void(0);">〇〇</a>さん
                                 </li>
                                 <li class="nav-item">
-                                    <a class="nav-link" href="{{url('/')}}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="ログアウト"><i class="ti navbar-icon ti-logout ti-md me-1"></i></a>
+                                    <a class="nav-link" href="{{url('/logout')}}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="ログアウト"><i class="ti navbar-icon ti-logout ti-md me-1"></i></a>
                                 </li>
                             </ul>
                         </div>
