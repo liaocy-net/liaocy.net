@@ -29,7 +29,7 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(RouteServiceProvider::ROOT);
+        return redirect()->intended(RouteServiceProvider::AMAZON_INFO);
     }
 
     /**

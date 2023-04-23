@@ -18,6 +18,7 @@ class RouteServiceProvider extends ServiceProvider
      * @var string
      */
     public const ROOT = '/';
+    public const AMAZON_INFO = '/amazon_info';
 
     /**
      * Define your route model bindings, pattern filters, and other route configuration.

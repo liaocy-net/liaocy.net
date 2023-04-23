@@ -62,11 +62,11 @@
                         <div class="col-sm-6 mb-3">
                             <label class="form-label" for="common_purchase_price">仕入れ価格</label>
                             <div class="input-group" id="common_purchase_price">
-                                <span class="input-group-text col-5">5000~100000円</span>
+                                <span class="input-group-text col-5">50~1000ドル</span>
                                 <input type="number" id="common_purchase_price_from" name="common_purchase_price_from" class="form-control" />
                                 <span class="input-group-text">~</span>
                                 <input type="number" id="common_purchase_price_to" name="common_purchase_price_to" class="form-control" />
-                                <span class="input-group-text">円</span>
+                                <span class="input-group-text">ドル</span>
                             </div>
                         </div>
                         <div class="col-sm-6 mb-3">
@@ -94,11 +94,10 @@
                                 <select id="common_purchase_mark" name="common_purchase_mark" class="form-select">
                                     <option value="0">変更する場合は選択</option>
                                     <option value="0">フィルタしない</option>
-                                    <option value="98">98% 以上でフィルタ実施</option>
-                                    <option value="95">95% 以上でフィルタ実施</option>
                                     <option value="90">90% 以上でフィルタ実施</option>
                                     <option value="80">80% 以上でフィルタ実施</option>
                                     <option value="70">70% 以上でフィルタ実施</option>
+                                    <option value="60">60% 以上でフィルタ実施</option>
                                 </select>
                             </div>
                         </div>

@@ -31,7 +31,7 @@
                     <form>
                         <div class="row mb-3">
                             <div class="col-6 col-sm-3 mb-2">
-                                <label class="form-label" for="search_asin">ASIN ブランド タイトル</label>
+                                <label class="form-label" for="search_asin">ASIN</label>
                                 <input type="text" id="search_file_name" name="search_file_name" class="form-control" />
                             </div>
                             <div class="col-6 col-sm-3 mb-2">
@@ -58,10 +58,10 @@
                                     <th class="sorting_disabled dt-checkboxes-cell dt-checkboxes-select-all"><input type="checkbox" class="checkbox_all form-check-input"></th>
                                     <th class="sorting sorting_asc">ASIN</th>
                                     <th>画像</th>
-                                    <th>タイトル</th>
-                                    <th class="sorting sorting_desc">出品価格</th>
+                                    <th class="sorting">タイトル</th>
+                                    <th class="sorting">出品価格</th>
                                     <th class="sorting">仕入価格</th>
-                                    <th>サイズ</th>
+                                    <th class="sorting">サイズ</th>
                                     <th class="sorting">重量</th>
                                     <th>メッセージ</th>
                                 </tr>

@@ -71,6 +71,12 @@
 
             <ul class="menu-inner py-1">
                 <!-- Page -->
+                <li class="menu-item  @if(request()->is('amazon_info')) active @endif">
+                    <a href="{{url('/amazon_info')}}" class="menu-link">
+                        <i class="menu-icon tf-icons ti ti-brand-amazon"></i>
+                        <div data-i18n="Amazon情報取得">Amazon情報取得</div>
+                    </a>
+                </li>
                 <li class="menu-item @if(request()->is('exhibit')) active @endif">
                     <a href="{{url('/exhibit')}}" class="menu-link">
                         <i class="menu-icon tf-icons ti ti-file-description"></i>
@@ -87,12 +93,6 @@
                     <a href="{{url('/price_history')}}" class="menu-link">
                         <i class="menu-icon tf-icons ti ti-file-dollar"></i>
                         <div data-i18n="価格改定履歴">価格改定履歴</div>
-                    </a>
-                </li>
-                <li class="menu-item  @if(request()->is('amazon_info')) active @endif">
-                    <a href="{{url('/amazon_info')}}" class="menu-link">
-                        <i class="menu-icon tf-icons ti ti-brand-amazon"></i>
-                        <div data-i18n="Amazon情報取得">Amazon情報取得</div>
                     </a>
                 </li>
                 <li class="menu-item @if(request()->is('black_list')) open active @endif">

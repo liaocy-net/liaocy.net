@@ -21,6 +21,7 @@
                         <!-- /Logo -->
                         <h5 class="mb-3 pt-2">ログイン</h5>
                         {{--  <form id="formAuthentication" class="mb-3" action="" method="POST">  --}}
+
                         <form id="formAuthentication" class="mb-3" action="{{url('/login')}}" method="post">
                             @csrf
                             <div class="mb-3">

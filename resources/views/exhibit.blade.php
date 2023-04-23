@@ -36,12 +36,12 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td></td>
+                                    <td><input type="checkbox" class="form-check-input" name="exhibit_to[]" value="amazon"/></td>
                                     <td>Amazon</td>
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td></td>
+                                    <td><input type="checkbox" class="form-check-input" name="exhibit_to[]" value="yahoo"/></td>
                                     <td>Yahoo!</td>
                                     <td class="text-start">
                                         <select class="form-select select2" id="exhibit_line_2" name="exhibit_line[]" data-placeholder="選択してください">

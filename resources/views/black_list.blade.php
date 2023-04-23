@@ -81,7 +81,7 @@
                                         <button type="button" class="btn btn-danger waves-effect waves-light me-sm-3"><i class="fas fa-trash me-1"></i>削除</button>
                                     </div>
                                     <div class="col-sm-6 mb-3">
-                                        <h6>一括登録</h6>
+                                        <h6>ファイルで一括登録</h6>
                                         <div class="input-group mb-2">
                                             <input type="file" class="form-control" id="tab1_amazon_file_list" aria-describedby="tab1_amazon_file_list_upload" aria-label="ファイルを選択">
                                             <button class="btn btn-primary btn-sm waves-effect" type="button" id="tab1_amazon_file_list_upload">ファイル読み込み</button>
@@ -144,7 +144,7 @@
                                         <button type="button" class="btn btn-danger waves-effect waves-light me-sm-3"><i class="fas fa-trash me-1"></i>削除</button>
                                     </div>
                                     <div class="col-sm-6 mb-3">
-                                        <h6>一括登録</h6>
+                                        <h6>ファイルで一括登録</h6>
                                         <div class="input-group mb-2">
                                             <input type="file" class="form-control" id="tab2_amazon_file_list" aria-describedby="tab2_amazon_file_list_upload" aria-label="ファイルを選択">
                                             <button class="btn btn-primary btn-sm waves-effect" type="button" id="tab2_amazon_file_list_upload">ファイル読み込み</button>
@@ -207,7 +207,7 @@
                                         <button type="button" class="btn btn-danger waves-effect waves-light me-sm-3"><i class="fas fa-trash me-1"></i>削除</button>
                                     </div>
                                     <div class="col-sm-6 mb-3">
-                                        <h6>一括登録</h6>
+                                        <h6>ファイルで一括登録</h6>
                                         <div class="input-group mb-2">
                                             <input type="file" class="form-control" id="tab3_amazon_file_list" aria-describedby="tab3_amazon_file_list_upload" aria-label="ファイルを選択">
                                             <button class="btn btn-primary btn-sm waves-effect" type="button" id="tab3_amazon_file_list_upload">ファイル読み込み</button>
@@ -270,7 +270,7 @@
                                         <button type="button" class="btn btn-danger waves-effect waves-light me-sm-3"><i class="fas fa-trash me-1"></i>削除</button>
                                     </div>
                                     <div class="col-sm-6 mb-3">
-                                        <h6>一括登録</h6>
+                                        <h6>ファイルで一括登録</h6>
                                         <div class="input-group mb-2">
                                             <input type="file" class="form-control" id="tab4_amazon_file_list" aria-describedby="tab4_amazon_file_list_upload" aria-label="ファイルを選択">
                                             <button class="btn btn-primary btn-sm waves-effect" type="button" id="tab4_amazon_file_list_upload">ファイル読み込み</button>
@@ -355,7 +355,7 @@
                                         <button type="button" class="btn btn-danger waves-effect waves-light me-sm-3"><i class="fas fa-trash me-1"></i>削除</button>
                                     </div>
                                     <div class="col-sm-6 mb-3">
-                                        <h6>一括登録</h6>
+                                        <h6>ファイルで一括登録</h6>
                                         <div class="input-group mb-2">
                                             <input type="file" class="form-control" id="tab1_yahoo_file_list" aria-describedby="tab1_yahoo_file_list_upload" aria-label="ファイルを選択">
                                             <button class="btn btn-primary btn-sm waves-effect" type="button" id="tab1_yahoo_file_list_upload">ファイル読み込み</button>
@@ -418,7 +418,7 @@
                                         <button type="button" class="btn btn-danger waves-effect waves-light me-sm-3"><i class="fas fa-trash me-1"></i>削除</button>
                                     </div>
                                     <div class="col-sm-6 mb-3">
-                                        <h6>一括登録</h6>
+                                        <h6>ファイルで一括登録</h6>
                                         <div class="input-group mb-2">
                                             <input type="file" class="form-control" id="tab2_yahoo_file_list" aria-describedby="tab2_yahoo_file_list_upload" aria-label="ファイルを選択">
                                             <button class="btn btn-primary btn-sm waves-effect" type="button" id="tab2_yahoo_file_list_upload">ファイル読み込み</button>
@@ -481,7 +481,7 @@
                                         <button type="button" class="btn btn-danger waves-effect waves-light me-sm-3"><i class="fas fa-trash me-1"></i>削除</button>
                                     </div>
                                     <div class="col-sm-6 mb-3">
-                                        <h6>一括登録</h6>
+                                        <h6>ファイルで一括登録</h6>
                                         <div class="input-group mb-2">
                                             <input type="file" class="form-control" id="tab3_yahoo_file_list" aria-describedby="tab3_yahoo_file_list_upload" aria-label="ファイルを選択">
                                             <button class="btn btn-primary btn-sm waves-effect" type="button" id="tab3_yahoo_file_list_upload">ファイル読み込み</button>
@@ -544,7 +544,7 @@
                                         <button type="button" class="btn btn-danger waves-effect waves-light me-sm-3"><i class="fas fa-trash me-1"></i>削除</button>
                                     </div>
                                     <div class="col-sm-6 mb-3">
-                                        <h6>一括登録</h6>
+                                        <h6>ファイルで一括登録</h6>
                                         <div class="input-group mb-2">
                                             <input type="file" class="form-control" id="tab4_yahoo_file_list" aria-describedby="tab4_yahoo_file_list_upload" aria-label="ファイルを選択">
                                             <button class="btn btn-primary btn-sm waves-effect" type="button" id="tab4_yahoo_file_list_upload">ファイル読み込み</button>
