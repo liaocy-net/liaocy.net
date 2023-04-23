@@ -15,7 +15,7 @@ jobs:
       APP_ENV: stg
       APP_KEY: ${{secrets.APP_KEY_STG}}
       APP_DEBUG: 'true'
-      APP_URL: 'http://localhost'
+      APP_URL: 'https://d3m6ydyv0b0mii.cloudfront.net/'
       LOG_CHANNEL: stack
       LOG_DEPRECATIONS_CHANNEL: 'null'
       LOG_LEVEL: debug
