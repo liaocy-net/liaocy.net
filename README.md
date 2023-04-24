@@ -15,7 +15,7 @@ php artisan key:generate
 
 - Generate Controller
 ```bash
-php artisan make:controller <ControllerName>
+php artisan make:controller <ControllerName> -r
 ```
 
 - Database Migration
@@ -33,6 +33,8 @@ $user->password = Hash::make('123456');
 $user->email = 'test@test.com';
 $user->name = 'Test User';
 $user->role = 'admin';
+$user->first_name = '太郎';
+$user->last_name = '高木';
 $user->save();
 ```
 
@@ -40,6 +42,15 @@ $user->save();
 ```bash
 php artisan make:migration add_role_to_users --table="users"
 ```
+
+## Code Snippets
+
+- Route Resource
+```php
+Route::resource('users', UserController::class);
+```
+equals to
+https://github.com/ixiumu/laravel_meetup/blob/master/docs/11.Code%20Beauty%EF%BC%88Resource%20Controllers%EF%BC%89.md
 
 ## References
 
@@ -54,6 +65,13 @@ php artisan make:migration add_role_to_users --table="users"
 
 - Models
   - [Add new field to user profile in Laravel 8](https://dev.to/arifiqbal/add-new-field-to-user-profile-in-laravel-8-49ck)
+
+- Paging
+  - [イントロダクション](https://readouble.com/laravel/8.x/ja/pagination.html)
+  - [Database: Pagination](https://laravel.com/docs/10.x/pagination)
+
+- Form
+  - [【laravel】Validatorによるバリデーション](https://qiita.com/gone0021/items/c613ef7e006b6f5d47ce)
 
 - Others
   - [Laravel:419|PAGE EXPIREDエラーの解決方法](https://qiita.com/taka_no_okapi/items/fb4bbe59c18eeaf5a043)

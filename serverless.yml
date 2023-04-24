@@ -52,6 +52,7 @@ provider:
         VITE_PUSHER_PORT: ${env:VITE_PUSHER_PORT}
         VITE_PUSHER_SCHEME: ${env:VITE_PUSHER_SCHEME}
         VITE_PUSHER_APP_CLUSTER: ${env:VITE_PUSHER_APP_CLUSTER}
+        PAGE_MAX_LIMIT: ${env:PAGE_MAX_LIMIT}
     ecr:
         images:
             laravel-web:

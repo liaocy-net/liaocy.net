@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\UserController;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,6 +84,5 @@ Route::get('/setting', function () {
 });
 
 /* ユーザー管理 */
-Route::get('/users', function () {
-    return view('users');
-})->middleware(['auth', 'admin']);
+// Route::get('/users', [UserController::class, "index"])->middleware(['auth', 'admin']);
+Route::resource('/users', UserController::class)->middleware(['auth', 'admin']);

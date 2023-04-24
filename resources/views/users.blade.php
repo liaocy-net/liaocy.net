@@ -31,35 +31,48 @@
                                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                             </div>
                             <div class="modal-body">
-                                <form>
+                                <form id="storeUser" class="mb-3" action="{{route('users.store')}}" method="post">
                                     @csrf
                                     <div class="row mb-3">
                                         <div class="col-12">
-                                            <label class="form-label" for="user_name">お名前</label>
-                                            <input type="text" id="user_name" name="user_name" class="form-control" >
+                                            <label class="form-label" for="last_name">姓</label>
+                                            <input type="text" id="last_name" name="last_name" class="form-control" require value="姓1">
                                         </div>
                                     </div>
                                     <div class="row mb-3">
                                         <div class="col-12">
-                                            <label class="form-label" for="user_email">メールアドレス</label>
-                                            <input type="email" id="user_email" name="user_email" class="form-control" >
+                                            <label class="form-label" for="first_name">名</label>
+                                            <input type="text" id="first_name" name="first_name" class="form-control" value="名1">
                                         </div>
                                     </div>
                                     <div class="row mb-3">
                                         <div class="col-12">
-                                            <label class="form-label">権限</label>
+                                            <label class="form-label" for="email">メールアドレス</label>
+                                            <input type="email" id="email" name="email" class="form-control" value="001@charing.biz">
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <label class="form-label" for="email">パスワード</label>
+                                            <input type="password" id="password" name="password" class="form-control" value="12345678">
+                                        </div>
+                                    </div>
+                                    <div class="row mb-3">
+                                        <div class="col-12">
+                                            <label class="form-label">ロール</label>
                                             <div class="">
                                                 <div class="form-check form-check-inline">
-                                                    <input class="form-check-input" type="radio" name="user_permission" id="user_permission_1" value="1" checked>
-                                                    <label class="form-check-label" for="user_permission_1">管理者</label>
+                                                    <input class="form-check-input" type="radio" name="role" id="role_1" value="admin">
+                                                    <label class="form-check-label" for="role_1">管理者</label>
                                                 </div>
                                                 <div class="form-check form-check-inline">
-                                                    <input class="form-check-input" type="radio" name="user_permission" id="user_permission_2" value="2">
-                                                    <label class="form-check-label" for="user_permission_2">一般ユーザー</label>
+                                                    <input class="form-check-input" type="radio" name="role" id="role_2" value="user" checked>
+                                                    <label class="form-check-label" for="role_2">一般ユーザー</label>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
+                                    <button type="submit" class="btn btn-primary waves-effect waves-light"><i class="fas fa-save me-1"></i>登録</button>
                                 </form>
                             </div>
                             <div class="modal-footer">
@@ -87,56 +100,70 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
-                                    <td>1</td>
-                                    <td>高木 太郎</td>
-                                    <td>taro@aispel.com</td>
-                                    <td>管理者</td>
-                                    <td>2023/03/22 12:00:00</td>
-                                    <td><button type="button" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-trash"></i></button></td>
-                                </tr>
-                                <tr>
-                                    <td>2</td>
-                                    <td>高木 二郎</td>
-                                    <td>jiro@aispel.com</td>
-                                    <td>一般ユーザー</td>
-                                    <td>2023/03/22 12:00:00</td>
-                                    <td><button type="button" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-trash"></i></button></td>
-                                </tr>
+                                @foreach ($users as $user)
+                                    <tr>
+                                        <td>{{ $user->id }}</td>
+                                        <td>{{ $user->name }}</td>
+                                        <td>{{ $user->email }}</td>
+                                        <td>{{ $user->role }}</td>
+                                        <td>{{ $user->created_at }}</td>
+                                        <td><button type="button" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-trash"></i></button></td>
+                                    </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     </div>
                     
                     <div class="pagination-body mt-3">
                         <nav aria-label="Page navigation">
+                            @php
+                                $paginator = $users
+                            @endphp
                             <ul class="pagination justify-content-center pagination-info">
-                                <li class="page-item first">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-left ti-xs"></i></a>
-                                </li>
-                                <li class="page-item prev">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevron-left ti-xs"></i></a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">1</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">2</a>
-                                </li>
-                                <li class="page-item active">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">3</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">4</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">5</a>
-                                </li>
-                                <li class="page-item next">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevron-right ti-xs"></i></a>
-                                </li>
-                                <li class="page-item last">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-right ti-xs"></i></a>
-                                </li>
+                                @if ($paginator->onFirstPage())
+                                    <li class="page-item first disabled">
+                                        <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-left ti-xs"></i></a>
+                                    </li>
+                                    <li class="page-item prev disabled">
+                                        <a class="page-link waves-effect disable" href="javascript:void(0);"><i class="ti ti-chevron-left ti-xs"></i></a>
+                                    </li>
+                                @else
+                                    <li class="page-item first">
+                                        <a class="page-link waves-effect" href="{{ \Request::url().'?page=1' }}"><i class="ti ti-chevrons-left ti-xs"></i></a>
+                                    </li>
+                                    <li class="page-item prev">
+                                        <a class="page-link waves-effect" href="{{ $paginator->previousPageUrl() }}"><i class="ti ti-chevron-left ti-xs"></i></a>
+                                    </li>
+                                @endif
+
+                                @for ($i = $paginator->currentPage() - 3; $i <= $paginator->currentPage() + 3; $i++)
+                                    @if ($i == $paginator->currentPage())
+                                        <li class="page-item active">
+                                            <a class="page-link waves-effect" href="javascript:void(0);">{{ $i }}</a>
+                                        </li>
+                                    @elseif ($i > 0 && $i <= $paginator->lastPage())
+                                        <li class="page-item">
+                                            <a class="page-link waves-effect" href="{{ \Request::url().'?page='.$i }}">{{ $i }}</a>
+                                        </li>
+                                    @endif
+                                @endfor
+
+                                @if ($paginator->onLastPage())
+                                    <li class="page-item next disabled">
+                                        <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevron-right ti-xs"></i></a>
+                                    </li>
+                                    <li class="page-item last disabled">
+                                        <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-right ti-xs"></i></a>
+                                    </li>
+                                @else
+                                    <li class="page-item next">
+                                        <a class="page-link waves-effect" href="{{ $paginator->nextPageUrl() }}"><i class="ti ti-chevron-right ti-xs"></i></a>
+                                    </li>
+                                    <li class="page-item last">
+                                        <a class="page-link waves-effect" href="{{ \Request::url().'?page='.$paginator->lastPage() }}"><i class="ti ti-chevrons-right ti-xs"></i></a>
+                                    </li>
+                                @endif
+                                
                             </ul>
                         </nav>
                     </div>
