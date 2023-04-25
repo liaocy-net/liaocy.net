@@ -18,7 +18,7 @@ class UserController extends Controller
      */
     public function index()
     {
-        return view('users', [
+        return view('users.index', [
             'users' => DB::table('users')->orderBy("created_at", "desc")->paginate(env("PAGE_MAX_LIMIT", 50))
         ]);
     }
@@ -30,7 +30,7 @@ class UserController extends Controller
      */
     public function create()
     {
-        //
+        return view('users.create', []);
     }
 
     /**
@@ -76,7 +76,8 @@ class UserController extends Controller
      */
     public function show($id)
     {
-        //
+        $user = User::find($id);
+        return view('users.show')->with('user', $user);
     }
 
     /**
@@ -87,7 +88,8 @@ class UserController extends Controller
      */
     public function edit($id)
     {
-        //
+        $user = User::find($id); 
+        return view('users.edit')->with('user', $user);
     }
 
     /**
@@ -99,7 +101,36 @@ class UserController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $params = $request->all();
+
+        if ($params["act"] === "update_profile") {
+            $validator = Validator::make($request->all(), [
+                'email' => ['required', 'string', 'email', 'max:255'],
+                'first_name' => ['required', 'string', 'max:255'],
+                'last_name' => ['required', 'string', 'max:255'],
+                'role' => ['required', 'string', 'max:255', 'regex:/^[admin|user|banned]+$/u'],
+            ]);
+    
+            if ($validator->fails()) {
+                return back()->withErrors($validator)->withInput();
+            }
+
+            $params['name'] = $params['last_name'] . ' ' . $params['first_name'];
+        } elseif ($params["act"] === "update_password") {
+            $validator = Validator::make($request->all(), [
+                'password' => ['required', Rules\Password::defaults()],
+            ]);
+    
+            if ($validator->fails()) {
+                return back()->withErrors($validator)->withInput();
+            }
+
+            $params['password'] = Hash::make($params['password']);
+        }
+
+        $user = User::find($id); 
+        $user->update($params); 
+        return redirect()->route('users.show', $id)->with('success', '更新しました。');
     }
 
     /**

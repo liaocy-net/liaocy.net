@@ -20,68 +20,8 @@
         <!-- Content Body -->
         <div class="card">
             <div class="card-header">
-                <button type="button" class="btn btn-primary waves-effect waves-light" data-bs-toggle="modal" data-bs-target="#registModal"><i class="fas fa-plus me-1"></i>ユーザー登録</button>
+                <a type="button" href="{{route('users.create')}}" class="btn btn-primary waves-effect waves-light"><i class="fas fa-plus me-1"></i>ユーザー登録</a>
 
-                <!-- Modal -->
-                <div class="modal fade" id="registModal" tabindex="-1" style="display: none;" aria-hidden="true">
-                    <div class="modal-dialog" role="document">
-                        <div class="modal-content">
-                            <div class="modal-header">
-                                <h5 class="modal-title" id="registModalTitle">ユーザー登録</h5>
-                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                            </div>
-                            <div class="modal-body">
-                                <form id="storeUser" class="mb-3" action="{{route('users.store')}}" method="post">
-                                    @csrf
-                                    <div class="row mb-3">
-                                        <div class="col-12">
-                                            <label class="form-label" for="last_name">姓</label>
-                                            <input type="text" id="last_name" name="last_name" class="form-control" require value="姓1">
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3">
-                                        <div class="col-12">
-                                            <label class="form-label" for="first_name">名</label>
-                                            <input type="text" id="first_name" name="first_name" class="form-control" value="名1">
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3">
-                                        <div class="col-12">
-                                            <label class="form-label" for="email">メールアドレス</label>
-                                            <input type="email" id="email" name="email" class="form-control" value="001@charing.biz">
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3">
-                                        <div class="col-12">
-                                            <label class="form-label" for="email">パスワード</label>
-                                            <input type="password" id="password" name="password" class="form-control" value="12345678">
-                                        </div>
-                                    </div>
-                                    <div class="row mb-3">
-                                        <div class="col-12">
-                                            <label class="form-label">ロール</label>
-                                            <div class="">
-                                                <div class="form-check form-check-inline">
-                                                    <input class="form-check-input" type="radio" name="role" id="role_1" value="admin">
-                                                    <label class="form-check-label" for="role_1">管理者</label>
-                                                </div>
-                                                <div class="form-check form-check-inline">
-                                                    <input class="form-check-input" type="radio" name="role" id="role_2" value="user" checked>
-                                                    <label class="form-check-label" for="role_2">一般ユーザー</label>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <button type="submit" class="btn btn-primary waves-effect waves-light"><i class="fas fa-save me-1"></i>登録</button>
-                                </form>
-                            </div>
-                            <div class="modal-footer">
-                                <button type="button" class="btn btn-label-secondary waves-effect me-sm-2 me-1" data-bs-dismiss="modal">キャンセル</button>
-                                <button type="submit" class="btn btn-primary waves-effect waves-light"><i class="fas fa-save me-1"></i>登録</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <div class="card-body">
@@ -96,7 +36,8 @@
                                     <th>メールアドレス</th>
                                     <th>権限</th>
                                     <th>作成日</th>
-                                    <th>削除</th>
+                                    <th>詳細</th>
+                                    <th>編集</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -107,7 +48,8 @@
                                         <td>{{ $user->email }}</td>
                                         <td>{{ $user->role }}</td>
                                         <td>{{ $user->created_at }}</td>
-                                        <td><button type="button" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-trash"></i></button></td>
+                                        <td><a href="{{route('users.show', $user->id)}}" type="button" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-user"></i></a></td>
+                                        <td><a href="{{route('users.edit', $user->id)}}" type="button" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-edit"></i></a></td>
                                     </tr>
                                 @endforeach
                             </tbody>

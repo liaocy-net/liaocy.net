@@ -59,6 +59,7 @@ https://github.com/ixiumu/laravel_meetup/blob/master/docs/11.Code%20Beauty%EF%BC
   - [Laravel 8.x 認証](https://readouble.com/laravel/8.x/ja/authentication.html)
   - [middlewareを追加して管理者権限ユーザーのみアクセスを許可する](https://ohta412.jp/laravel-middleware/)
   - [Create Custom Laravel Blade Directive & Middleware Easily](https://mahekarim.medium.com/create-custom-laravel-blade-directive-middleware-easily-75155bf00cc9)
+  - [How to Disable Users from Login in Laravel](https://dev.to/techtoolindia/how-to-disable-users-from-login-in-laravel-bm9)
 
 - Route
   - [リダイレクトの書き方メモ](https://qiita.com/manbolila/items/767e1dae399de16813fb)

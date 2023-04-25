@@ -114,7 +114,7 @@
                     </a>
                 </li>
                 @admin
-                <li class="menu-item @if(request()->is('users')) active @endif">
+                <li class="menu-item @if(request()->is('user*')) active @endif">
                     <a href="{{url('/users')}}" class="menu-link">
                         <i class="menu-icon tf-icons ti ti-users"></i>
                         <div data-i18n="ユーザー管理">ユーザー管理</div>
@@ -144,7 +144,7 @@
                         <div class="col-5 d-flex">
                             <ul class="navbar-nav ms-auto flex-row justify-sm-content-end">
                                 <li class="nav-item d-flex align-items-center">
-                                    <a class="" href="javascript:void(0);">〇〇</a>さん
+                                    <a class="" href="javascript:void(0);">{{ auth()->user()->name }}</a>さん
                                 </li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{url('/logout')}}" data-bs-toggle="tooltip" data-bs-placement="bottom" title="ログアウト"><i class="ti navbar-icon ti-logout ti-md me-1"></i></a>

@@ -32,6 +32,11 @@
                                         <strong>{{ $message }}</strong>
                                     </span>
                                 @enderror
+                                @if (request('error'))
+                                    <span class="invalid-feedback" role="alert">
+                                        <strong>{{ request('error') }}</strong>
+                                    </span>
+                                @endif
                             </div>
                             <div class="mb-3 form-password-toggle">
                                 <div class="d-flex justify-content-between">
