@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\SettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,9 +83,8 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
     });
 
     /* 設定 */
-    Route::get('/setting', function () {
-        return view('setting');
-    });
+    Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
+    Route::put('/setting/update', [SettingController::class, 'update'])->name('setting.update');
 
     /* 管理者のみ */
     Route::group(['middleware' => 'admin'], function () {

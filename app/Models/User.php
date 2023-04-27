@@ -25,6 +25,13 @@ class User extends Authenticatable
         'role',
         'email_verified_at',
         'password',
+        'yahoo_store_account',
+        'yahoo_client_id',
+        'yahoo_secret',
+        'yahoo_access_token',
+        'yahoo_access_token_expires_in',
+        'yahoo_refresh_token',
+        'yahoo_refresh_token_expires_in',
     ];
 
     /**

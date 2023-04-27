@@ -18,9 +18,19 @@ php artisan key:generate
 php artisan make:controller <ControllerName> -r
 ```
 
+- Add Column to User Model
+```bash
+php artisan make:migration add_role_to_users --table="users"
+```
+
 - Database Migration
 ```bash
 php artisan migrate
+```
+
+- Database Migration Rollback
+```bash
+php artisan migrate:rollback --step=1
 ```
 
 - Create Admin in CLI
@@ -38,10 +48,7 @@ $user->last_name = '高木';
 $user->save();
 ```
 
-- Add Column to User Model
-```bash
-php artisan make:migration add_role_to_users --table="users"
-```
+
 
 ## Code Snippets
 

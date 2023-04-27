@@ -36,7 +36,7 @@
                                     <th>メールアドレス</th>
                                     <th>権限</th>
                                     <th>作成日</th>
-                                    <th>詳細</th>
+                                    {{-- <th>詳細</th> --}}
                                     <th>編集</th>
                                 </tr>
                             </thead>
@@ -48,7 +48,7 @@
                                         <td>{{ $user->email }}</td>
                                         <td>{{ $user->role }}</td>
                                         <td>{{ $user->created_at }}</td>
-                                        <td><a href="{{route('users.show', $user->id)}}" type="button" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-user"></i></a></td>
+                                        {{-- <td><a href="{{route('users.show', $user->id)}}" type="button" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-user"></i></a></td> --}}
                                         <td><a href="{{route('users.edit', $user->id)}}" type="button" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-edit"></i></a></td>
                                     </tr>
                                 @endforeach

@@ -332,25 +332,29 @@
 
                 <div class="mb-3">
                     <h5 class="fw-bold">Yahoo API認証</h5>
-                    <div class="row">
-                        <div class="col-12 mb-3">
-                            <label class="form-label" for="yahoo_api_store_account">ストアアカウント</label>
-                            <input type="text" id="yahoo_api_store_account" name="yahoo_api_store_account" class="form-control" />
+                    <form id="formAuthentication" class="mb-3" action="{{route('setting.update')}}" method="post">
+                        @csrf
+                        {{ method_field('PUT') }}
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <label class="form-label" for="yahoo_api_store_account">ストアアカウント</label>
+                                <input type="text" id="yahoo_api_store_account" name="yahoo_store_account" class="form-control" value="{{ $my->yahoo_store_account }}"/>
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="yahoo_api_client_id">Client ID</label>
+                                <input type="text" id="yahoo_api_client_id" name="yahoo_client_id" class="form-control" value="{{ $my->yahoo_client_id }}"/>
+                            </div>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="yahoo_api_secret">シークレット</label>
+                                <input type="password" id="yahoo_api_secret" name="yahoo_secret" class="form-control" value="{{ $my->yahoo_secret }}"/>
+                            </div>
+                            <div class="col-12 mb-3">
+                                <button type="submit" class="btn btn-danger me-sm-2 me-1 waves-effect waves-light" name="act" value="yahoo_auth">
+                                    <i class="ti ti-xs ti-brand-yahoo me-1"></i>ログイン認証</button>
+                                <span class="text-warning">✖未認証</span>
+                            </div>
                         </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="yahoo_api_client_id">Client ID</label>
-                            <input type="text" id="yahoo_api_client_id" name="yahoo_api_client_id" class="form-control" />
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="yahoo_api_secret">シークレット</label>
-                            <input type="text" id="yahoo_api_secret" name="yahoo_api_secret" class="form-control" />
-                        </div>
-                        <div class="col-12 mb-3">
-                            <button type="button" class="btn btn-danger me-sm-2 me-1 waves-effect waves-light">
-                                <i class="ti ti-xs ti-brand-yahoo me-1"></i>ログイン認証</button>
-                            <span class="text-warning">✖未認証</span>
-                        </div>
-                    </div>
+                    </form>
                 </div>
                 
                 <div class="mb-3">

@@ -138,10 +138,10 @@
 
                 <div class="navbar-nav-right px-3" id="navbar-collapse">
                     <div class="row d-flex align-items-center">
-                        <div class="col-7">
+                        <div class="col-5">
                             {{--  <h2 class="m-0">{{$title}}</h2>  --}}
                         </div>
-                        <div class="col-5 d-flex">
+                        <div class="col-7 d-flex">
                             <ul class="navbar-nav ms-auto flex-row justify-sm-content-end">
                                 <li class="nav-item d-flex align-items-center">
                                     <a class="" href="javascript:void(0);">{{ auth()->user()->name }}</a>さん

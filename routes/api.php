@@ -2,6 +2,7 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SettingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,3 +18,6 @@ use Illuminate\Support\Facades\Route;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
+// Route::group(['middleware' => ['auth', 'check_banned']], function () {
+    Route::get('/setting/yahoo_callback', [SettingController::class, 'yahooCallBack'])->name('yahoo_callback');
+// });
