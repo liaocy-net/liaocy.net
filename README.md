@@ -48,6 +48,10 @@ $user->last_name = '高木';
 $user->save();
 ```
 
+- Monitoring Port
+```bash
+lsof -i :8000
+```
 
 
 ## Code Snippets

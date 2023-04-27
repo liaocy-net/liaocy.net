@@ -85,6 +85,7 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
     /* 設定 */
     Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
     Route::put('/setting/update', [SettingController::class, 'update'])->name('setting.update');
+    Route::get('/setting/yahoo_callback', [SettingController::class, 'yahooCallBack'])->name('yahoo_callback');
 
     /* 管理者のみ */
     Route::group(['middleware' => 'admin'], function () {
@@ -92,3 +93,4 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
         Route::resource('/users', UserController::class)->middleware(['auth', 'admin']);
     });
 });
+

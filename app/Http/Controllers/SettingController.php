@@ -150,7 +150,7 @@ class SettingController extends Controller
                 $my->yahoo_refresh_token_expires_in = $yahoo_refresh_token_expires_in;
                 $my->save();
 
-                return redirect()->route('setting.index');
+                return redirect()->route('setting.index')->with('success', 'Yahoo認証しました。');
             } catch (Exception $e ) {
                 echo "認証失敗。";
             }

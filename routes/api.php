@@ -18,6 +18,3 @@ use App\Http\Controllers\SettingController;
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
-// Route::group(['middleware' => ['auth', 'check_banned']], function () {
-    Route::get('/setting/yahoo_callback', [SettingController::class, 'yahooCallBack'])->name('yahoo_callback');
-// });

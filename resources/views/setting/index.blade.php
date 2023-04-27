@@ -351,7 +351,11 @@
                             <div class="col-12 mb-3">
                                 <button type="submit" class="btn btn-danger me-sm-2 me-1 waves-effect waves-light" name="act" value="yahoo_auth">
                                     <i class="ti ti-xs ti-brand-yahoo me-1"></i>ログイン認証</button>
+                                @if ($my->yahoo_access_token)
+                                <span class="text-success">◯認証済み</span>
+                                @else
                                 <span class="text-warning">✖未認証</span>
+                                @endif
                             </div>
                         </div>
                     </form>
