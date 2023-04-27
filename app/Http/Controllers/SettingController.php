@@ -4,16 +4,16 @@ namespace App\Http\Controllers;
 
 require_once(__DIR__."/../../../vendor/autoload.php");
 
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
-
 use YConnect\Constant\OIDConnectDisplay;
 use YConnect\Constant\OIDConnectPrompt;
 use YConnect\Constant\OIDConnectScope;
 use YConnect\Constant\ResponseType;
 use YConnect\Credential\ClientCredential;
 use YConnect\YConnectClient;
-use App\Models\User;
 
 class SettingController extends Controller
 {
@@ -105,38 +105,38 @@ class SettingController extends Controller
 
     public function yahooCallBack(Request $request) 
     {
-        $validator = Validator::make($request->all(), [
-            'state' => ['required', 'string', 'max:255'],
-            'code' => ['required', 'string', 'max:255']
-        ]);
+        try {
+            $validator = Validator::make($request->all(), [
+                'state' => ['required', 'string', 'max:255'],
+                'code' => ['required', 'string', 'max:255']
+            ]);
 
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
+            if ($validator->fails()) {
+                return back()->withErrors($validator)->withInput();
+            }
 
-        $params = $request->all();
-        $yahoo_state = $params['state'];
+            $params = $request->all();
+            $yahoo_state = $params['state'];
 
-        $my = User::where('yahoo_state', $yahoo_state)->first();
+            $my = Auth::user();
 
-        $yahoo_client_id = $my->yahoo_client_id;
-        $yahoo_secret = $my->yahoo_secret;
+            $yahoo_client_id = $my->yahoo_client_id;
+            $yahoo_secret = $my->yahoo_secret;
 
-        $cred = new ClientCredential($yahoo_client_id, $yahoo_secret);
-        $client = new YConnectClient($cred);
+            $cred = new ClientCredential($yahoo_client_id, $yahoo_secret);
+            $client = new YConnectClient($cred);
 
-        $state = $my->yahoo_state;
-        $nonce = $my->yahoo_nonce;
-        $redirect_uri = route('yahoo_callback');
+            $state = $my->yahoo_state;
+            $nonce = $my->yahoo_nonce;
+            $redirect_uri = route('yahoo_callback');
 
-        $code_result = $client->getAuthorizationCode($state);
-        if( $code_result ) {
-            // Tokenエンドポイントにリクエスト
-            $client->requestAccessToken(
-                $redirect_uri,
-                $code_result
-            );
-            try {
+            $code_result = $client->getAuthorizationCode($state);
+            if( $code_result ) {
+                // Tokenエンドポイントにリクエスト
+                $client->requestAccessToken(
+                    $redirect_uri,
+                    $code_result
+                );
                 // IDトークンを検証(4)
                 $accessToken  = $client->getAccessToken();
                 $client->verifyIdToken($nonce, $accessToken);
@@ -151,10 +151,15 @@ class SettingController extends Controller
                 $my->save();
 
                 return redirect()->route('setting.index')->with('success', 'Yahoo認証しました。');
-            } catch (Exception $e ) {
-                echo "認証失敗。";
+                
             }
-            return ("failed");
+        } catch (\Exception $e) {
+            $my->yahoo_access_token = null;
+            $my->yahoo_refresh_token = null;
+            $my->yahoo_access_token_expires_in = null;
+            $my->yahoo_refresh_token_expires_in = null;
+            $my->save();
+            return redirect()->route('setting.index')->withErrors('success', 'Yahoo認証が失敗しました。もう一度お試しください。');
         }
     }
 }
