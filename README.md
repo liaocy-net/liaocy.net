@@ -37,6 +37,12 @@ php artisan migrate:rollback --step=1
 ```bash
 php artisan tinker
 ```
+
+- Create Model
+```bash
+php artisan make:model ForeignShipping -m
+```
+
 ```php
 $user = new App\Models\User();
 $user->password = Hash::make('123456');
@@ -72,6 +78,9 @@ https://github.com/ixiumu/laravel_meetup/blob/master/docs/11.Code%20Beauty%EF%BC
   - [Create Custom Laravel Blade Directive & Middleware Easily](https://mahekarim.medium.com/create-custom-laravel-blade-directive-middleware-easily-75155bf00cc9)
   - [How to Disable Users from Login in Laravel](https://dev.to/techtoolindia/how-to-disable-users-from-login-in-laravel-bm9)
 
+- Database
+  - [Eloquent: Relationships](https://laravel.com/docs/10.x/eloquent-relationships#one-to-many)
+
 - Route
   - [リダイレクトの書き方メモ](https://qiita.com/manbolila/items/767e1dae399de16813fb)
 
@@ -87,6 +96,10 @@ https://github.com/ixiumu/laravel_meetup/blob/master/docs/11.Code%20Beauty%EF%BC
 
 - Others
   - [Laravel:419|PAGE EXPIREDエラーの解決方法](https://qiita.com/taka_no_okapi/items/fb4bbe59c18eeaf5a043)
+
+- Files
+  - [【Laravel】CSVファイルのデータインポート＆エクスポートする方法](https://qiita.com/kyo-san/items/bc8d0278bee99ae1f2ec)
+
 # Laravel 8.x
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>

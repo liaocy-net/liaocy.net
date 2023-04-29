@@ -26,93 +26,111 @@
 
                 <div class="mb-3">
                     <h5 class="fw-bold">共通</h5>
-                    <div class="row">
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="common_currency_rate">為替</label>
-                            <div class="input-group" id="common_currency_rate_group">
-                                <span class="input-group-text col-5">1$ = 120円</span>
-                                <input type="number" id="common_currency_rate" name="common_currency_rate" class="form-control" />
-                                <span class="input-group-text">円</span>
+                    <form id="formAuthentication" class="mb-3" action="{{route('setting.update')}}" method="post" enctype="multipart/form-data">
+                        @csrf
+                        {{ method_field('PUT') }}
+                        <div class="row">
+                            
+                            
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="common_currency_rate">為替</label>
+                                <div class="input-group" id="common_currency_rate_group">
+                                    <span class="input-group-text col-5">1$ = {{ $my->common_currency_rate }}円</span>
+                                    <input type="number" id="common_currency_rate" name="common_currency_rate" class="form-control" min="1" max="9999999" required value="{{ $my->common_currency_rate }}"/>
+                                    <span class="input-group-text">円</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="common_country_shipping">国内送料</label>
-                            <div class="input-group" id="common_country_shipping_group">
-                                <span class="input-group-text col-5">1500円</span>
-                                <input type="number" id="common_country_shipping" name="common_country_shipping" class="form-control" />
-                                <span class="input-group-text">円</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="common_country_shipping">国内送料</label>
+                                <div class="input-group" id="common_country_shipping_group">
+                                    <span class="input-group-text col-5">{{ $my->common_country_shipping }}円</span>
+                                    <input type="number" id="common_country_shipping" name="common_country_shipping" class="form-control" min="0" max="999999" required value="{{ $my->common_country_shipping }}"/>
+                                    <span class="input-group-text">円</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="common_foreign_shipping_without_weight">重量なしの場合の国際送料</label>
-                            <div class="input-group" id="common_foreign_shipping_without_weight_group">
-                                <span class="input-group-text col-5">20000円</span>
-                                <input type="number" id="common_foreign_shipping_without_weight" name="common_foreign_shipping_without_weight" class="form-control" />
-                                <span class="input-group-text">円</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="common_foreign_shipping_without_weight">重量なしの場合の国際送料</label>
+                                <div class="input-group" id="common_foreign_shipping_without_weight_group">
+                                    <span class="input-group-text col-5">{{ $my->common_foreign_shipping_without_weight }}円</span>
+                                    <input type="number" id="common_foreign_shipping_without_weight" name="common_foreign_shipping_without_weight" class="form-control" min="0" max="999999" required value="{{ $my->common_foreign_shipping_without_weight }}"/>
+                                    <span class="input-group-text">円</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="common_customs_tax">関税消費税</label>
-                            <div class="input-group" id="common_customs_tax_group">
-                                <span class="input-group-text col-5">15%</span>
-                                <input type="number" id="common_customs_tax" name="common_customs_tax" class="form-control" />
-                                <span class="input-group-text">%</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="common_customs_tax">関税消費税</label>
+                                <div class="input-group" id="common_customs_tax_group">
+                                    <span class="input-group-text col-5">{{ $my->common_customs_tax * 100 }}%</span>
+                                    <input type="number" id="common_customs_tax" name="common_customs_tax" class="form-control" min="0" max="100" step="0.01" required value="{{ $my->common_customs_tax * 100 }}"/>
+                                    <span class="input-group-text">%</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="common_purchase_price">仕入れ価格</label>
-                            <div class="input-group" id="common_purchase_price">
-                                <span class="input-group-text col-5">50~1000ドル</span>
-                                <input type="number" id="common_purchase_price_from" name="common_purchase_price_from" class="form-control" />
-                                <span class="input-group-text">~</span>
-                                <input type="number" id="common_purchase_price_to" name="common_purchase_price_to" class="form-control" />
-                                <span class="input-group-text">ドル</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="common_purchase_price">仕入れ価格</label>
+                                <div class="input-group" id="common_purchase_price">
+                                    <span class="input-group-text col-5">{{ $my->common_purchase_price_from }}~{{ $my->common_purchase_price_to }}ドル</span>
+                                    <input type="number" id="common_purchase_price_from" name="common_purchase_price_from" min="1" max="999999"  class="form-control" required value="{{ $my->common_purchase_price_from }}"/>
+                                    <span class="input-group-text">~</span>
+                                    <input type="number" id="common_purchase_price_to" name="common_purchase_price_to"  min="1" max="999999" class="form-control" required value="{{ $my->common_purchase_price_to }}"/>
+                                    <span class="input-group-text">ドル</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="common_max_weight">取扱い最大重量</label>
-                            <div class="input-group" id="common_max_weight_group">
-                                <span class="input-group-text col-5">100kg</span>
-                                <input type="number" id="common_max_weight" name="common_max_weight" class="form-control" />
-                                <span class="input-group-text">kg</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="common_max_weight">取扱い最大重量</label>
+                                <div class="input-group" id="common_max_weight_group">
+                                    <span class="input-group-text col-5">{{ $my->common_max_weight }}kg</span>
+                                    <input type="number" id="common_max_weight" name="common_max_weight" class="form-control" min="1" max="999999" required value="{{ $my->common_max_weight }}"/>
+                                    <span class="input-group-text">kg</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="common_size">サイズ (縦 + 横 + 高さ 合計値)</label>
-                            <div class="input-group" id="common_size">
-                                <span class="input-group-text col-5">0 ~ 50cm</span>
-                                <input type="number" id="common_size_from" name="common_size_from" class="form-control" />
-                                <span class="input-group-text">~</span>
-                                <input type="number" id="common_size_to" name="common_size_to" class="form-control" />
-                                <span class="input-group-text">cm</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="common_size">サイズ (縦 + 横 + 高さ 合計値)</label>
+                                <div class="input-group" id="common_size">
+                                    <span class="input-group-text col-5">{{ $my->common_size_from }} ~ {{ $my->common_size_to }}cm</span>
+                                    <input type="number" id="common_size_from" name="common_size_from" class="form-control"  min="0" max="999999" required value="{{ $my->common_size_from }}"/>
+                                    <span class="input-group-text">~</span>
+                                    <input type="number" id="common_size_to" name="common_size_to" class="form-control"  min="1" max="999999" required value="{{ $my->common_size_to }}"/>
+                                    <span class="input-group-text">cm</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="common_purchase_mark">仕入先評価</label>
-                            <div class="input-group" id="common_purchase_mark_group">
-                                <span class="input-group-text col-5">フィルタしない</span>
-                                <select id="common_purchase_mark" name="common_purchase_mark" class="form-select">
-                                    <option value="0">変更する場合は選択</option>
-                                    <option value="0">フィルタしない</option>
-                                    <option value="90">90% 以上でフィルタ実施</option>
-                                    <option value="80">80% 以上でフィルタ実施</option>
-                                    <option value="70">70% 以上でフィルタ実施</option>
-                                    <option value="60">60% 以上でフィルタ実施</option>
-                                </select>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="common_purchase_mark">仕入先評価</label>
+                                <div class="input-group" id="common_purchase_mark_group">
+                                    <span class="input-group-text col-5">
+                                        @if ($my->common_purchase_mark == 0)
+                                            フィルタしない
+                                        @elseif ($my->common_purchase_mark == 0.9)
+                                            90% 以上でフィルタ実施
+                                        @elseif ($my->common_purchase_mark == 0.8)
+                                            80% 以上でフィルタ実施
+                                        @elseif ($my->common_purchase_mark == 0.7)
+                                            70% 以上でフィルタ実施
+                                        @elseif ($my->common_purchase_mark == 0.6)
+                                            60% 以上でフィルタ実施
+                                        @endif
+                                    </span>
+                                    <select id="common_purchase_mark" name="common_purchase_mark" class="form-select">
+                                        <option value="0" @if ($my->common_purchase_mark == 0) selected @endif>フィルタしない</option>
+                                        <option value="90" @if ($my->common_purchase_mark == 0.9) selected @endif>90% 以上でフィルタ実施</option>
+                                        <option value="80" @if ($my->common_purchase_mark == 0.8) selected @endif>80% 以上でフィルタ実施</option>
+                                        <option value="70" @if ($my->common_purchase_mark == 0.7) selected @endif>70% 以上でフィルタ実施</option>
+                                        <option value="60" @if ($my->common_purchase_mark == 0.6) selected @endif>60% 以上でフィルタ実施</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="common_foreign_shipping">国際送料</label>
-                            <div class="input-group" id="common_foreign_shipping_group">
-                                <button type="button" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>ダウンロード</button>
-                                <input type="file" id="common_foreign_shipping" name="common_foreign_shipping" class="form-control" />
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="common_foreign_shipping">国際送料</label>
+                                <div class="input-group" id="common_foreign_shipping_group">
+                                    <a type="button" href="{{route('setting.download_my_foreign_shippings_csv')}}" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>ダウンロード</a>
+                                    <input type="file" id="common_foreign_shipping" name="common_foreign_shipping" class="form-control" />
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="col-12 d-flex justify-content-center">
-                            <button type="submit" class="btn btn-primary me-sm-2 me-1 waves-effect waves-light"><i class="fas fa-save me-1"></i>保存</button>
+                            <div class="col-12 d-flex justify-content-center">
+                                <button type="submit" class="btn btn-primary me-sm-2 me-1 waves-effect waves-light" name="act" value="common_setting"><i class="fas fa-save me-1"></i>保存</button>
+                            </div>
+                            
                         </div>
-                    </div>
+                    </form>
                 </div>
 
                 <div class="mb-3">

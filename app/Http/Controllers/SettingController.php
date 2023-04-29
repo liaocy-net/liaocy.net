@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-require_once(__DIR__."/../../../vendor/autoload.php");
+require_once(__DIR__ . "/../../../vendor/autoload.php");
 
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -17,7 +17,8 @@ use YConnect\YConnectClient;
 
 class SettingController extends Controller
 {
-    function generateRandomString($length = 10) {
+    function generateRandomString($length = 10)
+    {
         $characters = '0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $charactersLength = strlen($characters);
         $randomString = '';
@@ -46,64 +47,142 @@ class SettingController extends Controller
 
     public function update(Request $request)
     {
-        $params = $request->all();
-
-        if ($params["act"] === "yahoo_auth") {
-            
-            $validator = Validator::make($request->all(), [
-                'yahoo_store_account' => ['required', 'string', 'max:255'],
-                'yahoo_client_id' => ['required', 'string', 'max:255'],
-                'yahoo_secret' => ['required', 'string', 'max:255']
-            ]);
-
-            if ($validator->fails()) {
-                return back()->withErrors($validator)->withInput();
-            }
-
-            $yahoo_client_id = $params['yahoo_client_id'];
-            $yahoo_secret = $params['yahoo_secret'];
-
-            $cred = new ClientCredential($yahoo_client_id, $yahoo_secret);
-            $client = new YConnectClient($cred);
-
-            $state = $this->generateRandomString(36);
-            $nonce = $this->generateRandomString(52);
-
+        try {
+            $params = $request->all();
             $my = User::find(auth()->id());
-            $my->yahoo_store_account = $params['yahoo_store_account'];
-            $my->yahoo_client_id = $params['yahoo_client_id'];
-            $my->yahoo_secret = $params['yahoo_secret'];
-            $my->yahoo_state = $state;
-            $my->yahoo_nonce = $nonce;
-            $my->save();
+            if ($params["act"] === "common_setting") {
 
-            $redirect_uri = route('yahoo_callback');
+                $validator = Validator::make($params, [
+                    'common_currency_rate' => ['required', 'integer', 'min:1', 'max:999999'],
+                    'common_country_shipping' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'common_foreign_shipping_without_weight' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'common_customs_tax' => ['required', 'numeric', 'min:0', 'max:100'],
+                    'common_purchase_price_from' => ['required', 'integer', 'min:1', 'max:999999'],
+                    'common_purchase_price_to' => ['required', 'integer', 'min:1', 'max:999999'],
+                    'common_max_weight' => ['required', 'integer', 'min:1', 'max:999999'],
+                    'common_size_from' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'common_size_to' => ['required', 'integer', 'min:1', 'max:999999'],
+                    'common_purchase_mark' => ['required', 'numeric', 'min:0', 'max:100']
+                ]);
 
-            $response_type = ResponseType::CODE;
-            $scope = array(
-                OIDConnectScope::OPENID,
-                OIDConnectScope::PROFILE,
-                OIDConnectScope::EMAIL,
-                OIDConnectScope::ADDRESS
-            );
-            $display = OIDConnectDisplay::DEFAULT_DISPLAY;
-            $prompt = array(
-                OIDConnectPrompt::DEFAULT_PROMPT
-            );
+                if ($validator->fails()) {
+                    return back()->withErrors($validator)->withInput();
+                }
 
-            $client->requestAuth(
-                $redirect_uri,
-                $state,
-                $nonce,
-                $response_type,
-                $scope,
-                $display,
-                $prompt
-            );
+                $my->common_currency_rate = $params["common_currency_rate"];
+                $my->common_country_shipping = $params["common_country_shipping"];
+                $my->common_foreign_shipping_without_weight = $params["common_foreign_shipping_without_weight"];
+                $my->common_customs_tax = $params["common_customs_tax"] / 100;
+                $my->common_purchase_price_from = $params["common_purchase_price_from"];
+                $my->common_purchase_price_to = $params["common_purchase_price_to"];
+                $my->common_max_weight = $params["common_max_weight"];
+                $my->common_size_from = $params["common_size_from"];
+                $my->common_size_to = $params["common_size_to"];
+                $my->common_purchase_mark = $params["common_purchase_mark"] / 100;
+                $my->save();
+
+                if ($request->hasFile('common_foreign_shipping')) {
+                    //拡張子がCSVであるかの確認
+                    if ($request->common_foreign_shipping->getClientOriginalExtension() !== "csv") {
+                        throw new \Exception("不適切な拡張子です。CSVファイルを選択してください。");
+                    }
+                    //ファイルの保存
+                    // $newCsvFileName = $request->csvFile->getClientOriginalName();
+                    // $request->csvFile->storeAs('public/csv', $newCsvFileName);
+
+                    $foreignShippings = array();
+                    if (($handle = fopen($request->common_foreign_shipping, "r")) !== FALSE) {
+                        $row = 0;
+                        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
+                            if ($row === 0) {
+                                if (count($data) != 2 || strcmp($data[0], "重量(KG)") !== 0 || strcmp($data[1], "費用(USD)") !== 0) {
+                                    throw new \Exception("CSVファイルのフォーマットが不適切です。もう一度ダウンロードしてください。１");
+                                }
+                            } else {
+                                if (count($data) != 2) {
+                                    throw new \Exception("CSVファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
+                                }
+                                if (!is_numeric($data[0]) || !is_numeric($data[1])) {
+                                    throw new \Exception("CSVファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
+                                }
+                                array_push($foreignShippings, [
+                                    "user_id" => auth()->id(),
+                                    "weight_kg" => (double)$data[0], 
+                                    "usd_fee" => (double)$data[1]]
+                                );
+                            }
+                            $row++;
+                            if ($row > 1000) {
+                                throw new \Exception("CSVファイルの行数が1000行を超えています。もう一度ダウンロードしてください。");
+                            }
+                        }
+                        fclose($handle);
+                    }
+                    ForeignShipping::where("user_id", auth()->id())->delete();
+                    ForeignShipping::insert($foreignShippings);
+                }
+
+
+                return redirect()->route('setting.index')->with('success', '共通設定を更新しました。');
+            } elseif ($params["act"] === "yahoo_auth") {
+
+                $validator = Validator::make($params, [
+                    'yahoo_store_account' => ['required', 'string', 'max:255'],
+                    'yahoo_client_id' => ['required', 'string', 'max:255'],
+                    'yahoo_secret' => ['required', 'string', 'max:255']
+                ]);
+
+                if ($validator->fails()) {
+                    return back()->withErrors($validator)->withInput();
+                }
+
+                $yahoo_client_id = $params['yahoo_client_id'];
+                $yahoo_secret = $params['yahoo_secret'];
+
+                $cred = new ClientCredential($yahoo_client_id, $yahoo_secret);
+                $client = new YConnectClient($cred);
+
+                $state = $this->generateRandomString(36);
+                $nonce = $this->generateRandomString(52);
+
+
+                $my->yahoo_store_account = $params['yahoo_store_account'];
+                $my->yahoo_client_id = $params['yahoo_client_id'];
+                $my->yahoo_secret = $params['yahoo_secret'];
+                $my->yahoo_state = $state;
+                $my->yahoo_nonce = $nonce;
+                $my->save();
+
+                $redirect_uri = route('yahoo_callback');
+
+                $response_type = ResponseType::CODE;
+                $scope = array(
+                    OIDConnectScope::OPENID,
+                    OIDConnectScope::PROFILE,
+                    OIDConnectScope::EMAIL,
+                    OIDConnectScope::ADDRESS
+                );
+                $display = OIDConnectDisplay::DEFAULT_DISPLAY;
+                $prompt = array(
+                    OIDConnectPrompt::DEFAULT_PROMPT
+                );
+
+                $client->requestAuth(
+                    $redirect_uri,
+                    $state,
+                    $nonce,
+                    $response_type,
+                    $scope,
+                    $display,
+                    $prompt
+                );
+            }
+        } catch (\Exception $e) {
+            return back()->withErrors($e->getMessage());
         }
     }
 
-    public function yahooCallBack(Request $request) 
+    public function yahooCallBack(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [

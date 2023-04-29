@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\ForeignShippingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -86,11 +87,12 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
     Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
     Route::put('/setting/update', [SettingController::class, 'update'])->name('setting.update');
     Route::get('/setting/yahoo_callback', [SettingController::class, 'yahooCallBack'])->name('yahoo_callback');
+    Route::get('/setting/download_my_foreign_shippings_csv', [ForeignShippingController::class, 'downloadMyCSV'])->name('setting.download_my_foreign_shippings_csv');
 
     /* 管理者のみ */
     Route::group(['middleware' => 'admin'], function () {
         /* ユーザー管理 */
-        Route::resource('/users', UserController::class)->middleware(['auth', 'admin']);
+        Route::resource('/users', UserController::class);
     });
 });
 
