@@ -59,6 +59,20 @@ $user->save();
 lsof -i :8000
 ```
 
+## Docker
+
+### Build and Replace
+
+```bash
+$ docker build -f DockerfileWeb -t dev-charing:latest .
+$ docker ps -a -q --filter="name=dev-charing" | xargs docker stop | xargs docker rm
+$ docker run -p 5000:8000 -d --name dev-charing --restart=always dev-charing:latest
+$ docker rmi $(docker images -f "dangling=true" -q)
+$ docker logs -f dev-charing
+
+
+$ docker exec -it 2201ebd62585 /bin/bash
+```
 
 ## Code Snippets
 
@@ -99,6 +113,9 @@ https://github.com/ixiumu/laravel_meetup/blob/master/docs/11.Code%20Beauty%EF%BC
 
 - Files
   - [【Laravel】CSVファイルのデータインポート＆エクスポートする方法](https://qiita.com/kyo-san/items/bc8d0278bee99ae1f2ec)
+
+- SSL
+  - [LaravelアプリをSSL化する際の注意点(assetヘルパー)](https://maasaablog.com/development/backend/php/laravel/538/)
 
 # Laravel 8.x
 

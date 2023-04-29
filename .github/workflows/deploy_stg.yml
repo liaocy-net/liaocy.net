@@ -2,7 +2,7 @@ name: Deploy Stg Lambda Laravel Function
 on: 
   push:
     branches:
-      - 'main'     # excludes the main branch
+      - 'main'
 concurrency:
   group: deploy-stg-app
   cancel-in-progress: true
@@ -10,12 +10,16 @@ jobs:
   deploy-stg-app:
     runs-on: ubuntu-latest
     env:
-      ROLE_ARN: ${{secrets.ROLE_ARN}}
+      SERVER_HOST: test.charing.biz
+      SERVER_PORT: 22
+      SERVER_USER: ubuntu
+      SERVER_SSH_KEY: ${{secrets.SERVER_SSH_KEY}}
+      APP_PORT: 5000
       APP_NAME: charing
       APP_ENV: stg
       APP_KEY: ${{secrets.APP_KEY_STG}}
       APP_DEBUG: 'true'
-      APP_URL: 'https://d3m6ydyv0b0mii.cloudfront.net/'
+      APP_URL: 'https://test.charing.biz/'
       LOG_CHANNEL: stack
       LOG_DEPRECATIONS_CHANNEL: 'null'
       LOG_LEVEL: debug
@@ -59,31 +63,90 @@ jobs:
       VITE_PUSHER_SCHEME: ''
       VITE_PUSHER_APP_CLUSTER: ''
       PAGE_MAX_LIMIT: 50
-    permissions:
-      id-token: write # This is required for requesting the JWT
-      contents: read  # This is required for actions/checkout
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v3
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Remove Source Folder If Exist
+        uses: appleboy/ssh-action@v0.1.10
         with:
-          role-to-assume: ${{env.ROLE_ARN}}
-          aws-region: ${{env.AWS_DEFAULT_REGION}}
-      - name: Setup NodeJS
-        uses: actions/setup-node@v3
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ env.SERVER_SSH_KEY }}
+          port: ${{ env.SERVER_PORT }}
+          script: |
+            if [ -d /home/ubuntu/${{ env.APP_ENV }}-charing/ ]; then rm -Rf /home/ubuntu/${{ env.APP_ENV }}-charing/; fi
+      - name: Upload Source File
+        uses: appleboy/scp-action@v0.1.4
         with:
-          node-version: 19.x
-      - name: Setup Serverless
-        run: npm install -g serverless
-      - name: Install NodeJS dependencies
-        run: npm install
-      - uses: shivammathur/setup-php@v2
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ env.SERVER_SSH_KEY }}
+          port: ${{ env.SERVER_PORT }}
+          source: "./,!.github/**,!.git/**,!.gitignore,!.gitmodules,!.vscode/**"
+          target: /home/ubuntu/${{ env.APP_ENV }}-charing
+      - name: Deploy Docker
+        uses: appleboy/ssh-action@v0.1.10
         with:
-          php-version: "8.2"
-      - name: Install PHP dependencies
-        run: composer install
-      - name: Migrate Database
-        run: php artisan migrate
-      - name: Severless Deploy
-        run: serverless deploy --stage=${{env.APP_ENV}}
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ env.SERVER_SSH_KEY }}
+          port: ${{ env.SERVER_PORT }}
+          script: |
+            cd /home/ubuntu/${{env.APP_ENV}}-charing
+            sudo docker build -f DockerfileWeb -t ${{ env.APP_ENV }}-charing:latest .
+            sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing" | xargs sudo docker stop | xargs sudo docker rm
+            sudo docker run \
+              -p ${{ env.APP_PORT }}:8000 \
+              -d --name ${{ env.APP_ENV }}-charing \
+              --restart=always \
+              -e APP_NAME=${{ env.APP_NAME }} \
+              -e APP_ENV=${{ env.APP_ENV }} \
+              -e APP_KEY=${{ env.APP_KEY }} \
+              -e APP_DEBUG=${{ env.APP_DEBUG }} \
+              -e APP_URL=${{ env.APP_URL }} \
+              -e LOG_CHANNEL=${{ env.LOG_CHANNEL }} \
+              -e LOG_DEPRECATIONS_CHANNEL=${{ env.LOG_DEPRECATIONS_CHANNEL }} \
+              -e LOG_LEVEL=${{ env.LOG_LEVEL }} \
+              -e DB_CONNECTION=${{ env.DB_CONNECTION }} \
+              -e DB_HOST=${{ env.DB_HOST }} \
+              -e DB_PORT=${{ env.DB_PORT }} \
+              -e DB_DATABASE=${{ env.DB_DATABASE }} \
+              -e DB_USERNAME=${{ env.DB_USERNAME }} \
+              -e DB_PASSWORD=${{ env.DB_PASSWORD }} \
+              -e BROADCAST_DRIVER=${{ env.BROADCAST_DRIVER }} \
+              -e CACHE_DRIVER=${{ env.CACHE_DRIVER }} \
+              -e FILESYSTEM_DISK=${{ env.FILESYSTEM_DISK }} \
+              -e QUEUE_CONNECTION=${{ env.QUEUE_CONNECTION }} \
+              -e SESSION_DRIVER=${{ env.SESSION_DRIVER }} \
+              -e SESSION_LIFETIME=${{ env.SESSION_LIFETIME }} \
+              -e MEMCACHED_HOST=${{ env.MEMCACHED_HOST }} \
+              -e REDIS_HOST=${{ env.REDIS_HOST }} \
+              -e REDIS_PASSWORD=${{ env.REDIS_PASSWORD }} \
+              -e REDIS_PORT=${{ env.REDIS_PORT }} \
+              -e MAIL_MAILER=${{ env.MAIL_MAILER }} \
+              -e MAIL_HOST=${{ env.MAIL_HOST }} \
+              -e MAIL_PORT=${{ env.MAIL_PORT }} \
+              -e MAIL_USERNAME=${{ env.MAIL_USERNAME }} \
+              -e MAIL_PASSWORD=${{ env.MAIL_PASSWORD }} \
+              -e MAIL_ENCRYPTION=${{ env.MAIL_ENCRYPTION }} \
+              -e MAIL_FROM_ADDRESS=${{ env.MAIL_FROM_ADDRESS }} \
+              -e MAIL_FROM_NAME=${{ env.MAIL_FROM_NAME }} \
+              -e AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }} \
+              -e AWS_BUCKET=${{ env.AWS_BUCKET }} \
+              -e AWS_USE_PATH_STYLE_ENDPOINT=${{ env.AWS_USE_PATH_STYLE_ENDPOINT }} \
+              -e PUSHER_APP_ID=${{ env.PUSHER_APP_ID }} \
+              -e PUSHER_APP_KEY=${{ env.PUSHER_APP_KEY }} \
+              -e PUSHER_APP_SECRET=${{ env.PUSHER_APP_SECRET }} \
+              -e PUSHER_HOST=${{ env.PUSHER_HOST }} \
+              -e PUSHER_PORT=${{ env.PUSHER_PORT }} \
+              -e PUSHER_SCHEME=${{ env.PUSHER_SCHEME }} \
+              -e PUSHER_APP_CLUSTER=${{ env.PUSHER_APP_CLUSTER }} \
+              -e VITE_PUSHER_APP_KEY=${{ env.VITE_PUSHER_APP_KEY }} \
+              -e VITE_PUSHER_HOST=${{ env.VITE_PUSHER_HOST }} \
+              -e VITE_PUSHER_PORT=${{ env.VITE_PUSHER_PORT }} \
+              -e VITE_PUSHER_SCHEME=${{ env.VITE_PUSHER_SCHEME }} \
+              -e VITE_PUSHER_APP_CLUSTER=${{ env.VITE_PUSHER_APP_CLUSTER }} \
+              -e PAGE_MAX_LIMIT=${{ env.PAGE_MAX_LIMIT }} \
+              ${{ env.APP_ENV }}-charing:latest
+            sudo docker exec -it $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing") php artisan migrate
+            sudo docker rmi $(sudo docker images -f "dangling=true" -q)
