@@ -34,6 +34,12 @@ class User extends Authenticatable
         'yahoo_access_token_expires_in',
         'yahoo_refresh_token',
         'yahoo_refresh_token_expires_in',
+        'yahoo_min_profit',
+        'yahoo_profit_rate',
+        'yahoo_using_profit',
+        'yahoo_using_sale_commission',
+        'yahoo_stock',
+        'yahoo_category',
     ];
 
     /**

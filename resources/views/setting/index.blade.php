@@ -26,7 +26,7 @@
 
                 <div class="mb-3">
                     <h5 class="fw-bold">共通</h5>
-                    <form id="formAuthentication" class="mb-3" action="{{route('setting.update')}}" method="post" enctype="multipart/form-data">
+                    <form id="formCommonSetting" class="mb-3" action="{{route('setting.update')}}" method="post" enctype="multipart/form-data">
                         @csrf
                         {{ method_field('PUT') }}
                         <div class="row">
@@ -274,78 +274,82 @@
                     </div>
                 </div>
 
-                <div class="mb-3">
+                <div id="divYahooSetting" class="mb-3">
                     <h5 class="fw-bold">Yahoo!</h5>
-                    <div class="row">
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="yahoo_min_profit">最低利益額</label>
-                            <div class="input-group" id="yahoo_min_profit_group">
-                                <span class="input-group-text col-5">10000円</span>
-                                <input type="number" id="yahoo_min_profit" name="yahoo_min_profit" class="form-control" />
-                                <span class="input-group-text">円</span>
+                    <form id="formYahooSetting" class="mb-3" action="{{route('setting.update')}}" method="post" enctype="multipart/form-data">
+                        @csrf
+                        {{ method_field('PUT') }}
+                        <div class="row">
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="yahoo_min_profit">最低利益額</label>
+                                <div class="input-group" id="yahoo_min_profit_group">
+                                    <span class="input-group-text col-5">{{ $my->yahoo_min_profit }}円</span>
+                                    <input type="number" id="yahoo_min_profit" name="yahoo_min_profit" class="form-control" value="{{ $my->yahoo_min_profit }}" min="1" max="999999" />
+                                    <span class="input-group-text">円</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="yahoo_profit_rate">利益率</label>
-                            <div class="input-group" id="yahoo_profit_rate_group">
-                                <span class="input-group-text col-5">30%</span>
-                                <input type="number" id="yahoo_profit_rate" name="yahoo_profit_rate" class="form-control" />
-                                <span class="input-group-text">%</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="yahoo_profit_rate">利益率</label>
+                                <div class="input-group" id="yahoo_profit_rate_group">
+                                    <span class="input-group-text col-5">{{ $my->yahoo_profit_rate * 100 }}%</span>
+                                    <input type="number" id="yahoo_profit_rate" name="yahoo_profit_rate" class="form-control" value="{{ $my->yahoo_profit_rate * 100 }}" min="0" max="100"/>
+                                    <span class="input-group-text">%</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="yahoo_using_profit">適用する利益設定</label>
-                            <p class="small text-muted">※注意：利益率(％)を選択した場合でも、最低利益額（円）は保持されます。</p>
-                            <div class="input-group" id="yahoo_using_profit_group">
-                                <span class="input-group-text col-5">「 円 」が設定</span>
-                                <div class="col-form-label input-group-text col-7">
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="yahoo_using_profit" id="yahoo_using_profit_1" value="1" checked>
-                                        <label class="form-check-label" for="yahoo_using_profit_1">円</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="yahoo_using_profit" id="yahoo_using_profit_2" value="2">
-                                        <label class="form-check-label" for="yahoo_using_profit_2">%</label>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="yahoo_using_profit">適用する利益設定</label>
+                                <p class="small text-muted">※注意：利益率(％)を選択した場合でも、最低利益額（円）は保持されます。</p>
+                                <div class="input-group" id="yahoo_using_profit_group">
+                                    <span class="input-group-text col-5">「 円 」が設定</span>
+                                    <div class="col-form-label input-group-text col-7">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="yahoo_using_profit" id="yahoo_using_profit_1" value="1" @if ($my->yahoo_using_profit === 1) checked @endif>
+                                            <label class="form-check-label" for="yahoo_using_profit_1">円</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="yahoo_using_profit" id="yahoo_using_profit_2" value="2" @if ($my->yahoo_using_profit === 2) checked @endif>
+                                            <label class="form-check-label" for="yahoo_using_profit_2">%</label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="yahoo_using_sale_commission">販売手数料</label>
-                            <div class="input-group" id="yahoo_using_sale_commission_group">
-                                <span class="input-group-text col-5">15%</span>
-                                <input type="number" id="yahoo_using_sale_commission" name="yahoo_using_sale_commission" class="form-control" />
-                                <span class="input-group-text">%</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="yahoo_using_sale_commission">販売手数料</label>
+                                <div class="input-group" id="yahoo_using_sale_commission_group">
+                                    <span class="input-group-text col-5">{{ $my->yahoo_using_sale_commission * 100 }}%</span>
+                                    <input type="number" id="yahoo_using_sale_commission" name="yahoo_using_sale_commission" class="form-control" value="{{ $my->yahoo_using_sale_commission * 100 }}" min="0" max="100"/>
+                                    <span class="input-group-text">%</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="yahoo_stock">在庫数</label>
-                            <div class="input-group" id="yahoo_stock_group">
-                                <span class="input-group-text col-5">10個</span>
-                                <input type="number" id="yahoo_stock" name="yahoo_stock" class="form-control" />
-                                <span class="input-group-text">個</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="yahoo_stock">在庫数</label>
+                                <div class="input-group" id="yahoo_stock_group">
+                                    <span class="input-group-text col-5">{{ $my->yahoo_stock }}個</span>
+                                    <input type="number" id="yahoo_stock" name="yahoo_stock" class="form-control" value="{{ $my->yahoo_stock }}" min="0" max="999999"/>
+                                    <span class="input-group-text">個</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="yahoo_category">カテゴリー</label>
-                            <div class="input-group" id="yahoo_category_group">
-                                <button type="button" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>ダウンロード</button>
-                                <input type="file" id="yahoo_category" name="yahoo_category" class="form-control" />
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="yahoo_category">カテゴリー</label>
+                                <div class="input-group" id="yahoo_category_group">
+                                    <button type="button" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>ダウンロード</button>
+                                    <input type="file" id="yahoo_category" name="yahoo_category" class="form-control" />
+                                </div>
                             </div>
-                        </div>
 
 
-                        <div class="col-sm-12 mb-3">
-                            <label class="form-label" for="yahoo_exhibit_comment">Yahoo 出品コメント</label>
-                            <div class="input-group" id="yahoo_exhibit_comment_group">
-                                <span class="input-group-text col-6 text-wrap text-muted text-start">◆新品・未使用【発送方法】海外在庫商品のため、お届けに通常2週間程お時間を頂戴しております。<br/>米国配送センターへ到着後、検品をして発送いたします。また稀に輸送中に外装箱等に傷みが生じる場合がありますが、商品自体問題はございません。<br/>◆【関税について】税関手続き、関税支払い等すべて当方で対応させていただいております。そのため、関税等をお支払いいただくことはありません。<br/>◆【安心安全の返金保障】お届けする商品は十分な検品を実施しておりますが、万が一不備・不具合などございましたら大変お手数ではございますがご連絡ください。</span>
-                                <textarea class="form-control" id="yahoo_exhibit_comment_group" name="yahoo_exhibit_comment_group" rows="5"></textarea>
+                            <div class="col-sm-12 mb-3">
+                                <label class="form-label" for="yahoo_exhibit_comment">Yahoo 出品コメント</label>
+                                <div class="input-group" id="yahoo_exhibit_comment_group">
+                                    <span class="input-group-text col-6 text-wrap text-muted text-start">◆新品・未使用【発送方法】海外在庫商品のため、お届けに通常2週間程お時間を頂戴しております。<br/>米国配送センターへ到着後、検品をして発送いたします。また稀に輸送中に外装箱等に傷みが生じる場合がありますが、商品自体問題はございません。<br/>◆【関税について】税関手続き、関税支払い等すべて当方で対応させていただいております。そのため、関税等をお支払いいただくことはありません。<br/>◆【安心安全の返金保障】お届けする商品は十分な検品を実施しておりますが、万が一不備・不具合などございましたら大変お手数ではございますがご連絡ください。</span>
+                                    <textarea class="form-control" id="yahoo_exhibit_comment_group" name="yahoo_exhibit_comment_group" rows="5" minlength="0" maxlength="999999">{{ $my->yahoo_exhibit_comment_group }}</textarea>
+                                </div>
+                            </div>
+                            <div class="col-12 d-flex justify-content-center">
+                                <button type="submit" class="btn btn-primary me-sm-2 me-1 waves-effect waves-light" name="act" value="yahoo_setting"><i class="fas fa-save me-1"></i>保存</button>
                             </div>
                         </div>
-                        <div class="col-12 d-flex justify-content-center">
-                            <button type="submit" class="btn btn-primary me-sm-2 me-1 waves-effect waves-light"><i class="fas fa-save me-1"></i>保存</button>
-                        </div>
-                    </div>
+                    </form>
                 </div>
 
                 <div class="mb-3">

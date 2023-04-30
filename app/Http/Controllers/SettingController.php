@@ -124,6 +124,30 @@ class SettingController extends Controller
 
 
                 return redirect()->route('setting.index')->with('success', '共通設定を更新しました。');
+            } elseif ($params["act"] === "yahoo_setting") {
+                $validator = Validator::make($params, [
+                    'yahoo_min_profit' => ['required', 'integer', 'min:1', 'max:999999'],
+                    'yahoo_profit_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+                    'yahoo_using_profit' => ['required', 'integer', 'min:1', 'max:2'],
+                    'yahoo_using_sale_commission' => ['required', 'integer', 'min:0', 'max:100'],
+                    'yahoo_stock' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'yahoo_exhibit_comment_group' => ['required', 'string', 'max:99999'],
+                ]);
+
+                if ($validator->fails()) {
+                    return back()->withErrors($validator)->withInput();
+                }
+
+                $my->yahoo_min_profit = $params["yahoo_min_profit"];
+                $my->yahoo_profit_rate = $params["yahoo_profit_rate"] / 100;
+                $my->yahoo_using_profit = $params["yahoo_using_profit"];
+                $my->yahoo_using_sale_commission = $params["yahoo_using_sale_commission"] / 100;
+                $my->yahoo_stock = $params["yahoo_stock"];
+                $my->yahoo_exhibit_comment_group = $params["yahoo_exhibit_comment_group"];
+                $my->save();
+
+                return redirect()->route('setting.index', ['#divYahooSetting'])->with('success', 'Amazon設定を更新しました。');
+
             } elseif ($params["act"] === "yahoo_auth") {
 
                 $validator = Validator::make($params, [
