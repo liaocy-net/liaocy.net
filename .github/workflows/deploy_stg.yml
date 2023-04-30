@@ -148,5 +148,13 @@ jobs:
               -e VITE_PUSHER_APP_CLUSTER=${{ env.VITE_PUSHER_APP_CLUSTER }} \
               -e PAGE_MAX_LIMIT=${{ env.PAGE_MAX_LIMIT }} \
               ${{ env.APP_ENV }}-charing:latest
-            sudo docker exec -it $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing") php artisan migrate
             sudo docker rmi $(sudo docker images -f "dangling=true" -q)
+      - name: Database Migration
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ env.SERVER_SSH_KEY }}
+          port: ${{ env.SERVER_PORT }}
+          script: |
+            sudo docker exec -it $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing") php artisan migrate
