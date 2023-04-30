@@ -124,6 +124,48 @@ class SettingController extends Controller
 
 
                 return redirect()->route('setting.index')->with('success', '共通設定を更新しました。');
+            } elseif ($params["act"] === "amazon_setting") {
+                $validator = Validator::make($params, [
+                    'amazon_hope_profit' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_min_profit' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_hope_profit_rate' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_min_profit_rate' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_using_profit' => ['required', 'integer', 'min:1', 'max:2'],
+                    'amazon_using_sale_commission' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_stock' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_price_increase_rate' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_rival' => ['required', 'integer', 'min:1', 'max:2'],
+                    'amazon_point_rate' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_lead_time_less' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_lead_time_more' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_lead_time_prime' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_white_list_brand' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_exhibit_comment_group' => ['nullable', 'string', 'max:99999'],
+                ]);
+
+                if ($validator->fails()) {
+                    return back()->withErrors($validator)->withInput();
+                }
+
+                $my->amazon_hope_profit = $params["amazon_hope_profit"];
+                $my->amazon_min_profit = $params["amazon_min_profit"];
+                $my->amazon_hope_profit_rate = $params["amazon_hope_profit_rate"] / 100;
+                $my->amazon_min_profit_rate = $params["amazon_min_profit_rate"] / 100;
+                $my->amazon_using_profit = $params["amazon_using_profit"];
+                $my->amazon_using_sale_commission = $params["amazon_using_sale_commission"] / 100;
+                $my->amazon_stock = $params["amazon_stock"];
+                $my->amazon_price_increase_rate = $params["amazon_price_increase_rate"] / 100;
+                $my->amazon_rival = $params["amazon_rival"];
+                $my->amazon_point_rate = $params["amazon_point_rate"] / 100;
+                $my->amazon_lead_time_less = $params["amazon_lead_time_less"];
+                $my->amazon_lead_time_more = $params["amazon_lead_time_more"];
+                $my->amazon_lead_time_prime = $params["amazon_lead_time_prime"];
+                $my->amazon_white_list_brand = $params["amazon_white_list_brand"];
+                $my->amazon_exhibit_comment_group = $params["amazon_exhibit_comment_group"];
+                $my->save();
+
+                return redirect()->route('setting.index', ['#divAmazonSetting'])->with('success', 'Amazon設定を更新しました。');
+
             } elseif ($params["act"] === "yahoo_setting") {
                 $validator = Validator::make($params, [
                     'yahoo_min_profit' => ['required', 'integer', 'min:1', 'max:999999'],

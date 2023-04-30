@@ -133,145 +133,154 @@
                     </form>
                 </div>
 
-                <div class="mb-3">
-                    <h5 class="fw-bold">amazon</h5>
-                    <div class="row">
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="amazon_hope_profit">希望利益額</label>
-                            <div class="input-group" id="amazon_hope_profit_group">
-                                <span class="input-group-text col-5">10000円</span>
-                                <input type="number" id="amazon_hope_profit" name="amazon_hope_profit" class="form-control" />
-                                <span class="input-group-text">円</span>
+                <div id="divAmazonSetting" class="mb-3">
+                    <h5 class="fw-bold">Amazon</h5>
+                    <form id="formAmazonSetting" class="mb-3" action="{{route('setting.update')}}" method="post" enctype="multipart/form-data">
+                        @csrf
+                        {{ method_field('PUT') }}
+                        <div class="row">
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_hope_profit">希望利益額</label>
+                                <div class="input-group" id="amazon_hope_profit_group">
+                                    <span class="input-group-text col-5">{{ $my->amazon_hope_profit }}円</span>
+                                    <input type="number" id="amazon_hope_profit" name="amazon_hope_profit" class="form-control" min="0" max="999999" value="{{ $my->amazon_hope_profit }}"/>
+                                    <span class="input-group-text">円</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="amazon_min_profit">最低利益額</label>
-                            <div class="input-group" id="amazon_min_profit_group">
-                                <span class="input-group-text col-5">10000円</span>
-                                <input type="number" id="amazon_min_profit" name="amazon_min_profit" class="form-control" />
-                                <span class="input-group-text">円</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_min_profit">最低利益額</label>
+                                <div class="input-group" id="amazon_min_profit_group">
+                                    <span class="input-group-text col-5">{{ $my->amazon_min_profit }}円</span>
+                                    <input type="number" id="amazon_min_profit" name="amazon_min_profit" class="form-control" min="0" max="999999" value="{{ $my->amazon_min_profit }}"/>
+                                    <span class="input-group-text">円</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="amazon_hope_profit_rate">希望利益率</label>
-                            <div class="input-group" id="amazon_hope_profit_rate_group">
-                                <span class="input-group-text col-5">30%</span>
-                                <input type="number" id="amazon_hope_profit_rate" name="amazon_hope_profit_rate" class="form-control" />
-                                <span class="input-group-text">%</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_hope_profit_rate">希望利益率</label>
+                                <div class="input-group" id="amazon_hope_profit_rate_group">
+                                    <span class="input-group-text col-5">{{ $my->amazon_hope_profit_rate * 100 }}%</span>
+                                    <input type="number" id="amazon_hope_profit_rate" name="amazon_hope_profit_rate" class="form-control" min="0" max="999999" value="{{ $my->amazon_hope_profit_rate * 100 }}"/>
+                                    <span class="input-group-text">%</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="amazon_min_profit_rate">最低利益率</label>
-                            <div class="input-group" id="amazon_min_profit_rate_group">
-                                <span class="input-group-text col-5">30%</span>
-                                <input type="number" id="amazon_min_profit_rate" name="amazon_min_profit_rate" class="form-control" />
-                                <span class="input-group-text">%</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_min_profit_rate">最低利益率</label>
+                                <div class="input-group" id="amazon_min_profit_rate_group">
+                                    <span class="input-group-text col-5">{{ $my->amazon_min_profit_rate * 100 }}%</span>
+                                    <input type="number" id="amazon_min_profit_rate" name="amazon_min_profit_rate" class="form-control" min="0" max="999999" value="{{ $my->amazon_min_profit_rate * 100 }}"/>
+                                    <span class="input-group-text">%</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="amazon_using_profit">適用する利益設定</label>
-                            <p class="small text-muted">※注意：利益率(％)を選択した場合でも、最低利益額（円）は保持されます。</p>
-                            <div class="input-group" id="amazon_using_profit_group">
-                                <span class="input-group-text col-5">「 円 」が設定</span>
-                                <div class="col-form-label input-group-text col-7">
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="amazon_using_profit" id="amazon_using_profit_1" value="1" checked>
-                                        <label class="form-check-label" for="amazon_using_profit_1">円</label>
-                                    </div>
-                                    <div class="form-check form-check-inline">
-                                        <input class="form-check-input" type="radio" name="amazon_using_profit" id="amazon_using_profit_2" value="2">
-                                        <label class="form-check-label" for="amazon_using_profit_2">%</label>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_using_profit">適用する利益設定</label>
+                                <p class="small text-muted">※注意：利益率(％)を選択した場合でも、最低利益額（円）は保持されます。</p>
+                                <div class="input-group" id="amazon_using_profit_group">
+                                    <span class="input-group-text col-5">「 円 」が設定</span>
+                                    <div class="col-form-label input-group-text col-7">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="amazon_using_profit" id="amazon_using_profit_1" value="1" @if ($my->amazon_using_profit === 1) checked @endif>
+                                            <label class="form-check-label" for="amazon_using_profit_1">円</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="amazon_using_profit" id="amazon_using_profit_2" value="2" @if ($my->amazon_using_profit === 2) checked @endif>
+                                            <label class="form-check-label" for="amazon_using_profit_2">%</label>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="amazon_using_sale_commission">販売手数料</label>
-                            <div class="input-group" id="amazon_using_sale_commission_group">
-                                <span class="input-group-text col-5">15%</span>
-                                <input type="number" id="amazon_using_sale_commission" name="amazon_using_sale_commission" class="form-control" />
-                                <span class="input-group-text">%</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_using_sale_commission">販売手数料</label>
+                                <div class="input-group" id="amazon_using_sale_commission_group">
+                                    <span class="input-group-text col-5">{{ $my->amazon_using_sale_commission * 100 }}%</span>
+                                    <input type="number" id="amazon_using_sale_commission" name="amazon_using_sale_commission" class="form-control" min="0" max="999999" value="{{ $my->amazon_using_sale_commission * 100 }}"/>
+                                    <span class="input-group-text">%</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="amazon_stock">在庫数</label>
-                            <div class="input-group" id="amazon_stock_group">
-                                <span class="input-group-text col-5">10個</span>
-                                <input type="number" id="amazon_stock" name="amazon_stock" class="form-control" />
-                                <span class="input-group-text">個</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_stock">在庫数</label>
+                                <div class="input-group" id="amazon_stock_group">
+                                    <span class="input-group-text col-5">{{ $my->amazon_stock }}個</span>
+                                    <input type="number" id="amazon_stock" name="amazon_stock" class="form-control" min="0" max="999999" value="{{ $my->amazon_stock }}"/>
+                                    <span class="input-group-text">個</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="amazon_price_increase_rate">値上げ率</label>
-                            <div class="input-group" id="amazon_price_increase_rate_group">
-                                <span class="input-group-text col-5">180%</span>
-                                <input type="number" id="amazon_price_increase_rate" name="amazon_price_increase_rate" class="form-control" />
-                                <span class="input-group-text">%</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_price_increase_rate">値上げ率</label>
+                                <div class="input-group" id="amazon_price_increase_rate_group">
+                                    <span class="input-group-text col-5">{{ $my->amazon_price_increase_rate * 100 }}%</span>
+                                    <input type="number" id="amazon_price_increase_rate" name="amazon_price_increase_rate" class="form-control" min="0" max="999999" value="{{ $my->amazon_price_increase_rate * 100 }}"/>
+                                    <span class="input-group-text">%</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="amazon_rival">ライバル</label>
-                            <div class="input-group" id="amazon_rival_group">
-                                <span class="input-group-text col-5">ON</span>
-                                <select id="amazon_rival" name="amazon_rival" class="form-select">
-                                    <option value="0">変更する場合は選択</option>
-                                    <option value="1">ON</option>
-                                    <option value="2">OFF</option>
-                                </select>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_rival">ライバル</label>
+                                <div class="input-group" id="amazon_rival_group">
+                                    <span class="input-group-text col-5">
+                                        @if ($my->amazon_rival === 1)
+                                            ON
+                                        @elseif ($my->amazon_rival === 2)
+                                            OFF
+                                        @endif
+                                    </span>
+                                    <select id="amazon_rival" name="amazon_rival" class="form-select">
+                                        <option value="1" @if ($my->amazon_rival === 1) selected @endif>ON</option>
+                                        <option value="2" @if ($my->amazon_rival === 2) selected @endif>OFF</option>
+                                    </select>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="amazon_point_rate">ポイント比率</label>
-                            <div class="input-group" id="amazon_point_rate_group">
-                                <span class="input-group-text col-5">3%</span>
-                                <input type="number" id="amazon_point_rate" name="amazon_point_rate" class="form-control" />
-                                <span class="input-group-text">%</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_point_rate">ポイント比率</label>
+                                <div class="input-group" id="amazon_point_rate_group">
+                                    <span class="input-group-text col-5">{{ $my->amazon_point_rate * 100 }}%</span>
+                                    <input type="number" id="amazon_point_rate" name="amazon_point_rate" class="form-control" min="0" max="999999" value="{{ $my->amazon_point_rate * 100 }}"/>
+                                    <span class="input-group-text">%</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="amazon_lead_time_less">リードタイム(XX日未満の場合)</label>
-                            <div class="input-group" id="amazon_lead_time_less_group">
-                                <span class="input-group-text col-5">10日</span>
-                                <input type="number" id="amazon_lead_time_less" name="amazon_lead_time_less" class="form-control" />
-                                <span class="input-group-text">日</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_lead_time_less">リードタイム(XX日未満の場合)</label>
+                                <div class="input-group" id="amazon_lead_time_less_group">
+                                    <span class="input-group-text col-5">{{ $my->amazon_lead_time_less }}日</span>
+                                    <input type="number" id="amazon_lead_time_less" name="amazon_lead_time_less" class="form-control" min="0" max="999999" value="{{ $my->amazon_lead_time_less }}"/>
+                                    <span class="input-group-text">日</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="amazon_lead_time_more">リードタイム(XX日以上の場合)</label>
-                            <div class="input-group" id="amazon_lead_time_more_group">
-                                <span class="input-group-text col-5">20日</span>
-                                <input type="number" id="amazon_lead_time_more" name="amazon_lead_time_more" class="form-control" />
-                                <span class="input-group-text">日</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_lead_time_more">リードタイム(XX日以上の場合)</label>
+                                <div class="input-group" id="amazon_lead_time_more_group">
+                                    <span class="input-group-text col-5">{{ $my->amazon_lead_time_more }}日</span>
+                                    <input type="number" id="amazon_lead_time_more" name="amazon_lead_time_more" class="form-control" min="0" max="999999" value="{{ $my->amazon_lead_time_more }}"/>
+                                    <span class="input-group-text">日</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="amazon_lead_time_prime">プライムリードタイム</label>
-                            <div class="input-group" id="amazon_lead_time_prime_group">
-                                <span class="input-group-text col-5">8日</span>
-                                <input type="number" id="amazon_lead_time_prime" name="amazon_lead_time_prime" class="form-control" />
-                                <span class="input-group-text">日</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_lead_time_prime">プライムリードタイム</label>
+                                <div class="input-group" id="amazon_lead_time_prime_group">
+                                    <span class="input-group-text col-5">{{ $my->amazon_lead_time_prime }}日</span>
+                                    <input type="number" id="amazon_lead_time_prime" name="amazon_lead_time_prime" class="form-control" min="0" max="999999" value="{{ $my->amazon_lead_time_prime }}"/>
+                                    <span class="input-group-text">日</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-6 mb-3">
-                            <label class="form-label" for="amazon_white_list_brand">ホワイトリスト抽出重複ブランド数</label>
-                            <div class="input-group" id="amazon_white_list_brand_group">
-                                <span class="input-group-text col-5">10個</span>
-                                <input type="number" id="amazon_white_list_brand" name="amazon_white_list_brand" class="form-control" />
-                                <span class="input-group-text">個</span>
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_white_list_brand">ホワイトリスト抽出重複ブランド数</label>
+                                <div class="input-group" id="amazon_white_list_brand_group">
+                                    <span class="input-group-text col-5">{{ $my->amazon_white_list_brand }}個</span>
+                                    <input type="number" id="amazon_white_list_brand" name="amazon_white_list_brand" class="form-control" min="0" max="999999" value="{{ $my->amazon_white_list_brand }}"/>
+                                    <span class="input-group-text">個</span>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-sm-12 mb-3">
-                            <label class="form-label" for="amazon_exhibit_comment">amazon 出品コメント</label>
-                            <div class="input-group" id="amazon_exhibit_comment_group">
-                                <span class="input-group-text col-6 text-wrap text-muted text-start">◆新品・未使用【発送方法】海外在庫商品のため、お届けに通常2週間程お時間を頂戴しております。<br/>米国配送センターへ到着後、検品をして発送いたします。また稀に輸送中に外装箱等に傷みが生じる場合がありますが、商品自体問題はございません。<br/>◆【関税について】税関手続き、関税支払い等すべて当方で対応させていただいております。そのため、関税等をお支払いいただくことはありません。<br/>◆【安心安全の返金保障】お届けする商品は十分な検品を実施しておりますが、万が一不備・不具合などございましたら大変お手数ではございますがご連絡ください。</span>
-                                <textarea class="form-control" id="amazon_exhibit_comment_group" name="amazon_exhibit_comment_group" rows="5"></textarea>
+                            <div class="col-sm-12 mb-3">
+                                <label class="form-label" for="amazon_exhibit_comment">Amazon 出品コメント</label>
+                                <div class="input-group" id="amazon_exhibit_comment_group">
+                                    <span class="input-group-text col-6 text-wrap text-muted text-start">◆新品・未使用【発送方法】海外在庫商品のため、お届けに通常2週間程お時間を頂戴しております。<br/>米国配送センターへ到着後、検品をして発送いたします。また稀に輸送中に外装箱等に傷みが生じる場合がありますが、商品自体問題はございません。<br/>◆【関税について】税関手続き、関税支払い等すべて当方で対応させていただいております。そのため、関税等をお支払いいただくことはありません。<br/>◆【安心安全の返金保障】お届けする商品は十分な検品を実施しておりますが、万が一不備・不具合などございましたら大変お手数ではございますがご連絡ください。</span>
+                                    <textarea class="form-control" id="amazon_exhibit_comment_group" name="amazon_exhibit_comment_group" rows="5">{{ $my->amazon_exhibit_comment_group }}</textarea>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="col-12 d-flex justify-content-center">
-                            <button type="submit" class="btn btn-primary me-sm-2 me-1 waves-effect waves-light"><i class="fas fa-save me-1"></i>保存</button>
+                            <div class="col-12 d-flex justify-content-center">
+                                <button type="submit" class="btn btn-primary me-sm-2 me-1 waves-effect waves-light" name="act" value="amazon_setting"><i class="fas fa-save me-1"></i>保存</button>
+                            </div>
                         </div>
-                    </div>
+                    </form>
                 </div>
 
                 <div id="divYahooSetting" class="mb-3">
