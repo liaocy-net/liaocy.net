@@ -157,7 +157,7 @@ jobs:
           port: ${{ env.SERVER_PORT }}
           script: |
             if [[ $(sudo docker images -f "dangling=true" -q) ]]; then
-              sudo docker --digests=true rmi $(sudo docker images -f "dangling=true" -q)
+              sudo docker rmi $(sudo docker images -f "dangling=true" -q)
             fi
       - name: Database Migration
         uses: appleboy/ssh-action@v0.1.10
