@@ -156,7 +156,9 @@ jobs:
           key: ${{ env.SERVER_SSH_KEY }}
           port: ${{ env.SERVER_PORT }}
           script: |
-            sudo docker rmi $(sudo docker images -f "dangling=true" -q)
+            if [[ $(sudo docker images -f "dangling=true" -q) ]]; then
+              sudo docker --digests=true rmi $(sudo docker images -f "dangling=true" -q)
+            fi
       - name: Database Migration
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -165,4 +167,4 @@ jobs:
           key: ${{ env.SERVER_SSH_KEY }}
           port: ${{ env.SERVER_PORT }}
           script: |
-            sudo docker exec -it $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing") php artisan migrate
+            sudo docker exec $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing") php artisan migrate
