@@ -76,4 +76,12 @@ class User extends Authenticatable
     {
         return $this->belongsTo(User::class, 'foreign_key', 'owner_key');
     }
+
+    /**
+     * Get the WhiteLists with the user.
+     */
+    public function whiteLists(): HasMany
+    {
+        return $this->hasMany(WhiteList::class);
+    }
 }

@@ -188,7 +188,7 @@ class SettingController extends Controller
                 $my->yahoo_exhibit_comment_group = $params["yahoo_exhibit_comment_group"];
                 $my->save();
 
-                return redirect()->route('setting.index', ['#divYahooSetting'])->with('success', 'Amazon設定を更新しました。');
+                return redirect()->route('setting.index', ['#divYahooSetting'])->with('success', 'Yahoo設定を更新しました。');
 
             } elseif ($params["act"] === "yahoo_auth") {
 

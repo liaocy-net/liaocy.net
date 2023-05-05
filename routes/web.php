@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ForeignShippingController;
+use App\Http\Controllers\WhiteListController;
 
 /*
 |--------------------------------------------------------------------------
@@ -79,9 +80,12 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
     });
 
     /* ホワイトリスト */
-    Route::get('/white_list', function () {
-        return view('white_list');
-    });
+    Route::put('/white_list/store_multiple', [WhiteListController::class, 'storeMultiple'])->name('white_list.store_multiple');
+    Route::get('/white_list/download_my_csv', [WhiteListController::class, 'downloadMyCSV'])->name('white_list.download_my_csv');
+    Route::delete('/white_list/delete_multiple', [WhiteListController::class, 'destroyMultiple'])->name('white_list.destroy_multiple');
+    Route::resource('/white_list', WhiteListController::class)->except(['create', 'store', 'show', 'edit', 'update']);
+    
+    
 
     /* 設定 */
     Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
