@@ -132,7 +132,7 @@
             alert('ファイルを選択してください。');
             return;
         }
-        if (file.type != "text/plain") {
+        if (file.type != "text/csv") {
             alert('CSVファイルを選択してください。');
             return;
         }
