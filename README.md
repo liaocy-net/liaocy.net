@@ -117,6 +117,9 @@ https://github.com/ixiumu/laravel_meetup/blob/master/docs/11.Code%20Beauty%EF%BC
 - SSL
   - [LaravelアプリをSSL化する際の注意点(assetヘルパー)](https://maasaablog.com/development/backend/php/laravel/538/)
 
+- Laravel
+  - [Laravel】Ajax通信をするときはCSRFトークンをヘッダーに追加しよう！](https://akizora.tech/laravel-ajax-csrf-4263)
+
 # Laravel 8.x
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>

@@ -7,6 +7,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ForeignShippingController;
 use App\Http\Controllers\WhiteListController;
+use App\Http\Controllers\BlackListController;
 
 /*
 |--------------------------------------------------------------------------
@@ -75,9 +76,11 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
     });
 
     /* ブラックリスト */
-    Route::get('/black_list', function () {
-        return view('black_list');
-    });
+    Route::put('/black_list/store_multiple', [BlackListController::class, 'storeMultiple'])->name('black_list.store_multiple');
+    Route::get('/black_list/get_blacklists', [BlackListController::class, 'getBlackLists'])->name('black_list.get_blacklists');
+    Route::get('/black_list/download_my_csv', [BlackListController::class, 'downloadMyCSV'])->name('black_list.download_my_csv');
+    Route::delete('/black_list/delete_multiple', [BlackListController::class, 'destroyMultiple'])->name('black_list.destroy_multiple');
+    Route::resource('/black_list', BlackListController::class)->except(['create', 'store', 'show', 'edit', 'update']);
 
     /* ホワイトリスト */
     Route::put('/white_list/store_multiple', [WhiteListController::class, 'storeMultiple'])->name('white_list.store_multiple');

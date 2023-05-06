@@ -103,3 +103,42 @@ $(function () {
 
   $(".print_content").html($(".print_body").html());
 })();
+
+
+var submitForm = function(form_id, call_back, preProcess = null){
+  if(preProcess != null){
+    preProcess();
+  }
+  $("#" + form_id).submit(function(event) {
+    // HTMLでの送信をキャンセル
+    event.preventDefault();
+    // 送信
+    $.ajax({
+      url: $(this).attr('action'),
+      method: $(this).attr('method'),
+      data: $(this).serialize(),
+      headers: {
+        'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+      }
+    }).done(function(data) {
+      call_back(data);
+    }).fail(function(XMLHttpRequest, textStatus, errorThrown){
+      alert("エラー:" + XMLHttpRequest.responseText);
+    });
+  });
+};
+
+var getData = function(url, data, call_back){
+  $.ajax({
+    url: url,
+    method: "GET",
+    data: data,
+    headers: {
+      'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+    }
+  }).done(function(data) {
+    call_back(data);
+  }).fail(function(XMLHttpRequest, textStatus, errorThrown){
+    alert("エラー:" + XMLHttpRequest.responseText);
+  });
+};

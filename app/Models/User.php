@@ -84,4 +84,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(WhiteList::class);
     }
+
+    /**
+     * Get the BlackLists with the user.
+     */
+    public function blackLists(): HasMany
+    {
+        return $this->hasMany(BlackList::class);
+    }
 }
