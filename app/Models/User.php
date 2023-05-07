@@ -40,6 +40,12 @@ class User extends Authenticatable
         'yahoo_using_sale_commission',
         'yahoo_stock',
         'yahoo_category',
+        'amazon_jp_refresh_token',
+        'amazon_jp_access_token',
+        'amazon_jp_access_token_expires_in',
+        'amazon_us_refresh_token',
+        'amazon_us_access_token',
+        'amazon_us_access_token_expires_in',
     ];
 
     /**

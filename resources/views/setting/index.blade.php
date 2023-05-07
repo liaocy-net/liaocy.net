@@ -396,8 +396,12 @@
                     <h5 class="fw-bold">Amazon SP API認証</h5>
                     <div class="row">
                         <div class="col-12 mb-3">
-                            <button type="button" class="btn btn-info me-sm-2 me-1 waves-effect waves-light"><i class="ti ti-xs ti-brand-amazon me-1"></i>Amazon JP認証</button>
-                            <span class="text-danger">✖認証失敗（error : メッセージ）</span>
+                            <a href="https://sellercentral.amazon.co.jp/apps/authorize/consent?application_id={{env("AMAZON_JP_APPLICATION_ID")}}&version=beta&state=jp:{{ $my->user_id }}" class="btn btn-info me-sm-2 me-1 waves-effect waves-light"><i class="ti ti-xs ti-brand-amazon me-1"></i>Amazon JP認証</a>
+                            @if ($my->amazon_jp_refresh_token)
+                                <span class="text-success">◯認証済み</span>
+                            @else
+                                <span class="text-warning">✖未認証</span>
+                            @endif
                         </div>
                         <div class="col-12 mb-3">
                             <button type="button" class="btn btn-info me-sm-2 me-1 waves-effect waves-light"><i class="ti ti-xs ti-brand-amazon me-1"></i>Amazon US認証</button>

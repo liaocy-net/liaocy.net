@@ -7,11 +7,12 @@
     "repositories": [
         {
             "type": "vcs",
-            "url": "https://github.com/aispel/yconnect-php-sdk"
+            "url": "https://github.com/yahoojapan/yconnect-php-sdk"
         }
     ],
     "require": {
         "php": "^8.0.2",
+        "amazon-php/sp-api-sdk": "^5.0",
         "bref/bref": "^2.0",
         "bref/laravel-bridge": "^2.1",
         "doctrine/dbal": "^3.6",

@@ -63,6 +63,9 @@ jobs:
       VITE_PUSHER_SCHEME: ''
       VITE_PUSHER_APP_CLUSTER: ''
       PAGE_MAX_LIMIT: 50
+      AMAZON_JP_APPLICATION_ID: ${{secrets.AMAZON_JP_APPLICATION_ID_STG}}
+      AMAZON_JP_CLIENT_ID: ${{secrets.AMAZON_JP_CLIENT_ID_STG}}
+      AMAZON_JP_CLIENT_SECRET: ${{secrets.AMAZON_JP_CLIENT_SECRET_STG}}
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v3
@@ -147,6 +150,9 @@ jobs:
               -e VITE_PUSHER_SCHEME=${{ env.VITE_PUSHER_SCHEME }} \
               -e VITE_PUSHER_APP_CLUSTER=${{ env.VITE_PUSHER_APP_CLUSTER }} \
               -e PAGE_MAX_LIMIT=${{ env.PAGE_MAX_LIMIT }} \
+              -e AMAZON_JP_APPLICATION_ID=${{ env.AMAZON_JP_APPLICATION_ID }} \
+              -e AMAZON_JP_CLIENT_ID=${{ env.AMAZON_JP_CLIENT_ID }} \
+              -e AMAZON_JP_CLIENT_SECRET=${{ env.AMAZON_JP_CLIENT_SECRET }} \
               ${{ env.APP_ENV }}-charing:latest
       - name: Remove Untagged Images
         uses: appleboy/ssh-action@v0.1.10

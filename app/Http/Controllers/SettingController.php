@@ -307,4 +307,70 @@ class SettingController extends Controller
             return redirect()->route('setting.index')->withErrors('success', 'Yahoo認証が失敗しました。もう一度お試しください。');
         }
     }
+
+    public function amazonCallback(Request $request)
+    {
+        try {
+            $params = $request->all();
+
+            $validator = Validator::make($params, [
+                'spapi_oauth_code' => ['required', 'string'],
+                'selling_partner_id' => ['required', 'string'],
+                'state' => ['required', 'string']
+            ]);
+
+            if ($validator->fails()) {
+                throw new \Exception("Amazon認証が失敗しました。もう一度お試しください。");
+            }
+
+            $my = Auth::user();
+
+            
+
+            $spapi_oauth_code = $params['spapi_oauth_code'];
+            $state = $params['state'];
+            $states = explode(':',$state);
+            if ($states[0] == "jp") {
+                $region = 'jp';
+                $client_id = env("AMAZON_JP_CLIENT_ID");
+                $client_secret = env("AMAZON_JP_CLIENT_SECRET");
+            } elseif ($states[0] == "us") {
+                $region = 'us';
+                $client_id = env("AMAZON_US_CLIENT_ID");
+                $client_secret = env("AMAZON_US_CLIENT_SECRET");
+            } else {
+                throw new \Exception("Amazon認証が失敗しました。もう一度お試しください。");
+            }
+
+            
+            
+            $client = new \GuzzleHttp\Client();
+            $headers = [
+                'Content-Type' => 'application/x-www-form-urlencoded',
+                'charset' => 'UTF-8'
+            ];
+            $res = $client->request('POST',
+                "https://api.amazon.com/auth/o2/token?grant_type=authorization_code&code=".$spapi_oauth_code."&redirect_uri=".route("setting.index")."&client_id=".$client_id."&client_secret=".$client_secret, $headers);
+            $res = json_decode($res->getBody()->getContents(), true);
+
+            if(is_array($res) && array_key_exists('refresh_token',$res)){
+                if ($region == "jp") {
+                    $my->amazon_jp_refresh_token = $res['refresh_token'];
+                    $my->amazon_jp_access_token = $res['access_token'];
+                    $my->amazon_jp_access_token_expires_in = date("Y-m-d H:i:s", $res['expires_in'] + time());
+                    $my->save();
+                } elseif ($region == "us") {
+                    $my->amazon_us_refresh_token = $res['refresh_token'];
+                    $my->amazon_us_access_token = $res['access_token'];
+                    $my->amazon_us_access_token_expires_in = date("Y-m-d H:i:s", $res['expires_in'] + time());
+                    $my->save();
+                }
+            } else {
+                throw new \Exception("Amazon認証が失敗しました。もう一度お試しください。");
+            }
+            return redirect()->route('setting.index')->with('success', 'Amazon JPを認証しました。');
+        } catch (\Exception $e) {
+            return redirect()->route('setting.index')->withErrors('success', $e->getMessage());
+        }
+    }
 }
