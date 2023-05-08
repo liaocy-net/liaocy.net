@@ -382,10 +382,14 @@
                             <div class="col-12 mb-3">
                                 <button type="submit" class="btn btn-danger me-sm-2 me-1 waves-effect waves-light" name="act" value="yahoo_auth">
                                     <i class="ti ti-xs ti-brand-yahoo me-1"></i>ログイン認証</button>
-                                @if ($my->yahoo_access_token)
-                                <span class="text-success">◯認証済み</span>
+                                @if ($my->yahoo_refresh_token_expires_in && strtotime($my->yahoo_refresh_token_expires_in) < time())
+                                    <span class="text-danger">✖有効期限切れ、再認証してください。</span>
+                                @elseif ($my->yahoo_refresh_token_expires_in && strtotime($my->yahoo_refresh_token_expires_in) < time() + 86400 * 7)
+                                    <span class="text-warning">！有効期限が間もなく切れますから、再認証してください。有効期限:{{$my->yahoo_refresh_token_expires_in}}</span>
+                                @elseif ($my->yahoo_refresh_token_expires_in && $my->yahoo_access_token)
+                                    <span class="text-success">◯認証済み 有効期限:{{$my->yahoo_refresh_token_expires_in}}</span>
                                 @else
-                                <span class="text-warning">✖未認証</span>
+                                    <span class="text-danger">✖未認証</span>
                                 @endif
                             </div>
                         </div>
@@ -400,12 +404,16 @@
                             @if ($my->amazon_jp_refresh_token)
                                 <span class="text-success">◯認証済み</span>
                             @else
-                                <span class="text-warning">✖未認証</span>
+                                <span class="text-danger">✖未認証</span>
                             @endif
                         </div>
                         <div class="col-12 mb-3">
                             <button type="button" class="btn btn-info me-sm-2 me-1 waves-effect waves-light"><i class="ti ti-xs ti-brand-amazon me-1"></i>Amazon US認証</button>
-                            <span class="text-success">◯認証済</span>
+                            @if ($my->amazon_us_refresh_token)
+                                <span class="text-success">◯認証済み</span>
+                            @else
+                                <span class="text-danger">✖未認証</span>
+                            @endif
                         </div>
                     </div>
                 </div>

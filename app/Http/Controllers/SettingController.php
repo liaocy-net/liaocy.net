@@ -219,7 +219,7 @@ class SettingController extends Controller
                 $my->yahoo_nonce = $nonce;
                 $my->save();
 
-                $redirect_uri = route('yahoo_callback');
+                $redirect_uri = route('setting.yahoo_callback');
 
                 $response_type = ResponseType::CODE;
                 $scope = array(
@@ -248,7 +248,7 @@ class SettingController extends Controller
         }
     }
 
-    public function yahooCallBack(Request $request)
+    public function yahooCallback(Request $request)
     {
         try {
             $validator = Validator::make($request->all(), [
@@ -273,7 +273,7 @@ class SettingController extends Controller
 
             $state = $my->yahoo_state;
             $nonce = $my->yahoo_nonce;
-            $redirect_uri = route('yahoo_callback');
+            $redirect_uri = route('setting.yahoo_callback');
 
             $code_result = $client->getAuthorizationCode($state);
             if( $code_result ) {

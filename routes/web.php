@@ -93,7 +93,7 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
     /* 設定 */
     Route::get('/setting', [SettingController::class, 'index'])->name('setting.index');
     Route::put('/setting/update', [SettingController::class, 'update'])->name('setting.update');
-    Route::get('/setting/yahoo_callback', [SettingController::class, 'yahooCallBack'])->name('yahoo_callback');
+    Route::get('/setting/yahoo/callback', [SettingController::class, 'yahooCallback'])->name('setting.yahoo_callback');
     Route::get('/setting/amazon/callback', [SettingController::class, 'amazonCallback'])->name('setting.amazon_callback');
     Route::get('/setting/download_my_foreign_shippings_csv', [ForeignShippingController::class, 'downloadMyCSV'])->name('setting.download_my_foreign_shippings_csv');
 

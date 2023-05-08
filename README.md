@@ -59,6 +59,37 @@ $user->save();
 lsof -i :8000
 ```
 
+- Create Job
+```bash
+php artisan make:job RefreshYahooAPIAuth
+```
+
+- Start Queue Worker
+  - PRD
+```bash
+php artisan queue:work --queue=high,default
+```
+  - DEV
+```bash
+php artisan queue:listen --queue=high,default
+```
+
+- Run scheduled tasks on host
+
+
+```bash
+crontab -e
+```
+  - STG
+```bash
+* * * * * sudo docker exec $(sudo docker ps -a -q --filter="name=stg-charing-queue") php artisan schedule:run >> /dev/null 2>&1
+```
+
+  - PRD
+```bash
+* * * * * sudo docker exec $(sudo docker ps -a -q --filter="name=prd-charing-queue") php artisan schedule:run >> /dev/null 2>&1
+```
+
 ## Docker
 
 ### Build and Replace
@@ -117,8 +148,14 @@ https://github.com/ixiumu/laravel_meetup/blob/master/docs/11.Code%20Beauty%EF%BC
 - SSL
   - [LaravelアプリをSSL化する際の注意点(assetヘルパー)](https://maasaablog.com/development/backend/php/laravel/538/)
 
-- Laravel
+- Ajax
   - [Laravel】Ajax通信をするときはCSRFトークンをヘッダーに追加しよう！](https://akizora.tech/laravel-ajax-csrf-4263)
+
+- Queue
+  - [Laravel 8.x キュー](https://readouble.com/laravel/8.x/ja/queues.html)
+
+- Task Scheduling
+  - [Task Scheduling](https://laravel.com/docs/10.x/scheduling#scheduling-queued-jobs)
 
 # Laravel 8.x
 
