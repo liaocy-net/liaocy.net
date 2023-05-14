@@ -19,8 +19,8 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule)
     {
         $schedule->call(function () {
-            $this->checkYahooAuth();
-        })->everyMinute();
+            var_dump("Hellow schedule hourly");
+        })->eventHourly();
     }
 
     /**
@@ -33,18 +33,5 @@ class Kernel extends ConsoleKernel
         $this->load(__DIR__.'/Commands');
 
         require base_path('routes/console.php');
-    }
-
-    protected function checkYahooAuth()
-    {
-        $users = User::where([
-            ['yahoo_client_id', '!=', null],
-            ['yahoo_secret', '!=', null],
-            ['yahoo_access_token', '!=', null],
-            ['yahoo_refresh_token', '!=', null]
-        ])->get();
-        foreach ($users as $user) {
-            dispatch(new RefreshYahooAPIAuth($user));
-        }
     }
 }

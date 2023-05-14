@@ -17,6 +17,7 @@
         "bref/laravel-bridge": "^2.1",
         "doctrine/dbal": "^3.6",
         "guzzlehttp/guzzle": "^7.2",
+        "kriswallsmith/buzz": "^1.2",
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^3.0",
         "laravel/tinker": "^2.7",

@@ -8,6 +8,9 @@ use App\Http\Controllers\SettingController;
 use App\Http\Controllers\ForeignShippingController;
 use App\Http\Controllers\WhiteListController;
 use App\Http\Controllers\BlackListController;
+use App\Http\Controllers\AmazonInfoController;
+use App\Services\AmazonService;
+use App\Models\User;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,6 +55,9 @@ Route::post('/forgot-password', function () {
 })->name('password.email');
 
 Route::group(['middleware' => ['auth', 'check_banned']], function () {
+    /* Amazon情報取得 */
+    Route::resource('/amazon_info', AmazonInfoController::class)->except(['create', 'edit', 'update']);
+
     /* 出品 */
     Route::get('/exhibit', function () {
         return view('exhibit');
@@ -68,11 +74,6 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
     /* 価格改定履歴 */
     Route::get('/price_history', function () {
         return view('price_history');
-    });
-
-    /* Amazon情報取得 */
-    Route::get('/amazon_info', function () {
-        return view('amazon_info');
     });
 
     /* ブラックリスト */
@@ -101,6 +102,26 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
     Route::group(['middleware' => 'admin'], function () {
         /* ユーザー管理 */
         Route::resource('/users', UserController::class);
+    });
+
+    /* test */
+    Route::get('/test', function () {
+        $user = User::find(auth()->id());
+        $client_id = env("AMAZON_JP_CLIENT_ID");
+        $client_secret = env("AMAZON_JP_CLIENT_SECRET");
+        $refresh_token = $user->amazon_jp_refresh_token;
+        // return $refresh_token;
+        $amazonService = new AmazonService(
+            $client_id, 
+            $client_secret, 
+            $refresh_token, 
+            "B07N6Q4KQJ",  //B0BNWFM7MZ
+            "jp", 
+            $user
+        );
+        // return $amazonService->getCatalogItem();
+        return $amazonService->getProductPricing();
+        // return $amazonService->getReport();
     });
 });
 

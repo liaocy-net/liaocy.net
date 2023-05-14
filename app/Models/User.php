@@ -98,4 +98,20 @@ class User extends Authenticatable
     {
         return $this->hasMany(BlackList::class);
     }
+
+    /**
+     * Get the ProductBatches with the user.
+     */
+    public function productBatches(): HasMany
+    {
+        return $this->hasMany(ProductBatch::class);
+    }
+
+    /**
+     * Get the Products with the user.
+     */
+    public function products(): HasMany
+    {
+        return $this->hasMany(Product::class);
+    }
 }

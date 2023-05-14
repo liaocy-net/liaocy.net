@@ -59,6 +59,16 @@ $user->save();
 lsof -i :8000
 ```
 
+- Create Jobs
+```bash
+php artisan make:job ExtractAmazonInformation
+```
+
+- Create Service
+```bash
+php artisan make:service ProductService
+```
+
 - Create Job
 ```bash
 php artisan make:job RefreshYahooAPIAuth
@@ -152,6 +162,7 @@ https://github.com/ixiumu/laravel_meetup/blob/master/docs/11.Code%20Beauty%EF%BC
   - [Laravel】Ajax通信をするときはCSRFトークンをヘッダーに追加しよう！](https://akizora.tech/laravel-ajax-csrf-4263)
 
 - Queue
+  - [任务批处理](https://learnku.com/docs/laravel/10.x/queuesmd/14873#e8f70e)
   - [Laravel 8.x キュー](https://readouble.com/laravel/8.x/ja/queues.html)
 
 - Task Scheduling
