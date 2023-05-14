@@ -328,6 +328,7 @@ class SettingController extends Controller
             
 
             $spapi_oauth_code = $params['spapi_oauth_code'];
+            $selling_partner_id = $params['selling_partner_id'];
             $state = $params['state'];
             $states = explode(':',$state);
             if ($states[0] == "jp") {
@@ -358,11 +359,13 @@ class SettingController extends Controller
                     $my->amazon_jp_refresh_token = $res['refresh_token'];
                     $my->amazon_jp_access_token = $res['access_token'];
                     $my->amazon_jp_access_token_expires_in = date("Y-m-d H:i:s", $res['expires_in'] + time());
+                    $my->amazon_jp_selling_partner_id = $selling_partner_id;
                     $my->save();
                 } elseif ($region == "us") {
                     $my->amazon_us_refresh_token = $res['refresh_token'];
                     $my->amazon_us_access_token = $res['access_token'];
                     $my->amazon_us_access_token_expires_in = date("Y-m-d H:i:s", $res['expires_in'] + time());
+                    $my->amazon_us_selling_partner_id = $selling_partner_id;
                     $my->save();
                 }
             } else {
