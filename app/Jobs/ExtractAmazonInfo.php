@@ -33,15 +33,15 @@ class ExtractAmazonInfo implements ShouldQueue
         $user = $this->product->user;
         
         // extract Amazon US info
-        $client_id = env("AMAZON_JP_CLIENT_ID"); //must fix on prd
-        $client_secret = env("AMAZON_JP_CLIENT_SECRET"); //must fix on prd
+        $client_id = env("AMAZON_US_CLIENT_ID"); //must fix on prd
+        $client_secret = env("AMAZON_US_CLIENT_SECRET"); //must fix on prd
         $amazon_refresh_token = $user->amazon_us_refresh_token;
         $amazonService = new AmazonService(
             $client_id, 
             $client_secret, 
             $amazon_refresh_token, 
             $this->product->asin,
-            "jp",  //must fix on prd
+            "us",  //must fix on prd
             $user
         );
 
@@ -152,7 +152,7 @@ class ExtractAmazonInfo implements ShouldQueue
     public function failed($exception)
     {
         if (env('APP_DEBUG', 'false') == 'true') {
-            var_dump($exception);
+            var_dump($exception->getMessage());
         }
     }
 }

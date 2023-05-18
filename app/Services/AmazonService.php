@@ -67,7 +67,7 @@ class AmazonService
             if (strtotime($this->user->amazon_us_access_token_expires_in) - 60 < time()) {
                 $this->accessToken = $sdk->oAuth()->exchangeRefreshToken($this->refresh_token);
                 $this->user->amazon_us_access_token = $this->accessToken->token();
-                $this->user->amazon_us_access_token_expires_in = date('Y-m-d H:i:s', $accessToken->expiresIn() + time());
+                $this->user->amazon_us_access_token_expires_in = date('Y-m-d H:i:s', $this->accessToken->expiresIn() + time());
                 $this->user->save();
             }
 
@@ -230,6 +230,10 @@ class AmazonService
         $offices = $item->getPayload()->getOffers();
         $result['nc'] = count($offices);
 
+        if ($result['nc'] == 0) {
+            throw new \Exception("No seller on Amazon " . $this->nation);
+        }
+
         // np: 新品最低価格
         // pp: プライム価格
         // cp_point: カート価格のポイント数
@@ -252,10 +256,15 @@ class AmazonService
             $result['minimum_hours'] = $office->getShippingTime()->getMinimumHours();
             $result['is_prime'] = $office->getPrimeInformation()->getIsPrime();
             $result['shipping_cost'] = $office->getShipping()->getAmount();
-            $result['ap'] = $office->getPoints()->getPointsNumber();
-            $result['cp_point'] = $office->getPoints()->getPointsNumber();
-            $result['cp'] = $result['np'] - $result['cp_point'] + $result['shipping_cost'];
-            
+            if ($this->nation == 'jp') {
+                $result['ap'] = $office->getPoints()->getPointsNumber();
+                $result['cp_point'] = $office->getPoints()->getPointsNumber();
+                $result['cp'] = $result['np'] - $result['cp_point'] + $result['shipping_cost'];
+            } else if ($this->nation == 'us') {
+                $result['ap'] = 0;
+                $result['cp_point'] = 0;
+                $result['cp'] = $result['np'] + $result['shipping_cost'];
+            }
             
             if ($result['is_prime']) {
                 $result['pp'] = $result['np'];

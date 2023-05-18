@@ -92,12 +92,12 @@ crontab -e
 ```
   - STG
 ```bash
-* * * * * sudo docker exec $(sudo docker ps -a -q --filter="name=stg-charing-queue") php artisan schedule:run >> /dev/null 2>&1
+* * * * * sudo docker exec $(sudo docker ps -a -q --filter="name=stg-charing-web") php artisan schedule:run >> /dev/null 2>&1
 ```
 
   - PRD
 ```bash
-* * * * * sudo docker exec $(sudo docker ps -a -q --filter="name=prd-charing-queue") php artisan schedule:run >> /dev/null 2>&1
+* * * * * sudo docker exec $(sudo docker ps -a -q --filter="name=prd-charing-web") php artisan schedule:run >> /dev/null 2>&1
 ```
 
 ## Docker

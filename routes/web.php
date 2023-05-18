@@ -107,16 +107,16 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
     /* test */
     Route::get('/test', function () {
         $user = User::find(auth()->id());
-        $client_id = env("AMAZON_JP_CLIENT_ID");
-        $client_secret = env("AMAZON_JP_CLIENT_SECRET");
-        $refresh_token = $user->amazon_jp_refresh_token;
+        $client_id = env("AMAZON_US_CLIENT_ID");
+        $client_secret = env("AMAZON_US_CLIENT_SECRET");
+        $refresh_token = $user->amazon_us_refresh_token;
         // return $refresh_token;
         $amazonService = new AmazonService(
             $client_id, 
             $client_secret, 
             $refresh_token, 
-            "B07N6Q4KQJ",  //B0BNWFM7MZ
-            "jp", 
+            "B01I13PGTW",  //B0BNWFM7MZ
+            "us", 
             $user
         );
         // return $amazonService->getCatalogItem();

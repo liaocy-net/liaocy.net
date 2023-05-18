@@ -14,58 +14,65 @@ jobs:
       SERVER_PORT: 22
       SERVER_USER: ubuntu
       SERVER_SSH_KEY: ${{secrets.SERVER_SSH_KEY}}
-      APP_PORT: 5000
-      APP_NAME: charing
       APP_ENV: stg
-      APP_KEY: ${{secrets.APP_KEY_STG}}
-      APP_DEBUG: 'true'
-      APP_URL: 'https://test.charing.biz/'
-      LOG_CHANNEL: stack
-      LOG_DEPRECATIONS_CHANNEL: 'null'
-      LOG_LEVEL: debug
-      DB_CONNECTION: mysql
-      DB_HOST: ${{secrets.DB_HOST}}
-      DB_PORT: ${{secrets.DB_PORT}}
-      DB_DATABASE: charing_stg
-      DB_USERNAME: ${{secrets.DB_USERNAME}}
-      DB_PASSWORD: ${{secrets.DB_PASSWORD}}
-      BROADCAST_DRIVER: log
-      CACHE_DRIVER: file
-      FILESYSTEM_DISK: local
-      QUEUE_CONNECTION: database
-      SESSION_DRIVER: file
-      SESSION_LIFETIME: 120
-      MEMCACHED_HOST: 127.0.0.1
-      REDIS_HOST: 127.0.0.1
-      REDIS_PASSWORD: 'null'
-      REDIS_PORT: 6479
-      MAIL_MAILER: smtp
-      MAIL_HOST: mailpit
-      MAIL_PORT: 1025
-      MAIL_USERNAME: 'null'
-      MAIL_PASSWORD: 'null'
-      MAIL_ENCRYPTION: 'null'
-      MAIL_FROM_ADDRESS: 'hello@example.com'
-      MAIL_FROM_NAME: 'HelloWorld'
-      AWS_DEFAULT_REGION: ap-northeast-1
-      AWS_BUCKET: ''
-      AWS_USE_PATH_STYLE_ENDPOINT: 'false'
-      PUSHER_APP_ID: ''
-      PUSHER_APP_KEY: ''
-      PUSHER_APP_SECRET: ''
-      PUSHER_HOST: ''
-      PUSHER_PORT: 443
-      PUSHER_SCHEME: https
-      PUSHER_APP_CLUSTER: ''
-      VITE_PUSHER_APP_KEY: ''
-      VITE_PUSHER_HOST: ''
-      VITE_PUSHER_PORT: ''
-      VITE_PUSHER_SCHEME: ''
-      VITE_PUSHER_APP_CLUSTER: ''
-      PAGE_MAX_LIMIT: 50
-      AMAZON_JP_APPLICATION_ID: ${{secrets.AMAZON_JP_APPLICATION_ID_STG}}
-      AMAZON_JP_CLIENT_ID: ${{secrets.AMAZON_JP_CLIENT_ID_STG}}
-      AMAZON_JP_CLIENT_SECRET: ${{secrets.AMAZON_JP_CLIENT_SECRET_STG}}
+      APP_PORT: 5000
+      DOCKER_COMMON_ENVS: |- 
+        -e APP_NAME=charing \
+        -e APP_KEY=${{secrets.APP_KEY_STG}} \
+        -e APP_DEBUG=true \
+        -e APP_URL=https://test.charing.biz/ \
+        -e LOG_CHANNEL=stack \
+        -e LOG_DEPRECATIONS_CHANNEL=null \
+        -e LOG_LEVEL=debug \
+        -e DB_CONNECTION=mysql \
+        -e DB_HOST=${{secrets.DB_HOST}} \
+        -e DB_PORT=${{secrets.DB_PORT}} \
+        -e DB_DATABASE=charing_stg \
+        -e DB_USERNAME=${{secrets.DB_USERNAME}} \
+        -e DB_PASSWORD=${{secrets.DB_PASSWORD}} \
+        -e BROADCAST_DRIVER=log \
+        -e CACHE_DRIVER=file \
+        -e FILESYSTEM_DISK=local \
+        -e QUEUE_CONNECTION=database \
+        -e SESSION_DRIVER=file \
+        -e SESSION_LIFETIME=120 \
+        -e MEMCACHED_HOST=127.0.0.1 \
+        -e REDIS_HOST=127.0.0.1 \
+        -e REDIS_PASSWORD=null \
+        -e REDIS_PORT=6479 \
+        -e MAIL_MAILER=smtp \
+        -e MAIL_HOST=mailpit \
+        -e MAIL_PORT=1025 \
+        -e MAIL_USERNAME=null \
+        -e MAIL_PASSWORD=null \
+        -e MAIL_ENCRYPTION=null \
+        -e MAIL_FROM_ADDRESS=hello@example.com \
+        -e MAIL_FROM_NAME=HelloWorld \
+        -e AWS_DEFAULT_REGION=ap-northeast-1 \
+        -e AWS_BUCKET="" \
+        -e AWS_USE_PATH_STYLE_ENDPOINT=false \
+        -e PUSHER_APP_ID="" \
+        -e PUSHER_APP_KEY="" \
+        -e PUSHER_APP_SECRET="" \
+        -e PUSHER_HOST="" \
+        -e PUSHER_PORT=443 \
+        -e PUSHER_SCHEME=https \
+        -e PUSHER_APP_CLUSTER="" \
+        -e VITE_PUSHER_APP_KEY="" \
+        -e VITE_PUSHER_HOST="" \
+        -e VITE_PUSHER_PORT="" \
+        -e VITE_PUSHER_SCHEME="" \
+        -e VITE_PUSHER_APP_CLUSTER="" \
+        -e PAGE_MAX_LIMIT=50 \
+        -e IAM_ARN=${{secrets.IAM_ARN_STG}} \
+        -e IAM_ACCESS_KEY=${{secrets.IAM_ACCESS_KEY_STG}} \
+        -e IAM_SECRECT_KEY=${{secrets.IAM_SECRECT_KEY_STG}} \
+        -e AMAZON_JP_APPLICATION_ID=${{secrets.AMAZON_JP_APPLICATION_ID_STG}} \
+        -e AMAZON_JP_CLIENT_ID=${{secrets.AMAZON_JP_CLIENT_ID_STG}} \
+        -e AMAZON_JP_CLIENT_SECRET=${{secrets.AMAZON_JP_CLIENT_SECRET_STG}} \
+        -e AMAZON_US_APPLICATION_ID=${{secrets.AMAZON_US_APPLICATION_ID_STG}} \
+        -e AMAZON_US_CLIENT_ID=${{secrets.AMAZON_US_CLIENT_ID_STG}} \
+        -e AMAZON_US_CLIENT_SECRET=${{secrets.AMAZON_US_CLIENT_SECRET_STG}}
     steps:
       - name: Git clone the repository
         uses: actions/checkout@v3
@@ -87,16 +94,25 @@ jobs:
           port: ${{ env.SERVER_PORT }}
           source: "./,!.github/**,!.git/**,!.gitignore,!.gitmodules,!.vscode/**"
           target: /home/ubuntu/${{ env.APP_ENV }}-charing
-      - name: Deploy Web Docker
+      - name: Build Web & Queue Docker
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ env.SERVER_HOST }}
           username: ${{ env.SERVER_USER }}
           key: ${{ env.SERVER_SSH_KEY }}
           port: ${{ env.SERVER_PORT }}
-          script: |
+          script: |-
             cd /home/ubuntu/${{env.APP_ENV}}-charing
             sudo docker build -f DockerfileWeb -t ${{ env.APP_ENV }}-charing-web:latest .
+            sudo docker build -f DockerfileQueue -t ${{ env.APP_ENV }}-charing-queue:latest .
+      - name: Run Web Docker
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ env.SERVER_SSH_KEY }}
+          port: ${{ env.SERVER_PORT }}
+          script: |-
             if [[ $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-web") ]]; then
               sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-web" | xargs sudo docker stop | xargs sudo docker rm
             fi
@@ -104,58 +120,26 @@ jobs:
               -p ${{ env.APP_PORT }}:8000 \
               -d --name ${{ env.APP_ENV }}-charing-web \
               --restart=always \
-              -e APP_NAME=${{ env.APP_NAME }} \
               -e APP_ENV=${{ env.APP_ENV }} \
-              -e APP_KEY=${{ env.APP_KEY }} \
-              -e APP_DEBUG=${{ env.APP_DEBUG }} \
-              -e APP_URL=${{ env.APP_URL }} \
-              -e LOG_CHANNEL=${{ env.LOG_CHANNEL }} \
-              -e LOG_DEPRECATIONS_CHANNEL=${{ env.LOG_DEPRECATIONS_CHANNEL }} \
-              -e LOG_LEVEL=${{ env.LOG_LEVEL }} \
-              -e DB_CONNECTION=${{ env.DB_CONNECTION }} \
-              -e DB_HOST=${{ env.DB_HOST }} \
-              -e DB_PORT=${{ env.DB_PORT }} \
-              -e DB_DATABASE=${{ env.DB_DATABASE }} \
-              -e DB_USERNAME=${{ env.DB_USERNAME }} \
-              -e DB_PASSWORD=${{ env.DB_PASSWORD }} \
-              -e BROADCAST_DRIVER=${{ env.BROADCAST_DRIVER }} \
-              -e CACHE_DRIVER=${{ env.CACHE_DRIVER }} \
-              -e FILESYSTEM_DISK=${{ env.FILESYSTEM_DISK }} \
-              -e QUEUE_CONNECTION=${{ env.QUEUE_CONNECTION }} \
-              -e SESSION_DRIVER=${{ env.SESSION_DRIVER }} \
-              -e SESSION_LIFETIME=${{ env.SESSION_LIFETIME }} \
-              -e MEMCACHED_HOST=${{ env.MEMCACHED_HOST }} \
-              -e REDIS_HOST=${{ env.REDIS_HOST }} \
-              -e REDIS_PASSWORD=${{ env.REDIS_PASSWORD }} \
-              -e REDIS_PORT=${{ env.REDIS_PORT }} \
-              -e MAIL_MAILER=${{ env.MAIL_MAILER }} \
-              -e MAIL_HOST=${{ env.MAIL_HOST }} \
-              -e MAIL_PORT=${{ env.MAIL_PORT }} \
-              -e MAIL_USERNAME=${{ env.MAIL_USERNAME }} \
-              -e MAIL_PASSWORD=${{ env.MAIL_PASSWORD }} \
-              -e MAIL_ENCRYPTION=${{ env.MAIL_ENCRYPTION }} \
-              -e MAIL_FROM_ADDRESS=${{ env.MAIL_FROM_ADDRESS }} \
-              -e MAIL_FROM_NAME=${{ env.MAIL_FROM_NAME }} \
-              -e AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }} \
-              -e AWS_BUCKET=${{ env.AWS_BUCKET }} \
-              -e AWS_USE_PATH_STYLE_ENDPOINT=${{ env.AWS_USE_PATH_STYLE_ENDPOINT }} \
-              -e PUSHER_APP_ID=${{ env.PUSHER_APP_ID }} \
-              -e PUSHER_APP_KEY=${{ env.PUSHER_APP_KEY }} \
-              -e PUSHER_APP_SECRET=${{ env.PUSHER_APP_SECRET }} \
-              -e PUSHER_HOST=${{ env.PUSHER_HOST }} \
-              -e PUSHER_PORT=${{ env.PUSHER_PORT }} \
-              -e PUSHER_SCHEME=${{ env.PUSHER_SCHEME }} \
-              -e PUSHER_APP_CLUSTER=${{ env.PUSHER_APP_CLUSTER }} \
-              -e VITE_PUSHER_APP_KEY=${{ env.VITE_PUSHER_APP_KEY }} \
-              -e VITE_PUSHER_HOST=${{ env.VITE_PUSHER_HOST }} \
-              -e VITE_PUSHER_PORT=${{ env.VITE_PUSHER_PORT }} \
-              -e VITE_PUSHER_SCHEME=${{ env.VITE_PUSHER_SCHEME }} \
-              -e VITE_PUSHER_APP_CLUSTER=${{ env.VITE_PUSHER_APP_CLUSTER }} \
-              -e PAGE_MAX_LIMIT=${{ env.PAGE_MAX_LIMIT }} \
-              -e AMAZON_JP_APPLICATION_ID=${{ env.AMAZON_JP_APPLICATION_ID }} \
-              -e AMAZON_JP_CLIENT_ID=${{ env.AMAZON_JP_CLIENT_ID }} \
-              -e AMAZON_JP_CLIENT_SECRET=${{ env.AMAZON_JP_CLIENT_SECRET }} \
+              ${{ env.DOCKER_COMMON_ENVS }} \
               ${{ env.APP_ENV }}-charing-web:latest
+      - name: Run Queue Docker
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ env.SERVER_SSH_KEY }}
+          port: ${{ env.SERVER_PORT }}
+          script: |
+            if [[ $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-queue") ]]; then
+              sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-queue" | xargs sudo docker stop | xargs sudo docker rm
+            fi
+            sudo docker run \
+              -d --name ${{ env.APP_ENV }}-charing-queue \
+              --restart=always \
+              -e APP_ENV=${{ env.APP_ENV }} \
+              ${{ env.DOCKER_COMMON_ENVS }} \
+              ${{ env.APP_ENV }}-charing-queue:latest
       - name: Database Migration
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -165,74 +149,6 @@ jobs:
           port: ${{ env.SERVER_PORT }}
           script: |
             sudo docker exec $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-web") php artisan migrate
-      - name: Deploy Queue Docker
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ env.SERVER_HOST }}
-          username: ${{ env.SERVER_USER }}
-          key: ${{ env.SERVER_SSH_KEY }}
-          port: ${{ env.SERVER_PORT }}
-          script: |
-            cd /home/ubuntu/${{env.APP_ENV}}-charing
-            sudo docker build -f DockerfileQueue -t ${{ env.APP_ENV }}-charing-queue:latest .
-            if [[ $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-queue") ]]; then
-              sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-queue" | xargs sudo docker stop | xargs sudo docker rm
-            fi
-            sudo docker run \
-              -d --name ${{ env.APP_ENV }}-charing-queue \
-              --restart=always \
-              -e APP_NAME=${{ env.APP_NAME }} \
-              -e APP_ENV=${{ env.APP_ENV }} \
-              -e APP_KEY=${{ env.APP_KEY }} \
-              -e APP_DEBUG=${{ env.APP_DEBUG }} \
-              -e APP_URL=${{ env.APP_URL }} \
-              -e LOG_CHANNEL=${{ env.LOG_CHANNEL }} \
-              -e LOG_DEPRECATIONS_CHANNEL=${{ env.LOG_DEPRECATIONS_CHANNEL }} \
-              -e LOG_LEVEL=${{ env.LOG_LEVEL }} \
-              -e DB_CONNECTION=${{ env.DB_CONNECTION }} \
-              -e DB_HOST=${{ env.DB_HOST }} \
-              -e DB_PORT=${{ env.DB_PORT }} \
-              -e DB_DATABASE=${{ env.DB_DATABASE }} \
-              -e DB_USERNAME=${{ env.DB_USERNAME }} \
-              -e DB_PASSWORD=${{ env.DB_PASSWORD }} \
-              -e BROADCAST_DRIVER=${{ env.BROADCAST_DRIVER }} \
-              -e CACHE_DRIVER=${{ env.CACHE_DRIVER }} \
-              -e FILESYSTEM_DISK=${{ env.FILESYSTEM_DISK }} \
-              -e QUEUE_CONNECTION=${{ env.QUEUE_CONNECTION }} \
-              -e SESSION_DRIVER=${{ env.SESSION_DRIVER }} \
-              -e SESSION_LIFETIME=${{ env.SESSION_LIFETIME }} \
-              -e MEMCACHED_HOST=${{ env.MEMCACHED_HOST }} \
-              -e REDIS_HOST=${{ env.REDIS_HOST }} \
-              -e REDIS_PASSWORD=${{ env.REDIS_PASSWORD }} \
-              -e REDIS_PORT=${{ env.REDIS_PORT }} \
-              -e MAIL_MAILER=${{ env.MAIL_MAILER }} \
-              -e MAIL_HOST=${{ env.MAIL_HOST }} \
-              -e MAIL_PORT=${{ env.MAIL_PORT }} \
-              -e MAIL_USERNAME=${{ env.MAIL_USERNAME }} \
-              -e MAIL_PASSWORD=${{ env.MAIL_PASSWORD }} \
-              -e MAIL_ENCRYPTION=${{ env.MAIL_ENCRYPTION }} \
-              -e MAIL_FROM_ADDRESS=${{ env.MAIL_FROM_ADDRESS }} \
-              -e MAIL_FROM_NAME=${{ env.MAIL_FROM_NAME }} \
-              -e AWS_DEFAULT_REGION=${{ env.AWS_DEFAULT_REGION }} \
-              -e AWS_BUCKET=${{ env.AWS_BUCKET }} \
-              -e AWS_USE_PATH_STYLE_ENDPOINT=${{ env.AWS_USE_PATH_STYLE_ENDPOINT }} \
-              -e PUSHER_APP_ID=${{ env.PUSHER_APP_ID }} \
-              -e PUSHER_APP_KEY=${{ env.PUSHER_APP_KEY }} \
-              -e PUSHER_APP_SECRET=${{ env.PUSHER_APP_SECRET }} \
-              -e PUSHER_HOST=${{ env.PUSHER_HOST }} \
-              -e PUSHER_PORT=${{ env.PUSHER_PORT }} \
-              -e PUSHER_SCHEME=${{ env.PUSHER_SCHEME }} \
-              -e PUSHER_APP_CLUSTER=${{ env.PUSHER_APP_CLUSTER }} \
-              -e VITE_PUSHER_APP_KEY=${{ env.VITE_PUSHER_APP_KEY }} \
-              -e VITE_PUSHER_HOST=${{ env.VITE_PUSHER_HOST }} \
-              -e VITE_PUSHER_PORT=${{ env.VITE_PUSHER_PORT }} \
-              -e VITE_PUSHER_SCHEME=${{ env.VITE_PUSHER_SCHEME }} \
-              -e VITE_PUSHER_APP_CLUSTER=${{ env.VITE_PUSHER_APP_CLUSTER }} \
-              -e PAGE_MAX_LIMIT=${{ env.PAGE_MAX_LIMIT }} \
-              -e AMAZON_JP_APPLICATION_ID=${{ env.AMAZON_JP_APPLICATION_ID }} \
-              -e AMAZON_JP_CLIENT_ID=${{ env.AMAZON_JP_CLIENT_ID }} \
-              -e AMAZON_JP_CLIENT_SECRET=${{ env.AMAZON_JP_CLIENT_SECRET }} \
-              ${{ env.APP_ENV }}-charing-queue:latest
       - name: Remove Untagged Images
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -244,4 +160,3 @@ jobs:
             if [[ $(sudo docker images -f "dangling=true" -q) ]]; then
               sudo docker rmi $(sudo docker images -f "dangling=true" -q)
             fi
-      
