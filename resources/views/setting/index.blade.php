@@ -408,7 +408,7 @@
                             @endif
                         </div>
                         <div class="col-12 mb-3">
-                            <a href="https://sellercentral.amazon.com/apps/authorize/consent?application_id={{env("AMAZON_US_APPLICATION_ID")}}&version=beta&state=jp:{{ $my->user_id }}" class="btn btn-info me-sm-2 me-1 waves-effect waves-light"><i class="ti ti-xs ti-brand-amazon me-1"></i>Amazon US認証</a>
+                            <a href="https://sellercentral.amazon.com/apps/authorize/consent?application_id={{env("AMAZON_US_APPLICATION_ID")}}&version=beta&state=us:{{ $my->user_id }}" class="btn btn-info me-sm-2 me-1 waves-effect waves-light"><i class="ti ti-xs ti-brand-amazon me-1"></i>Amazon US認証</a>
                             @if ($my->amazon_us_refresh_token)
                                 <span class="text-success">◯認証済み</span>
                             @else

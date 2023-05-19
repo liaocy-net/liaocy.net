@@ -371,7 +371,7 @@ class SettingController extends Controller
             } else {
                 throw new \Exception("Amazon認証が失敗しました。もう一度お試しください。");
             }
-            return redirect()->route('setting.index')->with('success', 'Amazon JPを認証しました。');
+            return redirect()->route('setting.index')->with('success', 'Amazon ' . strtoupper($region) . 'を認証しました。');
         } catch (\Exception $e) {
             return redirect()->route('setting.index')->withErrors('success', $e->getMessage());
         }
