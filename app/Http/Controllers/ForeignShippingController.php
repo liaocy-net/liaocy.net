@@ -2,22 +2,40 @@
 
 namespace App\Http\Controllers;
 
+require_once(__DIR__ . "/../../../vendor/autoload.php");
+
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 class ForeignShippingController extends Controller
 {
-    public function downloadMyCSV(Request $request){
+    public function downloadMyXLSX(Request $request){
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('国際送料');
+
+        // ヘッダー
+        $sheet->setCellValue('A1', '重量(KG)');
+        $sheet->setCellValue('B1', '費用(USD)');
+
         $user = $request->user();
         $foreignShippings = $user->foreignShippings;
-        $csv = "重量(KG),費用(USD)\n";
-        foreach($foreignShippings as $foreignShipping){
-            $csv .= $foreignShipping->weight_kg . ",";
-            $csv .= $foreignShipping->usd_fee . "\n";
+
+        foreach($foreignShippings as $i => $foreignShipping){
+            $sheet->setCellValueExplicit('A' . ($i + 2), $foreignShipping->weight_kg, DataType::TYPE_NUMERIC);
+            $sheet->setCellValueExplicit('B' . ($i + 2), $foreignShipping->usd_fee, DataType::TYPE_NUMERIC);
         }
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="kokusai.csv"',
-        ];
-        return response($csv, 200, $headers);
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="kokusai.xlsx"');
+        header('Cache-Control: max-age=0');
+        header('Cache-Control: max-age=1');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
     }
 }

@@ -118,9 +118,9 @@
                                 </div>
                             </div>
                             <div class="col-sm-6 mb-3">
-                                <label class="form-label" for="common_foreign_shipping">国際送料</label>
+                                <label class="form-label" for="common_foreign_shipping">国際送料 (Excel .xlsx ファイル)</label>
                                 <div class="input-group" id="common_foreign_shipping_group">
-                                    <a type="button" href="{{route('setting.download_my_foreign_shippings_csv')}}" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>ダウンロード</a>
+                                    <a type="button" href="{{route('setting.download_my_foreign_shippings_xlsx')}}" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>ダウンロード</a>
                                     <input type="file" id="common_foreign_shipping" name="common_foreign_shipping" class="form-control" />
                                 </div>
                             </div>

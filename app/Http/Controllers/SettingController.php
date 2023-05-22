@@ -14,6 +14,8 @@ use YConnect\Constant\OIDConnectScope;
 use YConnect\Constant\ResponseType;
 use YConnect\Credential\ClientCredential;
 use YConnect\YConnectClient;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use App\Models\ForeignShipping;
 
 class SettingController extends Controller
 {
@@ -83,40 +85,30 @@ class SettingController extends Controller
 
                 if ($request->hasFile('common_foreign_shipping')) {
                     //拡張子がCSVであるかの確認
-                    if ($request->common_foreign_shipping->getClientOriginalExtension() !== "csv") {
-                        throw new \Exception("不適切な拡張子です。CSVファイルを選択してください。");
+                    if ($request->common_foreign_shipping->getClientOriginalExtension() !== "xlsx") {
+                        throw new \Exception("不適切な拡張子です。EXCEL(xlsx)ファイルを選択してください。");
                     }
-                    //ファイルの保存
-                    // $newCsvFileName = $request->csvFile->getClientOriginalName();
-                    // $request->csvFile->storeAs('public/csv', $newCsvFileName);
-
+                    //Excelファイルを読み込み
+                    $reader = IOFactory::createReader("Xlsx");
+                    $spreadsheet = $reader->load($request->common_foreign_shipping);
+                    
+                    //シートの読み込み
                     $foreignShippings = array();
-                    if (($handle = fopen($request->common_foreign_shipping, "r")) !== FALSE) {
-                        $row = 0;
-                        while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                            if ($row === 0) {
-                                if (count($data) != 2 || strcmp($data[0], "重量(KG)") !== 0 || strcmp($data[1], "費用(USD)") !== 0) {
-                                    throw new \Exception("CSVファイルのフォーマットが不適切です。もう一度ダウンロードしてください。１");
-                                }
-                            } else {
-                                if (count($data) != 2) {
-                                    throw new \Exception("CSVファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
-                                }
-                                if (!is_numeric($data[0]) || !is_numeric($data[1])) {
-                                    throw new \Exception("CSVファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
-                                }
-                                array_push($foreignShippings, [
-                                    "user_id" => auth()->id(),
-                                    "weight_kg" => (double)$data[0], 
-                                    "usd_fee" => (double)$data[1]]
-                                );
-                            }
-                            $row++;
-                            if ($row > 1000) {
-                                throw new \Exception("CSVファイルの行数が1000行を超えています。もう一度ダウンロードしてください。");
-                            }
+                    $sheet = $spreadsheet->getSheet(0);
+                    $headers = $sheet->rangeToArray('A1:B1', null, true, false);
+                    if (count($headers[0]) != 2 || strcmp($headers[0][0], "重量(KG)") !== 0 || strcmp($headers[0][1], "費用(USD)") !== 0) {
+                        throw new \Exception("EXCELファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
+                    }
+                    $rows = $sheet->rangeToArray('A2:B' . $sheet->getHighestRow(), null, true, false);
+                    foreach ($rows as $row) {
+                        if (count($row) != 2 || !is_numeric($row[0]) || !is_numeric($row[1])) {
+                            throw new \Exception("EXCELファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
                         }
-                        fclose($handle);
+                        $foreignShippings[] = array(
+                            "user_id" => auth()->id(),
+                            "weight_kg" => $row[0],
+                            "usd_fee" => $row[1]
+                        );
                     }
                     ForeignShipping::where("user_id", auth()->id())->delete();
                     ForeignShipping::insert($foreignShippings);
