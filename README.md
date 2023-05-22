@@ -141,6 +141,8 @@ https://github.com/ixiumu/laravel_meetup/blob/master/docs/11.Code%20Beauty%EF%BC
 
 - Models
   - [Add new field to user profile in Laravel 8](https://dev.to/arifiqbal/add-new-field-to-user-profile-in-laravel-8-49ck)
+  - [LaravelのMany-to-Many(多対多)テーブル実例](https://blog.capilano-fw.com/?p=510)
+  - [Laravel 外部キー制約エラー General error: 3780 Referencing column](https://qiita.com/ucan-lab/items/976d4d8b45685b1a4ada#%E4%BF%AE%E6%AD%A3%E6%96%B9%E6%B3%95)
 
 - Paging
   - [イントロダクション](https://readouble.com/laravel/8.x/ja/pagination.html)
@@ -167,6 +169,14 @@ https://github.com/ixiumu/laravel_meetup/blob/master/docs/11.Code%20Beauty%EF%BC
 
 - Task Scheduling
   - [Task Scheduling](https://laravel.com/docs/10.x/scheduling#scheduling-queued-jobs)
+
+- Amazon
+  - [Selling Partner API Document](https://developer.amazonservices.com/ja-jp)
+  - [【Python】Amazon SP-APIで出品商品(SKU)の情報操作｜物販・セリングパートナー向け自動化手法](https://di-acc2.com/system/rpa/16957/#index_id8)
+  - [/feeds/2021-06-30/feeds](https://developer-docs.amazon.com/sp-api/docs/feeds-api-v2021-06-30-use-case-guide)
+
+- DataTables
+  - [Documents](https://www.datatables.net/manual/api)
 
 # Laravel 8.x
 

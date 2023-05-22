@@ -39,13 +39,13 @@
                                 </div>
                             </div>
                             <div class="col-auto mb-2 d-inline-flex align-items-end">
-                                <button type="button" class="btn btn-primary waves-effect waves-light"><i class="fas fa-search me-1"></i>検索</button>
+                                <button type="button" class="btn btn-primary waves-effect waves-light" onclick="refresh()"><i class="fas fa-search me-1"></i>検索</button>
                             </div>
                         </div>
                     </form>
                 </div>
 
-                <div class="mb-4">
+                <div id="tab_amazon" class="mb-4">
                     <h5 class="fw-bold">アマゾン出品履歴</h5>
                     <div class="table-responsive text-nowrap">
                         <table class="table table-bordered table-striped text-center">
@@ -58,73 +58,25 @@
                                     <th>終了時間</th>
                                     <th>ASIN数</th>
                                     <th>成功件数</th>
+                                    <th>失敗件数</th>
                                     <th>メッセージ</th>
                                     <th>詳細</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><a href="#" target="_blank">0325.excel</a></td>
-                                    <td>商品情報取得</td>
-                                    <td>出品待ち</td>
-                                    <td>2023/03/25 09:00:00</td>
-                                    <td>2023/03/25 09:01:00</td>
-                                    <td>125</td>
-                                    <td>125</td>
-                                    <td>Amazon</td>
                                     <td>
-                                        <a href="{{url('exhibit_history_detail')}}" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <td><a href="#" target="_blank">0325.excel</a></td>
-                                    <td>商品情報取得</td>
-                                    <td>出品待ち</td>
-                                    <td>2023/03/25 09:00:00</td>
-                                    <td>2023/03/25 09:01:00</td>
-                                    <td>125</td>
-                                    <td>125</td>
-                                    <td>Amazon</td>
-                                    <td>
-                                        <button type="button" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></button>
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <div class="pagination-body mt-3">
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center pagination-info">
-                                <li class="page-item first">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-left ti-xs"></i></a>
-                                </li>
-                                <li class="page-item prev">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevron-left ti-xs"></i></a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">1</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">2</a>
-                                </li>
-                                <li class="page-item active">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">3</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">4</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">5</a>
-                                </li>
-                                <li class="page-item next">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevron-right ti-xs"></i></a>
-                                </li>
-                                <li class="page-item last">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-right ti-xs"></i></a>
-                                </li>
-                            </ul>
-                        </nav>
+                    <div id="nav_amazon" class="pagination-body mt-3">
+                        
                     </div>
                 </div>
 
@@ -220,12 +172,82 @@
 <script>
     $(document).ready(function(){
         'use strict';
-
+        refreshAmazon();
     });
 
     $(function () {
         
     });
+
+    var showLoading = function(tableId) {
+        var loading = '<tr><td>';
+        loading += '<div class="spinner-border text-primary" role="status">';
+        loading += '<span class="visually-hidden">Loading...</span>';
+        loading += '</div>';
+        loading += '</td></tr>';
+        $('#' + tableId + ' .table tbody').html(loading);
+    };
+
+    var refreshAmazon = function(page = 1) {  
+        showLoading('tab_amazon');
+        
+        getData("{{route('exhibit_history.get_exhibit_histories')}}", {
+            platform: "amazon",
+            page: page,
+            filename: $('#search_file_name').val(),
+            period_from: $('#search_period_from').val(),
+            period_to: $('#search_period_to').val(),
+        }, function(data) {
+            let html = '';
+            data.data.forEach(history => {
+                html += '<tr>';
+                html += '<td>' + history.filename + '</td>';
+                if (history.action == 'extract_amazon_info_for_exhibit') {
+                    html += '<td>商品情報取得</td>';
+                } else if (history.action == 'exhibit_to_amazon_jp') {
+                    html += '<td>AmazonJP出品</td>';
+                }
+                html += '<td>' + history.patch_status + '</td>';
+                html += '<td>' + (history.start_at ? history.start_at : '-') + '</td>';
+                html += '<td>' + (history.end_at ? history.end_at : '-') + '</td>';
+                if (history.action == 'extract_amazon_info_for_exhibit') {
+                    html += '<td>' + history.total_jobs + '</td>';
+                    html += '<td>' + (history.total_jobs - history.pending_jobs) + '</td>';
+                    html += '<td>' + history.failed_jobs + '</td>';
+                } else {
+                    html += '<td>' + history.products_count + '</td>';
+                    html += '<td>-</td>';
+                    html += '<td>-</td>';
+                }
+                if (history.has_message) {
+                    html += '<td><a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">詳細</a></td>';
+                } else {
+                    html += '<td>-</td>';
+                }
+                if (history.action == 'extract_amazon_info_for_exhibit' && history.end_at) {
+                    html += '<td><a href="{{route("exhibit_history.detail")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
+                } else if (history.action == 'exhibit_to_amazon_jp' && history.end_at){
+                    html += '<td><a href="{{route("exhibit_history.detail")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
+                } else {
+                    html += '<td></td>';
+                }
+                
+                html += '</tr>';
+            });
+            $('#tab_amazon .table tbody').html(html);
+
+            var navAmazon = getNavigator(data, 'refreshAmazon');
+
+            $('#nav_amazon').html(navAmazon);
+
+        }, function() {
+
+        });
+    };
+
+    var refresh = function() {
+        refreshAmazon();
+    };
 </script>
 @endsection
 

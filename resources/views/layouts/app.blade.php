@@ -35,6 +35,9 @@
     <link rel="stylesheet" href="{{ asset('ui/assets/vendor/libs/bs-stepper/bs-stepper.css') }}" />
     <link rel="stylesheet" href="{{ asset('ui/assets/vendor/libs/formvalidation/dist/css/formValidation.min.css') }}" />
 
+    <!-- Plugins -->
+    <link rel="stylesheet" href="//cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
+
     <script src="{{asset('ui/assets/vendor/js/helpers.js')}}"></script>
     <script src="{{asset('ui/assets/js/config.js')}}"></script>
     <link rel="stylesheet" type="text/css" href="{{asset('ui/custom/css/custom.css')}}">
@@ -228,6 +231,9 @@
 <script src="{{asset('ui/assets/js/ui-navbar.js')}}"></script>
 <script src="{{asset('ui/assets/js/ui-popover.js')}}"></script>
 <script src="{{asset('ui/assets/js/forms-selects.js')}}"></script>
+
+<!-- Plugins -->
+<script src="//cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
 @yield('script')
 

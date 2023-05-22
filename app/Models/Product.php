@@ -58,11 +58,12 @@ class Product extends Model
         'size_w_us',
         'size',
         'weight_us',
+        'amazon_jp_feed_id',
     ];
 
-    public function productBatch()
+    public function productBatches()
     {
-        return $this->belongsTo(ProductBatch::class);
+        return $this->belongsToMany(ProductBatch::class);
     }
 
     public function user()

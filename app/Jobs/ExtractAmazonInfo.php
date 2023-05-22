@@ -19,6 +19,13 @@ class ExtractAmazonInfo implements ShouldQueue
     protected $product;
 
     /**
+     * The number of times the job may be attempted.
+     *
+     * @var int
+     */
+    public $tries = 3;
+
+    /**
      * Create a new job instance.
      *
      * @return void
@@ -31,23 +38,22 @@ class ExtractAmazonInfo implements ShouldQueue
     protected function extractUSAmazonInfo()
     {
         $user = $this->product->user;
-        
+
         // extract Amazon US info
         $client_id = env("AMAZON_US_CLIENT_ID"); //must fix on prd
         $client_secret = env("AMAZON_US_CLIENT_SECRET"); //must fix on prd
         $amazon_refresh_token = $user->amazon_us_refresh_token;
         $amazonService = new AmazonService(
-            $client_id, 
-            $client_secret, 
-            $amazon_refresh_token, 
-            $this->product->asin,
-            "us",  //must fix on prd
-            $user
+            $client_id,
+            $client_secret,
+            $amazon_refresh_token,
+            $user,
+            "us",
         );
 
-        try{
-            $catalogItem = $amazonService->getCatalogItem();
-            $productPricing = $amazonService->getProductPricing();
+        try {
+            $catalogItem = $amazonService->getCatalogItem($this->product);
+            $productPricing = $amazonService->getProductPricing($this->product);
         } catch (ApiException $e) {
             $this->product->is_amazon_us = false;
             $this->product->save();
@@ -57,7 +63,7 @@ class ExtractAmazonInfo implements ShouldQueue
         $this->product->brand_us = $catalogItem['brand'];
         // $this->product->cate_us = $catalogItem['cate'];
         $this->product->color_us = $catalogItem['color'];
-        
+
         $this->product->img_url_01 = $catalogItem['img_url_01'];
         $this->product->img_url_02 = $catalogItem['img_url_02'];
         $this->product->img_url_03 = $catalogItem['img_url_03'];
@@ -77,13 +83,13 @@ class ExtractAmazonInfo implements ShouldQueue
         $this->product->size_us = $catalogItem['size'];
         $this->product->weight_us = $catalogItem['weight'];
 
-        
+
         $this->product->maximum_hours_us = $productPricing['maximum_hours'];
         $this->product->minimum_hours_us = $productPricing['minimum_hours'];
         $this->product->cp_us = $productPricing['cp'];
         $this->product->nc_us = $productPricing['nc'];
         $this->product->pp_us = $productPricing['pp'];
-        
+
         $this->product->is_amazon_us = true;
         $this->product->save();
     }
@@ -97,17 +103,16 @@ class ExtractAmazonInfo implements ShouldQueue
         $client_secret = env("AMAZON_JP_CLIENT_SECRET");
         $amazon_refresh_token = $user->amazon_jp_refresh_token;
         $amazonService = new AmazonService(
-            $client_id, 
-            $client_secret, 
-            $amazon_refresh_token, 
-            $this->product->asin,
-            "jp", 
-            $user
+            $client_id,
+            $client_secret,
+            $amazon_refresh_token,
+            $user,
+            "jp",
         );
-        
-        try{
-            $catalogItem = $amazonService->getCatalogItem();
-            $productPricing = $amazonService->getProductPricing();
+
+        try {
+            $catalogItem = $amazonService->getCatalogItem($this->product);
+            $productPricing = $amazonService->getProductPricing($this->product);
         } catch (ApiException $e) {
             $this->product->is_amazon_us = false;
             $this->product->save();
@@ -117,7 +122,7 @@ class ExtractAmazonInfo implements ShouldQueue
         $this->product->brand_jp = $catalogItem['brand'];
         $this->product->rank_id_jp = $catalogItem['rank_id'];
         $this->product->rank_jp = $catalogItem['rank'];
-        
+
         $this->product->cp_jp = $productPricing['cp'];
         $this->product->cp_point = $productPricing['cp_point'];
         $this->product->maximum_hours_jp = $productPricing['maximum_hours'];
@@ -144,9 +149,23 @@ class ExtractAmazonInfo implements ShouldQueue
             return;
         }
 
-        $this->extractUSAmazonInfo();
+        try {
+            $this->extractUSAmazonInfo();
+            $this->extractJPAmazonInfo();
 
-        $this->extractJPAmazonInfo();
+            $this->product->message = "正常";
+            $this->product->is_exhibit_to_amazon_jp = true;
+            $this->product->save();
+        } catch (\Exception $e) {
+            if ($this->attempts() < $this->tries) {
+                $this->release(10);
+            } else {
+                $this->product->message = $e->getMessage();
+                $this->product->is_exhibit_to_amazon_jp = false;
+                $this->product->save();
+                throw $e;
+            }
+        }
     }
 
     public function failed($exception)

@@ -13,28 +13,41 @@ use Monolog\Handler\StreamHandler;
 use Monolog\Logger;
 use Nyholm\Psr7\Factory\Psr17Factory;
 use Psr\Http\Client\ClientExceptionInterface;
+use AmazonPHP\SellingPartner\Model\Feeds\CreateFeedDocumentSpecification;
+use \AmazonPHP\SellingPartner\Model\Feeds\CreateFeedSpecification;
+use App\Models\Product;
+use App\Services\UtilityService;
 
+enum FeedTypes: string
+{
+    //ref. https://developer-docs.amazon.com/sp-api/docs/feed-type-values
+    case POST_PRODUCT_DATA = 'POST_PRODUCT_DATA';
+    case POST_INVENTORY_AVAILABILITY_DATA = 'POST_INVENTORY_AVAILABILITY_DATA';
+    case POST_PRODUCT_PRICING_DATA = 'POST_PRODUCT_PRICING_DATA';
+    case POST_FLAT_FILE_INVLOADER_DATA = 'POST_FLAT_FILE_INVLOADER_DATA';
+    case POST_FLAT_FILE_LISTINGS_DATA = 'POST_FLAT_FILE_LISTINGS_DATA';
+}
 
 class AmazonService
 {
     protected $client_id;
     protected $client_secret;
     protected $refresh_token;
-    protected $asin;
+    protected $product;
     protected $nation;
     protected $user;
     protected $region;
     protected $accessToken;
     protected $marketplace_ids = [];
+    protected $feedId;
 
-    public function __construct($client_id, $client_secret, $refresh_token, $asin, $nation, $user)
+    public function __construct($client_id, $client_secret, $refresh_token, $user, $nation)
     {
         $this->client_id = $client_id;
         $this->client_secret = $client_secret;
         $this->refresh_token = $refresh_token;
-        $this->asin = $asin;
-        $this->nation = $nation;
         $this->user = $user;
+        $this->nation = $nation;
     }
     
     protected function getSDK() : SellingPartnerSDK
@@ -95,14 +108,13 @@ class AmazonService
         return $sdk;
     }
 
-    public function getCatalogItem()
+    public function getCatalogItem(Product $product)
     {
-        sleep(0.3);
         $sdk = $this->getSDK();
         $item = $sdk->catalogItem()->getCatalogItem(
             $this->accessToken,
             $this->region,
-            $this->asin,
+            $product->asin,
             $this->marketplace_ids,
             // https://developer-docs.amazon.com/sp-api/docs/catalog-items-api-v2020-12-01-reference#includeddata-subgroup-1
             ['attributes', 'identifiers', 'images', 'productTypes', 'salesRanks', 'summaries']
@@ -212,7 +224,7 @@ class AmazonService
         return $result;
     }
 
-    public function getProductPricing()
+    public function getProductPricing(Product $product)
     {
         $sdk = $this->getSDK();
         //AccessToken $accessToken, string $region, string $marketplace_id, string $item_condition, string $asin, ?string $customer_type = null
@@ -221,7 +233,7 @@ class AmazonService
             region: $this->region,
             marketplace_id: $this->marketplace_ids[0],
             item_condition: 'New',
-            asin: $this->asin
+            asin: $product->asin
         );
 
         $result = array();
@@ -275,5 +287,113 @@ class AmazonService
         }
 
         return $result;
+    }
+
+    public function genSKU()
+    {
+        return strtoupper(md5($this->product->id));
+    }
+
+    public function getFeedDocument($feed_id)
+    {
+        // if(empty($this->feedId)) {
+        //     throw new \Exception("feedId is not available.");
+        // }
+
+        $sdk = $this->getSDK();
+
+        //ref. https://developer-docs.amazon.com/sp-api/docs/feeds-api-v2021-06-30-use-case-guide
+        //Step 5. Confirm feed processing
+        $results = $sdk->feeds()->getFeed(
+            $this->accessToken,
+            $this->region,
+            $feed_id,
+        );
+
+        if ($results->getProcessingStatus() == 'DONE') {
+            //Step 6. Download the feed
+            $results = $sdk->feeds()->getFeedDocument(
+                $this->accessToken,
+                $this->region,
+                $results->getResultFeedDocumentId()
+            );
+        }
+
+        return $results;
+    }
+
+    protected function genInvloaderTXT($products)
+    {
+        $headers = [
+            "sku",
+            "product-id",
+            "product-id-type",
+            "quantity",
+            "price",
+            "item-condition",
+            "item-note"
+        ];
+        $tsv = join("\t", $headers) . "\n";
+        foreach ($products as $product) {
+            $contents = [
+                $product->sku,
+                $product->asin,
+                "ASIN",
+                $this->user->amazon_stock,
+                UtilityService::calExhibitPrice($this->user, $product),
+                "New",
+                $product->note
+            ];
+            $tsv .= join("\t", $contents) . "\n";
+        }
+        return $tsv;
+    }
+
+    public function CreateFeedWithFile($products)
+    {
+        $sdk = $this->getSDK();
+
+        //ref. https://developer-docs.amazon.com/sp-api/docs/feeds-api-v2021-06-30-use-case-guide
+        //Step 1. Create a feed document
+        $createFeedDocumentSpecification = new CreateFeedDocumentSpecification(
+            data: array(
+                'content_type' => 'text/txt; charset=UTF-8',
+            )
+        );
+        $results = $sdk->feeds()->createFeedDocument(
+            $this->accessToken,
+            $this->region,
+            $createFeedDocumentSpecification
+        );
+        $feedDocumentId = $results->getFeedDocumentId();
+        $feedURL = $results->getUrl();
+
+        //Step 2. Construct a feed
+        $feedDocument = $this->genInvloaderTXT($products);
+
+        //Step 3. Upload the feed
+        $options = [
+            'headers' => ['Content-Type' => 'text/txt; charset=UTF-8'],
+            'body' => $feedDocument,
+        ];
+        $client =new \GuzzleHttp\Client();
+        $client->request('PUT', $feedURL, $options);
+
+        //Step 4. Create a feed
+        $createFeedSpecification = new CreateFeedSpecification(
+            data: array(
+                'feed_type' => FeedTypes::POST_FLAT_FILE_INVLOADER_DATA->value,
+                'marketplace_ids' => $this->marketplace_ids,
+                'input_feed_document_id' => $feedDocumentId,
+            )
+        );
+
+        $results = $sdk->feeds()->createFeed(
+            $this->accessToken,
+            $this->region,
+            $createFeedSpecification
+        );
+
+        return $results;
     }
 }

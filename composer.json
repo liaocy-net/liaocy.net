@@ -21,6 +21,7 @@
         "laravel/framework": "^9.19",
         "laravel/sanctum": "^3.0",
         "laravel/tinker": "^2.7",
+        "phpoffice/phpspreadsheet": "^1.28",
         "yahoojapan/yconnect-php-sdk": "3.0.0"
     },
     "require-dev": {

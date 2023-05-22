@@ -4,16 +4,16 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
-use App\Models\ProductBatch;
 use App\Models\Product;
+use App\Models\ProductBatch;
 use App\Services\UtilityService;
-use Illuminate\Bus\Batch;
-use Illuminate\Support\Facades\Bus;
-use Throwable;
 use App\Jobs\ExtractAmazonInfo;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Bus\Batch;
+use Throwable;
 
-class AmazonInfoController extends Controller
+class ExhibitController extends Controller
 {
     /**
      * Display a listing of the resource.
@@ -23,21 +23,8 @@ class AmazonInfoController extends Controller
     public function index()
     {
         $my = User::find(auth()->id());
-        $batches = DB::table('product_batches')
-            ->select('*', 'product_batches.id AS product_batch_id', 'product_batches.finished_at AS product_batch_finished_at')
-            ->where([
-                ['user_id', auth()->id()],
-                ['action', 'extract_amazon_info'],
-            ])
-            ->leftJoin('job_batches', 'product_batches.job_batch_id', '=', 'job_batches.id')
-            ->orderBy("product_batches.created_at", "desc")
-            ->paginate(env("PAGE_MAX_LIMIT", 50));
-        foreach ($batches as $batch) {
-            $batch->status = UtilityService::getExtractAmazonInfoPatchStatus($batch);
-        }
-        return view('amazon_info.index', [
-            'my' => $my,
-            'batches' => $batches,
+        return view('exhibit.index', [
+            'my' => $my
         ]);
     }
 
@@ -60,6 +47,16 @@ class AmazonInfoController extends Controller
     public function store(Request $request)
     {
         try {
+            $validator = Validator::make($request->all(), [
+                'exhibit_to' => ['required'],
+                'exhibit_to.*' => ['in:amazon,yahoo'],
+                'exhibit_yahoo_category' => ['required', 'string', 'max:255']
+            ]);
+    
+            if ($validator->fails()) {
+                throw new \Exception($validator->errors()->first(), 442);
+            }
+
             if ($request->hasFile('asin_file')) {
                 //拡張子がCSVであるかの確認
                 if ($request->asin_file->getClientOriginalExtension() !== "csv") {
@@ -106,7 +103,7 @@ class AmazonInfoController extends Controller
 
                     $productBatch = new ProductBatch();
                     $productBatch->user_id = auth()->id();
-                    $productBatch->action = "extract_amazon_info";
+                    $productBatch->action = "extract_amazon_info_for_exhibit";
 
                     $filename = pathinfo($request->asin_file->getClientOriginalName(), PATHINFO_FILENAME);
                     $existing_file_count = ProductBatch::where('user_id', auth()->id())->where('filename', 'like', $filename . '%')->count();
@@ -115,6 +112,17 @@ class AmazonInfoController extends Controller
                     }
 
                     $productBatch->filename = $filename . ".csv";
+                    if (in_array("amazon", $request->exhibit_to)) {
+                        $productBatch->is_exhibit_to_amazon = true;
+                    } else {
+                        $productBatch->is_exhibit_to_amazon = false;
+                    }
+                    if (in_array("yahoo", $request->exhibit_to)) {
+                        $productBatch->is_exhibit_to_yahoo = true;
+                        $productBatch->exhibit_yahoo_category = $request->exhibit_yahoo_category;
+                    } else {
+                        $productBatch->is_exhibit_to_yahoo = false;
+                    }
                     $productBatch->save();
 
                     $extractAmazonInfos = array();
@@ -130,7 +138,7 @@ class AmazonInfoController extends Controller
                         array_push($extractAmazonInfos, new ExtractAmazonInfo($product));
                     }
 
-                    $batch = Bus::batch($extractAmazonInfos)->name("extract_amazon_info")->then(function (Batch $batch) {
+                    $batch = Bus::batch($extractAmazonInfos)->name("extract_amazon_info_for_exhibit")->then(function (Batch $batch) {
                         // すべてのジョブが正常に完了
                     })->catch(function (Batch $batch, Throwable $e) {
                         // バッチジョブの失敗をはじめて検出
@@ -144,14 +152,14 @@ class AmazonInfoController extends Controller
                     $productBatch->job_batch_id = $batch->id;
                     $productBatch->save();
 
-                    return redirect()->route('amazon_info.index')->with('success', 'Amazon情報取得ジョブを登録しました。');
+                    return redirect()->route('exhibit.index')->with('success', 'Amazon情報取得ジョブを登録しました。');
                 }
             } else {
                 throw new \Exception("CSVファイルが選択されていません。");
             }
         } catch (\Exception $e) {
             return back()->withErrors($e->getMessage());
-        }   
+        }
     }
 
     /**
@@ -162,24 +170,7 @@ class AmazonInfoController extends Controller
      */
     public function show($id)
     {
-        try {
-            $productBatch = ProductBatch::find($id);
-            if (empty($productBatch) || $productBatch->user_id !== auth()->id()) {
-                throw new \Exception("指定されたバッチが見つかりません。");
-            }
-
-            $products = $productBatch->products()->get();
-
-            $csv = UtilityService::getProductsCSV($products);
-
-            $headers = [
-                'Content-Type' => 'text/csv',
-                'Content-Disposition' => 'attachment; filename="' . $productBatch->filename . '"',
-            ];
-            return response($csv, 200, $headers);
-        } catch (\Exception $e) {
-            return back()->withErrors($e->getMessage());
-        }
+        //
     }
 
     /**

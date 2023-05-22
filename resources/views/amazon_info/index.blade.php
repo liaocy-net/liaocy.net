@@ -60,8 +60,8 @@
                                         <td>{{ $batch->status }}</td>
                                         <td>{{ date('Y-m-d H:i:s', $batch->created_at) }}</td>
                                         <td>
-                                            @if ($batch->finished_at)
-                                                {{ date('Y-m-d H:i:s', $batch->finished_at) }}
+                                            @if ($batch->product_batch_finished_at)
+                                                {{ date('Y-m-d H:i:s', strtotime($batch->product_batch_finished_at)) }}
                                             @endif
                                         </td>
                                         <td>{{ $batch->total_jobs }}</td>

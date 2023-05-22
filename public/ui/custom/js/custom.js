@@ -105,18 +105,26 @@ $(function () {
 })();
 
 
-var submitForm = function(form_id, call_back, preProcess = null){
+var submitForm = function(form_id, call_back, preProcess = null, additonal_data = {}){
   if(preProcess != null){
     preProcess();
   }
+  
   $("#" + form_id).submit(function(event) {
     // HTMLでの送信をキャンセル
     event.preventDefault();
+
+    let data = $(this).serialize();
+
+    for (const [key, value] of Object.entries(additonal_data)) {
+      data += "&" + key + "=" + value;
+    }
+
     // 送信
     $.ajax({
       url: $(this).attr('action'),
       method: $(this).attr('method'),
-      data: $(this).serialize(),
+      data: data,
       headers: {
         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
       }
@@ -142,3 +150,54 @@ var getData = function(url, data, call_back){
     alert("エラー:" + XMLHttpRequest.responseText);
   });
 };
+
+var getNavigator = function(data, refreshFunctionName){
+  var html = "";
+  html += '<nav aria-label="Page navigation">';
+  html += '<ul class="pagination justify-content-center pagination-info">';
+  if (data.current_page == 1) {
+    html += '<li class="page-item first disabled">';
+    html += '  <botton class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-left ti-xs"></i></botton>';
+    html += '</li>';
+    html += '<li class="page-item prev disabled">';
+    html += '  <botton class="page-link waves-effect disable" href="javascript:void(0);"><i class="ti ti-chevron-left ti-xs"></i></botton>';
+    html += '</li>';
+  } else {
+    html += '<li class="page-item first">';
+    html += '  <botton onclick="' + refreshFunctionName + '(1)" class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-left ti-xs"></i></botton>';
+    html += '</li>';
+    html += '<li class="page-item prev">';
+    html += '  <botton onclick="' + refreshFunctionName + '(' + (data.current_page - 1) + ')" class="page-link waves-effect disable" href="javascript:void(0);"><i class="ti ti-chevron-left ti-xs"></i></botton>';
+    html += '</li>';
+  }
+
+  for (var i = data.current_page - 3; i < data.current_page + 3; i++) {
+    if (i == data.current_page) {
+      html += '<li class="page-item active">';
+      html += '<botton onclick="' + refreshFunctionName + '(' + i + ')" class="page-link waves-effect" href="javascript:void(0);">' + i + '</botton>';
+      html += '</li>';
+    } else if (i > 0 && i <= data.last_page) {
+      html += '<li class="page-item">';
+      html += '<botton onclick="' + refreshFunctionName + '(' + i + ')" class="page-link waves-effect" href="javascript:void(0);">' + i + '</botton>';
+      html += '</li>';
+    }
+  }
+
+  if (data.current_page == data.last_page) {
+    html += '<li class="page-item next disabled">';
+    html += '  <botton class="page-link waves-effect disable" href="javascript:void(0);"><i class="ti ti-chevron-right ti-xs"></i></botton>';
+    html += '</li>';
+    html += '<li class="page-item last disabled">';
+    html += '  <botton class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-right ti-xs"></i></botton>';
+    html += '</li>';
+  } else {
+    html += '<li class="page-item next">';
+    html += '  <botton onclick="' + refreshFunctionName + '(' + (data.current_page + 1) + ')" class="page-link waves-effect disable" href="javascript:void(0);"><i class="ti ti-chevron-right ti-xs"></i></botton>';
+    html += '</li>';
+    html += '<li class="page-item last">';
+    html += '  <botton onclick="' + refreshFunctionName + '(' + data.last_page + ')" class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-right ti-xs"></i></botton>';
+    html += '</li>';
+  }
+
+  return html;
+}

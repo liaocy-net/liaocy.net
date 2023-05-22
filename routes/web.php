@@ -9,8 +9,12 @@ use App\Http\Controllers\ForeignShippingController;
 use App\Http\Controllers\WhiteListController;
 use App\Http\Controllers\BlackListController;
 use App\Http\Controllers\AmazonInfoController;
+use App\Models\Product;
 use App\Services\AmazonService;
 use App\Models\User;
+use App\Services\FeedTypes;
+use App\Http\Controllers\ExhibitController;
+use App\Http\Controllers\ExhibitHistoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -31,7 +35,7 @@ Route::get('/phpinfo', function () {
 Route::get('/', function() {
     if (Auth::check()) {
         // ユーザーはログイン済み
-        return redirect()->route('exhibit');
+        return redirect()->route('exhibit.index');
     } else {
         // ユーザーはログインしていない
         return redirect()->route('login');
@@ -59,17 +63,15 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
     Route::resource('/amazon_info', AmazonInfoController::class)->except(['create', 'edit', 'update']);
 
     /* 出品 */
-    Route::get('/exhibit', function () {
-        return view('exhibit');
-    })->name('exhibit');
+    Route::resource('/exhibit', ExhibitController::class)->except(['create', 'edit', 'update']);
 
     /* 出品履歴 */
-    Route::get('/exhibit_history', function () {
-        return view('exhibit_history/index');
-    });
-    Route::get('/exhibit_history_detail', function () {
-        return view('exhibit_history/detail');
-    });
+    Route::get('/exhibit_history/get_exhibit_histories', [ExhibitHistoryController::class, 'getExhibitHistories'])->name('exhibit_history.get_exhibit_histories');
+    Route::get('/exhibit_history/get_products', [ExhibitHistoryController::class, 'getProducts'])->name('exhibit_history.get_products');
+    Route::get('/exhibit_history/detail', [ExhibitHistoryController::class, 'detail'])->name('exhibit_history.detail');
+    Route::get('/exhibit_history/product_batch_message', [ExhibitHistoryController::class, 'getProductBatchMessage'])->name('exhibit_history.product_batch_message');
+    Route::post('/exhibit_history/process_products', [ExhibitHistoryController::class, 'processProducts'])->name('exhibit_history.process_products');
+    Route::resource('/exhibit_history', ExhibitHistoryController::class);
 
     /* 価格改定履歴 */
     Route::get('/price_history', function () {
@@ -106,22 +108,41 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
 
     /* test */
     Route::get('/test', function () {
+        // $user = User::find(auth()->id());
+        // $client_id = env("AMAZON_US_CLIENT_ID");
+        // $client_secret = env("AMAZON_US_CLIENT_SECRET");
+        // $refresh_token = $user->amazon_us_refresh_token;
+        // $product = new Product();
+        // $product->asin = "B09TZWLFLY";
+        
+        // $amazonService = new AmazonService(
+        //     $client_id,
+        //     $client_secret,
+        //     $refresh_token,
+        //     $user,
+        //     "us",
+        // );
+        // return $amazonService->getCatalogItem($product);
+        // return $amazonService->getProductPricing();
+        // $feedType = FeedTypes::POST_PRODUCT_PRICING_DATA;
+        // return $amazonService->createFeed($feedType);
+        // return $amazonService->CreateFeedWithFile();
+
         $user = User::find(auth()->id());
-        $client_id = env("AMAZON_US_CLIENT_ID");
-        $client_secret = env("AMAZON_US_CLIENT_SECRET");
-        $refresh_token = $user->amazon_us_refresh_token;
-        // return $refresh_token;
+        $client_id = env("AMAZON_JP_CLIENT_ID");
+        $client_secret = env("AMAZON_JP_CLIENT_SECRET");
+        $refresh_token = $user->amazon_jp_refresh_token;
+        $product = new Product();
+        $product->asin = "B09TZWLFLY";
+        
         $amazonService = new AmazonService(
-            $client_id, 
-            $client_secret, 
-            $refresh_token, 
-            "B01I13PGTW",  //B0BNWFM7MZ
-            "us", 
-            $user
+            $client_id,
+            $client_secret,
+            $refresh_token,
+            $user,
+            "jp",
         );
-        // return $amazonService->getCatalogItem();
-        return $amazonService->getProductPricing();
-        // return $amazonService->getReport();
+        return $amazonService->getFeedDocument("50080019497");
     });
 });
 
