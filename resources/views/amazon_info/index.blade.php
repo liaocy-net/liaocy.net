@@ -35,6 +35,7 @@
                         </div>
                         <div class="col-12 d-flex">
                             <button type="submit" class="btn btn-primary me-sm-2 me-1 waves-effect waves-light" name="act" value="upload_asin_file"><i class="fas fa-save me-1"></i>アップロード</button>
+                            <a type="button" href="{{route('amazon_info.download_asin_template_xlsx')}}" class="btn btn-info waves-effect waves-light"><i class="fas fa-download me-1"></i>テンプレートダウンロード</a>
                         </div>
                     </form>
                 </div>

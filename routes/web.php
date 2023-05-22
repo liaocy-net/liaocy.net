@@ -60,6 +60,7 @@ Route::post('/forgot-password', function () {
 
 Route::group(['middleware' => ['auth', 'check_banned']], function () {
     /* Amazon情報取得 */
+    Route::get('/amazon_info/download_asin_template_xlsx', [AmazonInfoController::class, 'downloadASINTemplateXLSX'])->name('amazon_info.download_asin_template_xlsx');
     Route::resource('/amazon_info', AmazonInfoController::class)->except(['create', 'edit', 'update']);
 
     /* 出品 */

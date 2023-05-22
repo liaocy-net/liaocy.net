@@ -3,7 +3,9 @@
 namespace App\Services;
 
 use App\Models\Product;
-
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 class UtilityService
 {
     public function __construct()
@@ -55,7 +57,7 @@ class UtilityService
         }
     }
 
-    public static function getProductsCSV($products) {
+    public static function getProductsExcel($products) {
         $headers = [
             "asin",
             "ap_jp",
@@ -105,60 +107,63 @@ class UtilityService
             "size_us",
             "weight_us",
         ];
-        $csv = join(',',$headers) . "\n";
-        foreach($products as $product){
-            $csv .= $product->asin . ",";
-            $csv .= $product->ap_jp . ",";
-            $csv .= $product->title_jp . ",";
-            $csv .= $product->title_us . ",";
-            $csv .= $product->brand_jp . ",";
-            $csv .= $product->brand_us . ",";
-            $csv .= $product->cate_us . ",";
-            $csv .= $product->color_us . ",";
-            $csv .= $product->cp_jp . ",";
-            $csv .= $product->cp_point . ",";
-            $csv .= $product->cp_us . ",";
-            $csv .= $product->img_url_01 . ",";
-            $csv .= $product->img_url_02 . ",";
-            $csv .= $product->img_url_03 . ",";
-            $csv .= $product->img_url_04 . ",";
-            $csv .= $product->img_url_05 . ",";
-            $csv .= $product->img_url_06 . ",";
-            $csv .= $product->img_url_07 . ",";
-            $csv .= $product->img_url_08 . ",";
-            $csv .= $product->img_url_09 . ",";
-            $csv .= $product->img_url_10 . ",";
-            $csv .= $product->is_amazon_jp . ",";
-            $csv .= $product->is_amazon_us . ",";
-            $csv .= $product->material_type_us . ",";
-            $csv .= $product->maximum_hours_jp . ",";
-            $csv .= $product->maximum_hours_us . ",";
-            $csv .= $product->minimum_hours_jp . ",";
-            $csv .= $product->minimum_hours_us . ",";
-            $csv .= $product->model_us . ",";
-            $csv .= $product->nc_jp . ",";
-            $csv .= $product->nc_us . ",";
-            $csv .= $product->np_jp . ",";
-            $csv .= $product->np_us . ",";
-            $csv .= $product->pp_jp . ",";
-            $csv .= $product->pp_us . ",";
-            $csv .= $product->rank_id_jp . ",";
-            $csv .= $product->rank_jp . ",";
-            $csv .= $product->rank_us . ",";
-            $csv .= $product->seller_feedback_count . ",";
-            $csv .= $product->seller_feedback_rating . ",";
-            $csv .= $product->seller_id . ",";
-            $csv .= $product->shipping_cost . ",";
-            $csv .= $product->size_h_us . ",";
-            $csv .= $product->size_l_us . ",";
-            $csv .= $product->size_w_us . ",";
-            $csv .= $product->size_us . ",";
-            $csv .= $product->weight_us . ",";
-            $csv .= "\n";
+
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('ASIN');
+
+        $sheet->fromArray($headers, null, 'A1');
+
+        foreach($products as $index => $product){
+            $sheet->setCellValue('A' . ($index + 2), $product->asin);
+            $sheet->setCellValue('B' . ($index + 2), $product->ap_jp);
+            $sheet->setCellValue('C' . ($index + 2), $product->title_jp);
+            $sheet->setCellValue('D' . ($index + 2), $product->title_us);
+            $sheet->setCellValue('E' . ($index + 2), $product->brand_jp);
+            $sheet->setCellValue('F' . ($index + 2), $product->brand_us);
+            $sheet->setCellValue('G' . ($index + 2), $product->cate_us);
+            $sheet->setCellValue('H' . ($index + 2), $product->color_us);
+            $sheet->setCellValue('I' . ($index + 2), $product->cp_jp);
+            $sheet->setCellValue('J' . ($index + 2), $product->cp_point);
+            $sheet->setCellValue('K' . ($index + 2), $product->cp_us);
+            $sheet->setCellValue('L' . ($index + 2), $product->img_url_01);
+            $sheet->setCellValue('M' . ($index + 2), $product->img_url_02);
+            $sheet->setCellValue('N' . ($index + 2), $product->img_url_03);
+            $sheet->setCellValue('O' . ($index + 2), $product->img_url_04);
+            $sheet->setCellValue('P' . ($index + 2), $product->img_url_05);
+            $sheet->setCellValue('Q' . ($index + 2), $product->img_url_06);
+            $sheet->setCellValue('R' . ($index + 2), $product->img_url_07);
+            $sheet->setCellValue('S' . ($index + 2), $product->img_url_08);
+            $sheet->setCellValue('T' . ($index + 2), $product->img_url_09);
+            $sheet->setCellValue('U' . ($index + 2), $product->img_url_10);
+            $sheet->setCellValue('V' . ($index + 2), $product->is_amazon_jp);
+            $sheet->setCellValue('W' . ($index + 2), $product->is_amazon_us);
+            $sheet->setCellValue('X' . ($index + 2), $product->material_type_us);
+            $sheet->setCellValue('Y' . ($index + 2), $product->maximum_hours_jp);
+            $sheet->setCellValue('Z' . ($index + 2), $product->maximum_hours_us);
+            $sheet->setCellValue('AA' . ($index + 2), $product->minimum_hours_jp);
+            $sheet->setCellValue('AB' . ($index + 2), $product->minimum_hours_us);
+            $sheet->setCellValue('AC' . ($index + 2), $product->model_us);
+            $sheet->setCellValue('AD' . ($index + 2), $product->nc_jp);
+            $sheet->setCellValue('AE' . ($index + 2), $product->nc_us);
+            $sheet->setCellValue('AF' . ($index + 2), $product->np_jp);
+            $sheet->setCellValue('AG' . ($index + 2), $product->np_us);
+            $sheet->setCellValue('AH' . ($index + 2), $product->pp_jp);
+            $sheet->setCellValue('AI' . ($index + 2), $product->pp_us);
+            $sheet->setCellValue('AJ' . ($index + 2), $product->rank_id_jp);
+            $sheet->setCellValue('AK' . ($index + 2), $product->rank_jp);
+            $sheet->setCellValue('AL' . ($index + 2), $product->rank_us);
+            $sheet->setCellValue('AM' . ($index + 2), $product->seller_feedback_count);
+            $sheet->setCellValue('AN' . ($index + 2), $product->seller_feedback_rating);
+            $sheet->setCellValue('AO' . ($index + 2), $product->seller_id);
+            $sheet->setCellValue('AP' . ($index + 2), $product->shipping_cost);
+            $sheet->setCellValue('AQ' . ($index + 2), $product->size_h_us);
+            $sheet->setCellValue('AR' . ($index + 2), $product->size_l_us);
+            $sheet->setCellValue('AS' . ($index + 2), $product->size_w_us);
+            $sheet->setCellValue('AT' . ($index + 2), $product->size_us);
+            $sheet->setCellValue('AU' . ($index + 2), $product->weight_us);
         }
-        # convert to SHIFT-JIS
-        $csv = mb_convert_encoding($csv, 'SJIS', 'UTF-8');
-        return $csv;
+        return $spreadsheet;
     }
 
     public static function calExhibitPrice($user, $product) {
