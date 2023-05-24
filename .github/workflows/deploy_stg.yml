@@ -1,5 +1,6 @@
 name: Deploy Stg Lambda Laravel Function
 on: 
+  workflow_dispatch: null
   push:
     branches:
       - 'main'
