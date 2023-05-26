@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Bus\Batch;
 use Throwable;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ExhibitController extends Controller
 {
@@ -58,102 +61,92 @@ class ExhibitController extends Controller
             }
 
             if ($request->hasFile('asin_file')) {
-                //拡張子がCSVであるかの確認
-                if ($request->asin_file->getClientOriginalExtension() !== "csv") {
-                    throw new \Exception("不適切な拡張子です。CSVファイルを選択してください。");
+                //拡張子がxlsxであるかの確認
+                if ($request->asin_file->getClientOriginalExtension() !== "xlsx") {
+                    throw new \Exception("不適切な拡張子です。EXCEL(xlsx)ファイルを選択してください。");
                 }
-                if (($handle = fopen($request->asin_file, "r")) !== FALSE) {
-                    $asins = array();
-                    
-                    $row = 0;
-                    while (($data = fgetcsv($handle, 1000, ",")) !== FALSE) {
-                        $row++;
-                        if ($row === 1) {
-                            if (count($data) != 1 || strcmp($data[0], "ASIN") !== 0) { //(?:[/dp/]|$)([A-Z0-9]{10})
-                                throw new \Exception("CSVファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
-                            }
-                        } else {
-                            if (count($data) != 1) {
-                                throw new \Exception("CSVファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
-                            }
-                            if (empty($data[0])) {
-                                continue;
-                            }
+                //Excelファイルを読み込み
+                $reader = IOFactory::createReader("Xlsx");
+                $spreadsheet = $reader->load($request->asin_file);
 
-                            $matches = array();
-                            preg_match('/^(B[\dA-Z]{9}|\d{9}(X|\d))$/', $data[0], $matches);
-                            if (count($matches) != 2) {
-                                throw new \Exception("ASINのフォーマットが不適切です。" . $row . " 行目にある " . $data[0] . " を確認してください。");
-                            }
-
-                            if (!in_array($data[0], $asins)) {
-                                array_push($asins, $data[0]);
-                            }
-                        }
-                        
-                        if ($row > 10000) {
-                            throw new \Exception("CSVファイルの行数が10000行を超えています。もう一度ダウンロードしてください。");
-                        }
-                    }
-                    fclose($handle);
-
-                    if (count($asins) === 0) {
-                        throw new \Exception("CSVファイルにASINが含まれていません。");
-                    }
-
-                    $productBatch = new ProductBatch();
-                    $productBatch->user_id = auth()->id();
-                    $productBatch->action = "extract_amazon_info_for_exhibit";
-
-                    $filename = pathinfo($request->asin_file->getClientOriginalName(), PATHINFO_FILENAME);
-                    $existing_file_count = ProductBatch::where('user_id', auth()->id())->where('filename', 'like', $filename . '%')->count();
-                    if ($existing_file_count > 0) {
-                        $filename = $filename . "_" . ($existing_file_count + 1);
-                    }
-
-                    $productBatch->filename = $filename . ".csv";
-                    if (in_array("amazon", $request->exhibit_to)) {
-                        $productBatch->is_exhibit_to_amazon = true;
-                    } else {
-                        $productBatch->is_exhibit_to_amazon = false;
-                    }
-                    if (in_array("yahoo", $request->exhibit_to)) {
-                        $productBatch->is_exhibit_to_yahoo = true;
-                        $productBatch->exhibit_yahoo_category = $request->exhibit_yahoo_category;
-                    } else {
-                        $productBatch->is_exhibit_to_yahoo = false;
-                    }
-                    $productBatch->save();
-
-                    $extractAmazonInfos = array();
-                    foreach ($asins as $asin) {
-                        $product = new Product();
-                        $product->user_id = auth()->id();
-                        $product->asin = $asin;
-                        $product->sku = UtilityService::genSKU($product);
-                        $product->save();
-
-                        $product->productBatches()->attach($productBatch);
-
-                        array_push($extractAmazonInfos, new ExtractAmazonInfo($product));
-                    }
-
-                    $batch = Bus::batch($extractAmazonInfos)->name("extract_amazon_info_for_exhibit")->then(function (Batch $batch) {
-                        // すべてのジョブが正常に完了
-                    })->catch(function (Batch $batch, Throwable $e) {
-                        // バッチジョブの失敗をはじめて検出
-                    })->finally(function (Batch $batch) {
-                        // バッチジョブの完了
-                        $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
-                        $productBatch->finished_at = now();
-                        $productBatch->save();
-                    })->allowFailures()->dispatch();
-
-                    $productBatch->job_batch_id = $batch->id;
-                    $productBatch->save();
-
-                    return redirect()->route('exhibit.index')->with('success', 'Amazon情報取得ジョブを登録しました。');
+                //シートの読み込み
+                $sheet = $spreadsheet->getSheet(0);
+                $headers = $sheet->rangeToArray('A1:A1', null, true, false);
+                if (strcmp($headers[0][0], "ASIN") !== 0) {
+                    throw new \Exception("EXCELファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
                 }
+
+                $rows = $sheet->rangeToArray('A2:A' . $sheet->getHighestRow(), null, true, false);
+                $asins = array();
+                foreach ($rows as $index => $row) {
+                    $matches = array();
+                    preg_match('/^(B[\dA-Z]{9}|\d{9}(X|\d))$/', $row[0], $matches);
+                    if (count($matches) != 2) {
+                        throw new \Exception("ASINのフォーマットが不適切です。" . ($index + 2) . " 行目にある " . $row[0] . " を確認してください。");
+                    }
+
+                    if (!in_array($row[0], $asins)) {
+                        array_push($asins, $row[0]);
+                    }
+                }
+
+                if (count($asins) === 0) {
+                    throw new \Exception("EXCELファイルにASINが含まれていません。");
+                }
+
+                $productBatch = new ProductBatch();
+                $productBatch->user_id = auth()->id();
+                $productBatch->action = "extract_amazon_info_for_exhibit";
+
+                $filename = pathinfo($request->asin_file->getClientOriginalName(), PATHINFO_FILENAME);
+                $existing_file_count = ProductBatch::where('user_id', auth()->id())->where('filename', 'like', $filename . '%')->count();
+                if ($existing_file_count > 0) {
+                    $filename = $filename . "_" . ($existing_file_count + 1);
+                }
+
+                $productBatch->filename = $filename . ".csv";
+                if (in_array("amazon", $request->exhibit_to)) {
+                    $productBatch->is_exhibit_to_amazon = true;
+                } else {
+                    $productBatch->is_exhibit_to_amazon = false;
+                }
+                if (in_array("yahoo", $request->exhibit_to)) {
+                    $productBatch->is_exhibit_to_yahoo = true;
+                    $productBatch->exhibit_yahoo_category = $request->exhibit_yahoo_category;
+                } else {
+                    $productBatch->is_exhibit_to_yahoo = false;
+                }
+                $productBatch->save();
+
+                $extractAmazonInfos = array();
+                foreach ($asins as $asin) {
+                    $product = new Product();
+                    $product->user_id = auth()->id();
+                    $product->asin = $asin;
+                    $product->sku = UtilityService::genSKU($product);
+                    $product->save();
+
+                    $product->productBatches()->attach($productBatch);
+
+                    array_push($extractAmazonInfos, new ExtractAmazonInfo($product));
+                }
+
+                $batch = Bus::batch($extractAmazonInfos)->name("extract_amazon_info_for_exhibit")->then(function (Batch $batch) {
+                    // すべてのジョブが正常に完了
+                })->catch(function (Batch $batch, Throwable $e) {
+                    // バッチジョブの失敗をはじめて検出
+                })->finally(function (Batch $batch) {
+                    // バッチジョブの完了
+                    $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
+                    $productBatch->finished_at = now();
+                    $productBatch->save();
+                })->allowFailures()->dispatch();
+
+                $productBatch->job_batch_id = $batch->id;
+                $productBatch->save();
+
+                return redirect()->route('exhibit.index')->with('success', 'Amazon情報取得ジョブを登録しました。');
+                
             } else {
                 throw new \Exception("CSVファイルが選択されていません。");
             }

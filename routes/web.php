@@ -109,7 +109,7 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
 
     /* test */
     Route::get('/test', function () {
-        // $user = User::find(auth()->id());
+        $user = User::find(auth()->id());
         // $client_id = env("AMAZON_US_CLIENT_ID");
         // $client_secret = env("AMAZON_US_CLIENT_SECRET");
         // $refresh_token = $user->amazon_us_refresh_token;
@@ -129,21 +129,35 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
         // return $amazonService->createFeed($feedType);
         // return $amazonService->CreateFeedWithFile();
 
-        $user = User::find(auth()->id());
-        $client_id = env("AMAZON_JP_CLIENT_ID");
-        $client_secret = env("AMAZON_JP_CLIENT_SECRET");
-        $refresh_token = $user->amazon_jp_refresh_token;
+        $client_id = env("AMAZON_US_CLIENT_ID");
+        $client_secret = env("AMAZON_US_CLIENT_SECRET");
+        $refresh_token = $user->amazon_us_refresh_token;
         $product = new Product();
         $product->asin = "B09TZWLFLY";
-        
         $amazonService = new AmazonService(
             $client_id,
             $client_secret,
             $refresh_token,
             $user,
-            "jp",
+            "us",
         );
-        return $amazonService->getFeedDocument("50080019497");
+        return $amazonService->getCatalogItem($product);
+
+        // $user = User::find(auth()->id());
+        // $client_id = env("AMAZON_JP_CLIENT_ID");
+        // $client_secret = env("AMAZON_JP_CLIENT_SECRET");
+        // $refresh_token = $user->amazon_jp_refresh_token;
+        // $product = new Product();
+        // $product->asin = "B09TZWLFLY";
+        
+        // $amazonService = new AmazonService(
+        //     $client_id,
+        //     $client_secret,
+        //     $refresh_token,
+        //     $user,
+        //     "jp",
+        // );
+        // return $amazonService->getFeedDocument("50080019497");
     });
 });
 

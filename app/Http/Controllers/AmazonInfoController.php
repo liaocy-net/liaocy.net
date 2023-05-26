@@ -64,7 +64,7 @@ class AmazonInfoController extends Controller
     {
         try {
             if ($request->hasFile('asin_file')) {
-                //拡張子がCSVであるかの確認
+                //拡張子がxlsxであるかの確認
                 if ($request->asin_file->getClientOriginalExtension() !== "xlsx") {
                     throw new \Exception("不適切な拡張子です。EXCEL(xlsx)ファイルを選択してください。");
                 }

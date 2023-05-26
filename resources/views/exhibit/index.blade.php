@@ -63,14 +63,15 @@
                         </div>
                     </div>
                     <div class="">
-                        <h5 class="fw-bold">出品用ファイル</h5>
+                        <h5 class="fw-bold">出品用ファイル (.xlsxファイルをアップロードしてください)</h5>
                         <input type="file" id="asin_file" name="asin_file" class="form-control" />
                     </div>
                     <hr class="my-4 mx-n4">
                     <div class="">
                         <div class="row">
                             <div class="col-sm-12 d-flex justify-content-center">
-                                <button type="submit" class="btn btn-primary waves-effect waves-light"><i class="fas fa-save me-1"></i>出品する</button>
+                                <button type="submit" class="btn btn-primary me-sm-2 me-1 waves-effect waves-light"><i class="fas fa-save me-1"></i>出品する</button>
+                                <a type="button" href="{{route('amazon_info.download_asin_template_xlsx')}}" class="btn btn-info waves-effect waves-light"><i class="fas fa-download me-1"></i>テンプレートダウンロード</a>
                             </div>
                         </div>
                     </div>
