@@ -271,8 +271,8 @@
                             <div class="col-sm-12 mb-3">
                                 <label class="form-label" for="amazon_exhibit_comment">Amazon 出品コメント</label>
                                 <div class="input-group" id="amazon_exhibit_comment_group">
-                                    <span class="input-group-text col-6 text-wrap text-muted text-start">◆新品・未使用【発送方法】海外在庫商品のため、お届けに通常2週間程お時間を頂戴しております。<br/>米国配送センターへ到着後、検品をして発送いたします。また稀に輸送中に外装箱等に傷みが生じる場合がありますが、商品自体問題はございません。<br/>◆【関税について】税関手続き、関税支払い等すべて当方で対応させていただいております。そのため、関税等をお支払いいただくことはありません。<br/>◆【安心安全の返金保障】お届けする商品は十分な検品を実施しておりますが、万が一不備・不具合などございましたら大変お手数ではございますがご連絡ください。</span>
-                                    <textarea class="form-control" id="amazon_exhibit_comment_group" name="amazon_exhibit_comment_group" rows="5">{{ $my->amazon_exhibit_comment_group }}</textarea>
+                                    <span class="input-group-text col-6 text-wrap text-muted text-start">{{ $my->amazon_exhibit_comment_group }}</span>
+                                    <textarea class="form-control" id="amazon_exhibit_comment_group" name="amazon_exhibit_comment_group" rows="5" maxlength="2000">{{ $my->amazon_exhibit_comment_group }}</textarea>
                                 </div>
                             </div>
 
@@ -350,8 +350,8 @@
                             <div class="col-sm-12 mb-3">
                                 <label class="form-label" for="yahoo_exhibit_comment">Yahoo 出品コメント</label>
                                 <div class="input-group" id="yahoo_exhibit_comment_group">
-                                    <span class="input-group-text col-6 text-wrap text-muted text-start">◆新品・未使用【発送方法】海外在庫商品のため、お届けに通常2週間程お時間を頂戴しております。<br/>米国配送センターへ到着後、検品をして発送いたします。また稀に輸送中に外装箱等に傷みが生じる場合がありますが、商品自体問題はございません。<br/>◆【関税について】税関手続き、関税支払い等すべて当方で対応させていただいております。そのため、関税等をお支払いいただくことはありません。<br/>◆【安心安全の返金保障】お届けする商品は十分な検品を実施しておりますが、万が一不備・不具合などございましたら大変お手数ではございますがご連絡ください。</span>
-                                    <textarea class="form-control" id="yahoo_exhibit_comment_group" name="yahoo_exhibit_comment_group" rows="5" minlength="0" maxlength="999999">{{ $my->yahoo_exhibit_comment_group }}</textarea>
+                                    <span class="input-group-text col-6 text-wrap text-muted text-start">{{ $my->yahoo_exhibit_comment_group }}</span>
+                                    <textarea class="form-control" id="yahoo_exhibit_comment_group" name="yahoo_exhibit_comment_group" rows="5" minlength="0" maxlength="2000">{{ $my->yahoo_exhibit_comment_group }}</textarea>
                                 </div>
                             </div>
                             <div class="col-12 d-flex justify-content-center">
