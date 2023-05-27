@@ -178,6 +178,9 @@ https://github.com/ixiumu/laravel_meetup/blob/master/docs/11.Code%20Beauty%EF%BC
 - DataTables
   - [Documents](https://www.datatables.net/manual/api)
 
+- Javascript Read Excel
+  - [How to parse Excel (XLS) file in Javascript/HTML5](https://stackoverflow.com/questions/8238407/how-to-parse-excel-xls-file-in-javascript-html5)
+
 # Laravel 8.x
 
 <p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>

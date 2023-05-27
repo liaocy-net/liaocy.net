@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
 use App\Models\WhiteList;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class WhiteListController extends Controller
 {
@@ -100,22 +103,29 @@ class WhiteListController extends Controller
     }
 
     /**
-     * Download white list as csv file.
+     * Download white list as excel file.
      *
      * @return \Illuminate\Http\Response
      */
-    public function downloadMyCSV() {
+    public function downloadMyExcel() {
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('brand');
+
         $user = auth()->user();
         $whiteLists = $user->whiteLists;
-        $csv = "";
-        foreach($whiteLists as $whiteList){
-            $csv .= $whiteList->brand . "\n";
+        foreach($whiteLists as $index => $whiteList){
+            $sheet->setCellValue('A' . ($index + 1), $whiteList->brand);
         }
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => 'attachment; filename="white_list.csv"',
-        ];
-        return response($csv, 200, $headers);
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment; filename="white_list.xlsx"');
+        header('Cache-Control: max-age=0');
+        header('Cache-Control: max-age=1');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
     }
 
     /**

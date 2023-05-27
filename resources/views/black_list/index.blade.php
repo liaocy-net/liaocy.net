@@ -85,7 +85,7 @@
                                             <h6>ファイルで一括登録</h6>
                                             <div class="input-group mb-2">
                                                 <input type="file" class="form-control" id="tab_amazon_file_list" aria-describedby="tab_amazon_file_list_upload" aria-label="ファイルを選択">
-                                                <button class="btn btn-primary btn-sm waves-effect" type="button" id="tab_amazon_file_list_upload" onclick="loadCSVtoTextarea('tab_amazon_file_list', 'tab_amazon_list_memo')">ファイル読み込み</button>
+                                                <button class="btn btn-primary btn-sm waves-effect" type="button" id="tab_amazon_file_list_upload" onclick="loadExcelToTextarea('tab_amazon_file_list', 'tab_amazon_list_memo')">ファイル読み込み</button>
                                             </div>
                                             <input type="hidden" name="platform" value="amazon">
                                             <input type="hidden" id="inputStoreAmazonOn" name="on" value="brand">
@@ -99,11 +99,11 @@
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-sm-6 mb-3">
-                                        <form id="formAmazonDownloadBlackLists" class="mb-3" action="{{route('black_list.download_my_csv')}}" method="get">
+                                        <form id="formAmazonDownloadBlackLists" class="mb-3" action="{{route('black_list.download_my_excel')}}" method="get">
                                             <h6>現在の設定値をダウンロード</h6>
                                             <input type="hidden" name="platform" value="amazon">
                                             <input type="hidden" id="inputDownloadAmazonOn" name="on" value="brand">
-                                            <button type="submit" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>CSVダウンロード</button>
+                                            <button type="submit" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>Excelダウンロード</button>
                                         </form>
                                     </div>
                                     <div class="col-sm-6 mb-3">
@@ -183,7 +183,7 @@
                                             <h6>ファイルで一括登録</h6>
                                             <div class="input-group mb-2">
                                                 <input type="file" class="form-control" id="tab_yahoo_file_list" aria-describedby="tab_yahoo_file_list_upload" aria-label="ファイルを選択">
-                                                <button class="btn btn-primary btn-sm waves-effect" type="button" id="tab_yahoo_file_list_upload" onclick="loadCSVtoTextarea('tab_yahoo_file_list', 'tab_yahoo_list_memo')">ファイル読み込み</button>
+                                                <button class="btn btn-primary btn-sm waves-effect" type="button" id="tab_yahoo_file_list_upload" onclick="loadExcelToTextarea('tab_yahoo_file_list', 'tab_yahoo_list_memo')">ファイル読み込み</button>
                                             </div>
                                             <input type="hidden" name="platform" value="yahoo">
                                             <input type="hidden" id="inputStoreYahooOn" name="on" value="brand">
@@ -197,11 +197,11 @@
                                 </div>
                                 <div class="row mb-3">
                                     <div class="col-sm-6 mb-3">
-                                        <form id="formYahooDownloadBlackLists" class="mb-3" action="{{route('black_list.download_my_csv')}}" method="get">
+                                        <form id="formYahooDownloadBlackLists" class="mb-3" action="{{route('black_list.download_my_excel')}}" method="get">
                                             <h6>現在の設定値をダウンロード</h6>
                                             <input type="hidden" name="platform" value="yahoo">
                                             <input type="hidden" id="inputDownloadYahooOn" name="on" value="brand">
-                                            <button type="submit" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>CSVダウンロード</button>
+                                            <button type="submit" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>Excelダウンロード</button>
                                         </form>
                                     </div>
                                     <div class="col-sm-6 mb-3">
@@ -226,6 +226,8 @@
 @endsection
 
 @section('script')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/jszip.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.8.0/xlsx.js"></script>
 <script>
     window.params = {};
     window.params.amazonOn = 'brand';
@@ -346,7 +348,7 @@
     var cleanTextarea = function (textareaId) {
         document.getElementById(textareaId).value = '';
     };
-    var loadCSVtoTextarea = function (fileInputId, textareaId) {
+    var loadExcelToTextarea = function (fileInputId, textareaId) {
         
         let fileInput = document.getElementById(fileInputId);
         let file = fileInput.files[0];
@@ -354,14 +356,22 @@
             alert('ファイルを選択してください。');
             return;
         }
-        if (file.type != "text/csv") {
-            alert('CSVファイルを選択してください。');
+        if (file.type != "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet") {
+            alert('.xlsx型のExcelファイルを選択してください。');
             return;
         }
         let fileReader = new FileReader();
-        fileReader.readAsText(file, "UTF-8");
-        fileReader.onload = () => {
-            let fileResult = fileReader.result.replace(/\r\n/g, '\n').split('\n');
+        fileReader.readAsBinaryString(file);
+        fileReader.onload = (e) => {
+            var data = e.target.result;
+            var workbook = XLSX.read(data, {
+                type: 'binary'
+            });
+
+            // Load Excel Sheet to CSV String
+            var csv_content = XLSX.utils.sheet_to_csv(workbook.Sheets[workbook.SheetNames[0]]);
+
+            let fileResult = csv_content.replace(/\r\n/g, '\n').split('\n');
             let brandAmount = [];
             fileResult.forEach(brand => {
                 if (typeof brandAmount[brand] === 'undefined') {

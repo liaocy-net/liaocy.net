@@ -6,6 +6,9 @@ use Illuminate\Http\Request;
 use App\Models\BlackList;
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class BlackListController extends Controller
 {
@@ -42,7 +45,7 @@ class BlackListController extends Controller
         //
     }
 
-    public function downloadMyCSV(Request $request) {
+    public function downloadMyExcel(Request $request) {
         $params = $request->all();
 
         $validator = Validator::make($params, [
@@ -54,20 +57,29 @@ class BlackListController extends Controller
             return back()->withErrors($validator)->withInput();
         }
 
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle($params["platform"] . "_" . $params["on"]);
+
         $my = auth()->user();
         $blackLists = $my->blackLists()->where([
             ['platform', $params["platform"]],
             ['on', $params["on"]]
         ])->get();
-        $csv = "";
-        foreach($blackLists as $blackList){
-            $csv .= $blackList->value . "\n";
+
+        foreach($blackLists as $index => $blackList){
+            $sheet->setCellValue('A' . ($index + 1), $blackList->value);
         }
-        $headers = [
-            'Content-Type' => 'text/csv',
-            'Content-Disposition' => "attachment; filename=\"black_list_{$params["platform"]}_{$params["on"]}.csv\"",
-        ];
-        return response($csv, 200, $headers);
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header("Content-Disposition: attachment; filename=\"black_list_{$params["platform"]}_{$params["on"]}.xlsx\"");
+        header('Cache-Control: max-age=0');
+        header('Cache-Control: max-age=1');
+        header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
+        header('Cache-Control: cache, must-revalidate');
+        header('Pragma: public');
+        $writer = new Xlsx($spreadsheet);
+        $writer->save('php://output');
     }
 
     /**
