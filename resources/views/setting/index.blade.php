@@ -213,6 +213,14 @@
                                 </div>
                             </div>
                             <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_using_sale_commission">値下げ金額</label>
+                                <div class="input-group" id="amazon_price_cut_group">
+                                    <span class="input-group-text col-5">{{ $my->amazon_price_cut }}円</span>
+                                    <input type="number" id="amazon_price_cut" name="amazon_price_cut" class="form-control" value="{{ $my->amazon_price_cut }}" min="1" max="999999"/>
+                                    <span class="input-group-text">円</span>
+                                </div>
+                            </div>
+                            <div class="col-sm-6 mb-3">
                                 <label class="form-label" for="amazon_rival">ライバル</label>
                                 <div class="input-group" id="amazon_rival_group">
                                     <span class="input-group-text col-5">

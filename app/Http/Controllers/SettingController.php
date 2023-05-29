@@ -133,6 +133,7 @@ class SettingController extends Controller
                     'amazon_lead_time_prime' => ['required', 'integer', 'min:0', 'max:999999'],
                     'amazon_white_list_brand' => ['required', 'integer', 'min:0', 'max:999999'],
                     'amazon_exhibit_comment_group' => ['nullable', 'string', 'max:99999'],
+                    'amazon_price_cut' => ['nullable', 'integer',  'min:1', 'max:99999'],
                 ]);
 
                 if ($validator->fails()) {
@@ -154,6 +155,7 @@ class SettingController extends Controller
                 $my->amazon_lead_time_prime = $params["amazon_lead_time_prime"];
                 $my->amazon_white_list_brand = $params["amazon_white_list_brand"];
                 $my->amazon_exhibit_comment_group = $params["amazon_exhibit_comment_group"];
+                $my->amazon_price_cut = $params["amazon_price_cut"];
                 $my->save();
 
                 return redirect()->route('setting.index', ['#divAmazonSetting'])->with('success', 'Amazon設定を更新しました。');

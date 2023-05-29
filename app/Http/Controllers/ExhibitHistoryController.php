@@ -182,9 +182,7 @@ class ExhibitHistoryController extends Controller
             $my = User::find(auth()->id());
 
             $where = [
-                ['is_amazon_jp', '=', true],
-                ['is_amazon_us', '=', true],
-                ['is_exhibit_to_amazon_jp', '=', true],
+                
             ];
 
             if ($request->input('asin')) {
@@ -214,7 +212,15 @@ class ExhibitHistoryController extends Controller
                 );
 
             foreach ($products as $product) {
-                $product->exhibit_price = UtilityService::calExhibitPrice($my, $product);
+                $product->hope_price_jpy = UtilityService::calAmazonJPHopePrice($my, $product);
+                $product->rate_price_jpy = UtilityService::calAmazonJPRatePrice($my, $product);
+                $product->min_hope_price_jpy = UtilityService::calAmazonJPMinHopePrice($my, $product);
+                $product->min_rate_price_jpy = UtilityService::calAmazonJPMinRatePrice($my, $product);
+                $product->exhibit_price = 0;
+                $canBeExhibitToAmazonJP = UtilityService::canBeExhibitToAmazonJP($my, $product);
+                $product->can_be_exhibit_to_amazon_jp = $canBeExhibitToAmazonJP["canBeExhibit"];
+                $product->can_be_exhibit_to_amazon_jp_message = $canBeExhibitToAmazonJP["message"];
+                $product->can_be_exhibit_to_amazon_jp_price = $canBeExhibitToAmazonJP["exhibitPrice"];
             }
 
             return response()->json($products);
@@ -251,7 +257,7 @@ class ExhibitHistoryController extends Controller
                     if (!$product) {
                         throw new \Exception("product not found", 442);
                     }
-                    $product->is_exhibit_to_amazon_jp = false;
+                    $product->is_deleted = true;
                     $product->save();
                 }
 

@@ -269,9 +269,15 @@ class AmazonService
             $result['is_prime'] = $office->getPrimeInformation()->getIsPrime();
             $result['shipping_cost'] = $office->getShipping()->getAmount();
             if ($this->nation == 'jp') {
-                $result['ap'] = $office->getPoints()->getPointsNumber();
-                $result['cp_point'] = $office->getPoints()->getPointsNumber();
-                $result['cp'] = $result['np'] - $result['cp_point'] + $result['shipping_cost'];
+                if($office->getPoints() != null) {
+                    $result['ap'] = $office->getPoints()->getPointsNumber();
+                    $result['cp_point'] = $office->getPoints()->getPointsNumber();
+                    $result['cp'] = $result['np'] - $result['cp_point'] + $result['shipping_cost'];
+                } else {
+                    $result['ap'] = 0;
+                    $result['cp_point'] = 0;
+                    $result['cp'] = $result['np'] + $result['shipping_cost'];
+                }
             } else if ($this->nation == 'us') {
                 $result['ap'] = 0;
                 $result['cp_point'] = 0;
@@ -340,7 +346,7 @@ class AmazonService
                 $product->asin,
                 "ASIN",
                 $this->user->amazon_stock,
-                UtilityService::calExhibitPrice($this->user, $product),
+                UtilityService::calAmazonJPPurchaseCost($this->user, $product),
                 "New",
                 $product->note
             ];

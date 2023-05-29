@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Services\FeedTypes;
 use App\Http\Controllers\ExhibitController;
 use App\Http\Controllers\ExhibitHistoryController;
+use App\Services\UtilityService;
 
 /*
 |--------------------------------------------------------------------------
@@ -114,8 +115,11 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
         // $client_secret = env("AMAZON_US_CLIENT_SECRET");
         // $refresh_token = $user->amazon_us_refresh_token;
         // $product = new Product();
-        // $product->asin = "B09TZWLFLY";
+        // $product->asin = "B0B928B6BC";
         
+        // $client_id = env("AMAZON_US_CLIENT_ID");
+        // $client_secret = env("AMAZON_US_CLIENT_SECRET");
+        // $refresh_token = $user->amazon_us_refresh_token;
         // $amazonService = new AmazonService(
         //     $client_id,
         //     $client_secret,
@@ -128,20 +132,6 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
         // $feedType = FeedTypes::POST_PRODUCT_PRICING_DATA;
         // return $amazonService->createFeed($feedType);
         // return $amazonService->CreateFeedWithFile();
-
-        $client_id = env("AMAZON_US_CLIENT_ID");
-        $client_secret = env("AMAZON_US_CLIENT_SECRET");
-        $refresh_token = $user->amazon_us_refresh_token;
-        $product = new Product();
-        $product->asin = "B09TZWLFLY";
-        $amazonService = new AmazonService(
-            $client_id,
-            $client_secret,
-            $refresh_token,
-            $user,
-            "us",
-        );
-        return $amazonService->getCatalogItem($product);
 
         // $user = User::find(auth()->id());
         // $client_id = env("AMAZON_JP_CLIENT_ID");
@@ -158,6 +148,17 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
         //     "jp",
         // );
         // return $amazonService->getFeedDocument("50080019497");
+
+        $product = Product::find(535);
+        return array(
+            "calAmazonJPHopePrice" => UtilityService::calAmazonJPHopePrice($user, $product),
+            "calAmazonJPMinHopePrice" => UtilityService::calAmazonJPMinHopePrice($user, $product),
+            "calAmazonJPRatePrice" => UtilityService::calAmazonJPRatePrice($user, $product),
+            "calAmazonJPMinRatePrice" => UtilityService::calAmazonJPMinRatePrice($user, $product),
+            "canBeExhibitToAmazonJP" => UtilityService::canBeExhibitToAmazonJP($user, $product),
+        );
+
+        
     });
 });
 

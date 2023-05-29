@@ -53,18 +53,23 @@
                     <div class="">
                         <h5 class="fw-bold">商品一覧</h5>
                         <div id="tab_products" class="table-responsive text-nowrap">
-                            <table id="tableProductsList" class="table table-bordered dataTable  table-striped text-center text-wrap">
+                            <table id="tableProductsList" class="table table-bordered dataTable table-striped text-center text-wrap" style="font-size:12px">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="sorting_disabled dt-checkboxes-cell dt-checkboxes-select-all"><input type="checkbox" class="checkbox_all form-check-input"></th>
-                                        <th class="sorting sorting_asc" onclick="alert('here')">ASIN</th>
+                                        <th class="dt-checkboxes-cell dt-checkboxes-select-all"><input type="checkbox" class="checkbox_all form-check-input"></th>
+                                        <th class="" onclick="alert('here')">ASIN</th>
                                         <th>画像</th>
-                                        <th class="sorting">タイトル</th>
-                                        <th class="sorting">ブランド</th>
-                                        <th class="sorting">出品価格</th>
-                                        <th class="sorting">仕入価格</th>
-                                        <th class="sorting">サイズ</th>
-                                        <th class="sorting">重量</th>
+                                        <th class="">タイトル</th>
+                                        <th class="">ブランド</th>
+                                        <th class="">仕入価格(USD)</th>
+                                        <th class="">希望利益価格(JPY)</th>
+                                        <th class="">最低利益価格(JPY)</th>
+                                        <th class="">希望利益率価格(JPY)</th>
+                                        <th class="">最低利益率価格(JPY)</th>
+                                        <th class="">ライバル最低価格(JPY)</th>
+                                        <th class="">最終出品価格(JPY)</th>
+                                        <th class="">サイズ(cm)</th>
+                                        <th class="">重量(kg)</th>
                                         <th>メッセージ</th>
                                     </tr>
                                 </thead>
@@ -77,6 +82,25 @@
                                         </td>
                                     </tr>
                                 </tbody>
+                                <tfoot class="table-light">
+                                    <tr>
+                                        <th class="dt-checkboxes-cell dt-checkboxes-select-all"><input type="checkbox" class="checkbox_all form-check-input"></th>
+                                        <th class="" onclick="alert('here')">ASIN</th>
+                                        <th>画像</th>
+                                        <th class="">タイトル</th>
+                                        <th class="">ブランド</th>
+                                        <th class="">仕入価格(USD)</th>
+                                        <th class="">希望利益価格(JPY)</th>
+                                        <th class="">最低利益価格(JPY)</th>
+                                        <th class="">希望利益率価格(JPY)</th>
+                                        <th class="">最低利益率価格(JPY)</th>
+                                        <th class="">ライバル最低価格(JPY)</th>
+                                        <th class="">最終出品価格(JPY)</th>
+                                        <th class="">サイズ(cm)</th>
+                                        <th class="">重量(kg)</th>
+                                        <th>メッセージ</th>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                         
@@ -167,18 +191,38 @@
         }, function(data) {
             let html = '';
             data.data.forEach(product => {
-                html += '<tr>';
+                if (product.can_be_exhibit_to_amazon_jp) {
+                    html += '<tr>';
+                } else {
+                    html += '<tr class="bg-secondary bg-gradient">';
+                }
                 
-                html += '<td><input type="checkbox" name="product_ids[]" value="' + product.id + '" class="sub_checkbox form-check-input" /></td>';
+                html += '<td>';
+                if (product.can_be_exhibit_to_amazon_jp) {
+                    html += '<input type="checkbox" name="product_ids[]" value="' + product.id + '" class="sub_checkbox form-check-input" />';
+                }
+                html += '</td>';
                 
-                html += '<td>' + product.asin + '</td>';
+                html += '<td>' + product.asin + '<br />' + '<a target="_blank" href="https://www.amazon.com/dp/' + product.asin + '">US</a> <a target="_blank" href="https://www.amazon.co.jp/dp/' + product.asin + '">JP</a>' + '</td>';
                 html += '<td><img style="max-width:50px;" src="' + product.img_url_01 + '" /></td>';
-                html += '<td>' + product.title_jp + '</div></td>';
-                html += '<td>' + product.brand_jp + '</div></td>';
-                html += '<td>' + product.exhibit_price + '<br />(JPY)</td>';
-                html += '<td>' + product.cp_us + '<br />(USD)</td>';
-                html += '<td>Size US</td>';
+                html += '<td>' + (product.title_jp ? product.title_jp : '-') + '</div></td>';
+                html += '<td>' + (product.brand_jp ? product.brand_jp : '-') + '</div></td>';
+                html += '<td>' + product.cp_us + '</td>';
+                html += '<td>' + product.hope_price_jpy + '</td>';
+                html += '<td>' + product.min_hope_price_jpy + '</td>';
+                html += '<td>' + product.rate_price_jpy + '</td>';
+                html += '<td>' + product.min_rate_price_jpy + '</td>';
+                html += '<td>' + (product.cp_jp ? product.cp_jp : '-') + '</td>';
+
+                if (product.can_be_exhibit_to_amazon_jp_price) {
+                    html += '<td>' + product.can_be_exhibit_to_amazon_jp_price + '</td>';
+                } else {
+                    html += '<td>-</td>';
+                }
+
+                html += '<td>' + product.size_l_us + '<br />' + product.size_w_us + '<br />' + product.size_h_us + '</td>';
                 html += '<td>' + product.weight_us + '</td>';
+                html += '<td>' + product.can_be_exhibit_to_amazon_jp_message + '</td>';
                 html += '</tr>';
             });
             $('#tab_products .table tbody').html(html);
