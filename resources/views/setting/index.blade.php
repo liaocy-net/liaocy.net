@@ -117,13 +117,15 @@
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-sm-6 mb-3">
-                                <label class="form-label" for="common_foreign_shipping">国際送料 (Excel .xlsx ファイル)</label>
-                                <div class="input-group" id="common_foreign_shipping_group">
-                                    <a type="button" href="{{route('setting.download_my_foreign_shippings_xlsx')}}" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>ダウンロード</a>
-                                    <input type="file" id="common_foreign_shipping" name="common_foreign_shipping" class="form-control" />
+                            @if ($my->role === 'admin')
+                                <div class="col-sm-6 mb-3">
+                                    <label class="form-label" for="common_foreign_shipping">【管理者のみ】国際送料 (.xlsx型のExcelファイルをアップロードしてください)</label>
+                                    <div class="input-group" id="common_foreign_shipping_group">
+                                        <a type="button" href="{{route('setting.download_my_foreign_shippings_xlsx')}}" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>ダウンロード</a>
+                                        <input type="file" id="common_foreign_shipping" name="common_foreign_shipping" class="form-control" />
+                                    </div>
                                 </div>
-                            </div>
+                            @endif
 
                             <div class="col-12 d-flex justify-content-center">
                                 <button type="submit" class="btn btn-primary me-sm-2 me-1 waves-effect waves-light" name="act" value="common_setting"><i class="fas fa-save me-1"></i>保存</button>
@@ -245,7 +247,18 @@
                                 </div>
                             </div>
                             <div class="col-sm-6 mb-3">
-                                <label class="form-label" for="amazon_lead_time_less">リードタイム(XX日未満の場合)</label>
+                                <label class="form-label" for="amazon_lead_time_prime">プライムリードタイム</label>
+                                <div class="input-group" id="amazon_lead_time_prime_group">
+                                    <span class="input-group-text col-5">{{ $my->amazon_lead_time_prime }}日</span>
+                                    <input type="number" id="amazon_lead_time_prime" name="amazon_lead_time_prime" class="form-control" min="0" max="999999" value="{{ $my->amazon_lead_time_prime }}"/>
+                                    <span class="input-group-text">日</span>
+                                </div>
+                            </div>
+                            @php
+                                $global_amazon_lead_time = App\Models\Setting::getInt("global_amazon_lead_time", 15);
+                            @endphp
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_lead_time_less">リードタイム({{ $global_amazon_lead_time }}日未満の場合)</label>
                                 <div class="input-group" id="amazon_lead_time_less_group">
                                     <span class="input-group-text col-5">{{ $my->amazon_lead_time_less }}日</span>
                                     <input type="number" id="amazon_lead_time_less" name="amazon_lead_time_less" class="form-control" min="0" max="999999" value="{{ $my->amazon_lead_time_less }}"/>
@@ -253,18 +266,10 @@
                                 </div>
                             </div>
                             <div class="col-sm-6 mb-3">
-                                <label class="form-label" for="amazon_lead_time_more">リードタイム(XX日以上の場合)</label>
+                                <label class="form-label" for="amazon_lead_time_more">リードタイム({{ $global_amazon_lead_time }}日以上の場合)</label>
                                 <div class="input-group" id="amazon_lead_time_more_group">
                                     <span class="input-group-text col-5">{{ $my->amazon_lead_time_more }}日</span>
                                     <input type="number" id="amazon_lead_time_more" name="amazon_lead_time_more" class="form-control" min="0" max="999999" value="{{ $my->amazon_lead_time_more }}"/>
-                                    <span class="input-group-text">日</span>
-                                </div>
-                            </div>
-                            <div class="col-sm-6 mb-3">
-                                <label class="form-label" for="amazon_lead_time_prime">プライムリードタイム</label>
-                                <div class="input-group" id="amazon_lead_time_prime_group">
-                                    <span class="input-group-text col-5">{{ $my->amazon_lead_time_prime }}日</span>
-                                    <input type="number" id="amazon_lead_time_prime" name="amazon_lead_time_prime" class="form-control" min="0" max="999999" value="{{ $my->amazon_lead_time_prime }}"/>
                                     <span class="input-group-text">日</span>
                                 </div>
                             </div>
@@ -276,6 +281,16 @@
                                     <span class="input-group-text">個</span>
                                 </div>
                             </div>
+                            @if ($my->role === 'admin')
+                                <div class="col-sm-6 mb-3">
+                                    <label class="form-label" for="global_amazon_lead_time">【管理者のみ】リードタイム閾値</label>
+                                    <div class="input-group" id="global_amazon_lead_time_group">
+                                        <span class="input-group-text col-5">{{ $global_amazon_lead_time }}日</span>
+                                        <input type="number" id="global_amazon_lead_time" name="global_amazon_lead_time" class="form-control" min="0" max="999999" value="{{ $global_amazon_lead_time }}"/>
+                                        <span class="input-group-text">日</span>
+                                    </div>
+                                </div>
+                            @endif
                             <div class="col-sm-12 mb-3">
                                 <label class="form-label" for="amazon_exhibit_comment">Amazon 出品コメント</label>
                                 <div class="input-group" id="amazon_exhibit_comment_group">
@@ -346,13 +361,15 @@
                                     <span class="input-group-text">個</span>
                                 </div>
                             </div>
-                            <div class="col-sm-6 mb-3">
-                                <label class="form-label" for="yahoo_category">カテゴリー</label>
-                                <div class="input-group" id="yahoo_category_group">
-                                    <button type="button" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>ダウンロード</button>
-                                    <input type="file" id="yahoo_category" name="yahoo_category" class="form-control" />
+                            @if ($my->role === 'admin')
+                                <div class="col-sm-6 mb-3">
+                                    <label class="form-label" for="yahoo_category">【管理者のみ】カテゴリー</label>
+                                    <div class="input-group" id="yahoo_category_group">
+                                        <button type="button" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>ダウンロード</button>
+                                        <input type="file" id="yahoo_category" name="yahoo_category" class="form-control" />
+                                    </div>
                                 </div>
-                            </div>
+                            @endif
 
 
                             <div class="col-sm-12 mb-3">

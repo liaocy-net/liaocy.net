@@ -16,6 +16,7 @@ use YConnect\Credential\ClientCredential;
 use YConnect\YConnectClient;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\ForeignShipping;
+use App\Models\Setting;
 
 class SettingController extends Controller
 {
@@ -84,7 +85,12 @@ class SettingController extends Controller
                 $my->save();
 
                 if ($request->hasFile('common_foreign_shipping')) {
-                    //拡張子がCSVであるかの確認
+                    //Adminのみがアップロードできるようにする
+                    if (!$my->role === 'admin') {
+                        throw new \Exception("不正なアクセスです。");
+                    }
+
+                    //拡張子がxlsxであるかの確認
                     if ($request->common_foreign_shipping->getClientOriginalExtension() !== "xlsx") {
                         throw new \Exception("不適切な拡張子です。EXCEL(xlsx)ファイルを選択してください。");
                     }
@@ -105,12 +111,12 @@ class SettingController extends Controller
                             throw new \Exception("EXCELファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
                         }
                         $foreignShippings[] = array(
-                            "user_id" => auth()->id(),
                             "weight_kg" => $row[0],
                             "usd_fee" => $row[1]
                         );
                     }
-                    ForeignShipping::where("user_id", auth()->id())->delete();
+                    //DBのデータを削除
+                    ForeignShipping::truncate();
                     ForeignShipping::insert($foreignShippings);
                 }
 
@@ -120,8 +126,8 @@ class SettingController extends Controller
                 $validator = Validator::make($params, [
                     'amazon_hope_profit' => ['required', 'integer', 'min:0', 'max:999999'],
                     'amazon_min_profit' => ['required', 'integer', 'min:0', 'max:999999'],
-                    'amazon_hope_profit_rate' => ['required', 'integer', 'min:0', 'max:999999'],
-                    'amazon_min_profit_rate' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_hope_profit_rate' => ['required', 'integer', 'min:0', 'max:500'],
+                    'amazon_min_profit_rate' => ['required', 'integer', 'min:0', 'max:500'],
                     'amazon_using_profit' => ['required', 'integer', 'min:1', 'max:2'],
                     'amazon_using_sale_commission' => ['required', 'integer', 'min:0', 'max:999999'],
                     'amazon_stock' => ['required', 'integer', 'min:0', 'max:999999'],
@@ -134,11 +140,18 @@ class SettingController extends Controller
                     'amazon_white_list_brand' => ['required', 'integer', 'min:0', 'max:999999'],
                     'amazon_exhibit_comment_group' => ['nullable', 'string', 'max:99999'],
                     'amazon_price_cut' => ['nullable', 'integer',  'min:1', 'max:99999'],
+                    'global_amazon_lead_time' => ['integer',  'min:1', 'max:99999'],
                 ]);
 
                 if ($validator->fails()) {
                     return back()->withErrors($validator)->withInput();
                 }
+
+                if($my->role === 'admin' && $params["global_amazon_lead_time"] !== null){
+                    Setting::setInt('global_amazon_lead_time', $params["global_amazon_lead_time"]);
+                }
+
+                
 
                 $my->amazon_hope_profit = $params["amazon_hope_profit"];
                 $my->amazon_min_profit = $params["amazon_min_profit"];

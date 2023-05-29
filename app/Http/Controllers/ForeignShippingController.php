@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Cell\DataType;
+use \App\Models\ForeignShipping;
 
 class ForeignShippingController extends Controller
 {
@@ -20,8 +21,7 @@ class ForeignShippingController extends Controller
         $sheet->setCellValue('A1', '重量(KG)');
         $sheet->setCellValue('B1', '費用(USD)');
 
-        $user = $request->user();
-        $foreignShippings = $user->foreignShippings;
+        $foreignShippings = ForeignShipping::orderBy('weight_kg', 'asc')->get();
 
         foreach($foreignShippings as $i => $foreignShipping){
             $sheet->setCellValueExplicit('A' . ($i + 2), $foreignShipping->weight_kg, DataType::TYPE_NUMERIC);

@@ -68,14 +68,6 @@ class User extends Authenticatable
     ];
 
     /**
-     * Get the ForeignShippings with the user.
-     */
-    public function foreignShippings(): HasMany
-    {
-        return $this->hasMany(ForeignShipping::class);
-    }
-
-    /**
      * Get the post that owns the comment.
      */
     public function post(): BelongsTo
