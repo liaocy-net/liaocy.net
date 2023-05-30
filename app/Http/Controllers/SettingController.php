@@ -125,17 +125,17 @@ class SettingController extends Controller
             } elseif ($params["act"] === "amazon_setting") {
                 $validator = Validator::make($params, [
                     'amazon_hope_profit' => ['required', 'integer', 'min:0', 'max:999999'],
-                    'amazon_min_profit' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_min_profit' => ['required', 'integer', 'min:0', 'max:999999', 'lt:amazon_hope_profit'],
                     'amazon_hope_profit_rate' => ['required', 'integer', 'min:0', 'max:500'],
-                    'amazon_min_profit_rate' => ['required', 'integer', 'min:0', 'max:500'],
+                    'amazon_min_profit_rate' => ['required', 'integer', 'min:0', 'max:500', 'lt:amazon_hope_profit_rate'],
                     'amazon_using_profit' => ['required', 'integer', 'min:1', 'max:2'],
                     'amazon_using_sale_commission' => ['required', 'integer', 'min:0', 'max:999999'],
                     'amazon_stock' => ['required', 'integer', 'min:0', 'max:999999'],
                     'amazon_price_increase_rate' => ['required', 'integer', 'min:0', 'max:999999'],
                     'amazon_rival' => ['required', 'integer', 'min:1', 'max:2'],
                     'amazon_point_rate' => ['required', 'integer', 'min:0', 'max:999999'],
-                    'amazon_lead_time_less' => ['required', 'integer', 'min:0', 'max:999999'],
-                    'amazon_lead_time_more' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_lead_time_less' => ['required', 'integer', 'min:1', 'max:100'],
+                    'amazon_lead_time_more' => ['required', 'integer', 'min:1', 'max:100', 'gte:amazon_lead_time_less'],
                     'amazon_lead_time_prime' => ['required', 'integer', 'min:0', 'max:999999'],
                     'amazon_white_list_brand' => ['required', 'integer', 'min:0', 'max:999999'],
                     'amazon_exhibit_comment_group' => ['nullable', 'string', 'max:99999'],
@@ -149,6 +149,22 @@ class SettingController extends Controller
 
                 if($my->role === 'admin' && $params["global_amazon_lead_time"] !== null){
                     Setting::setInt('global_amazon_lead_time', $params["global_amazon_lead_time"]);
+                }
+
+
+                //アマゾン手数料率 - アマゾン手数料率 * アマゾンポイント比率はマイナスにならない
+                $amazon_commission_rate = 1 - $params["amazon_using_sale_commission"] / 100 * 1.1;
+        
+                if ($amazon_commission_rate - $amazon_commission_rate * $params["amazon_point_rate"] / 100 <= 0) {
+                    return back()->withErrors(['amazon_using_sale_commission' => 'アマゾン手数料率とアマゾンポイント比率の組み合わせが不適切で修正してください。'])->withInput();
+                }
+
+                if ($amazon_commission_rate - $params["amazon_hope_profit_rate"] / 100 - $amazon_commission_rate * $params["amazon_point_rate"] / 100 <= 0) {
+                    return back()->withErrors(['amazon_hope_profit_rate' => '希望利益率が適正値ではありませんので修正ください。'])->withInput();
+                }
+
+                if ($amazon_commission_rate - $params["amazon_min_profit_rate"] / 100 - $amazon_commission_rate * $params["amazon_point_rate"] / 100 <= 0) {
+                    return back()->withErrors(['amazon_hope_profit_rate' => '最低利益率が適正値ではありませんので修正ください。'])->withInput();
                 }
 
                 
