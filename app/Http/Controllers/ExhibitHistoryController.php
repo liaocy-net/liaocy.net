@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use PhpParser\Node\Expr\Cast\Array_;
 use App\Services\UtilityService;
 use App\Models\Product;
+use App\Models\ProductExhibitHistory;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Bus\Batch;
 use Throwable;
@@ -128,6 +129,15 @@ class ExhibitHistoryController extends Controller
         //
     }
 
+    public function hasExhibited($productBatch) {
+
+        $productBatchExhibitToAmazonJP = ProductBatch::where('filename', $productBatch->filename)
+            ->where('action', 'exhibit_to_amazon_jp')
+            ->first();
+        
+        return empty($productBatchExhibitToAmazonJP) ? false : true;
+    }
+
     public function detail(Request $request)
     {
         try {
@@ -140,22 +150,16 @@ class ExhibitHistoryController extends Controller
                 throw new \Exception($validator->errors()->first(), 442);
             }
 
-            $productBatch = ProductBatch::find($params['product_batch_id']);
             $my = User::find(auth()->id());
 
+            $productBatch = ProductBatch::find($params['product_batch_id']);
             if (!$productBatch || $productBatch->user_id != $my->id) {
-                throw new \Exception('product batch not found', 442);
+                throw new \Exception('Product Batch not found', 442);
             }
-
-            $productBatchExhibitToAmazonJP = ProductBatch::where('filename', $productBatch->filename)
-                ->where('action', 'exhibit_to_amazon_jp')
-                ->first();
-            
-            $has_exhibited = empty($productBatchExhibitToAmazonJP) ? false : true;
             
             return view('exhibit_history.detail', [
                 'my' => $my,
-                'has_exhibited' => $has_exhibited,
+                'has_exhibited' => $this->hasExhibited($productBatch),
             ]);
         } catch (\Exception $e) {
             return back()->withErrors($e->getMessage())->withInput();
@@ -261,10 +265,15 @@ class ExhibitHistoryController extends Controller
                     $product->save();
                 }
 
-            } else if($params["act"] == "exhibit_to_amazon_jp"){
+            } else if($params["act"] == "exhibit_to_amazon_jp"){ //Amazon JPに出品
                 $productBatch = ProductBatch::find($params['product_batch_id']);
                 if (!$productBatch || $productBatch->user_id != $my->id) {
                     throw new \Exception('product batch not found', 442);
+                }
+
+                $hasExhibited = $this->hasExhibited($productBatch);
+                if ($hasExhibited) {
+                    throw new \Exception('Already exhibited', 442);
                 }
 
                 $exhibitToJPProductBatch = new ProductBatch();
@@ -273,9 +282,29 @@ class ExhibitHistoryController extends Controller
                 $exhibitToJPProductBatch->action = "exhibit_to_amazon_jp";
                 $exhibitToJPProductBatch->is_exhibit_to_amazon = true;
                 $exhibitToJPProductBatch->save();
+
                 foreach ($productBatch->products as $product) {
-                    if ($product->is_exhibit_to_amazon_jp) {
+                    $canBeExhibitToAmazonJP = UtilityService::canBeExhibitToAmazonJP($my, $product);
+
+                    if ($canBeExhibitToAmazonJP["canBeExhibit"]) {
                         $exhibitToJPProductBatch->products()->attach($product);
+
+                        $productExhibitHistory = new ProductExhibitHistory();
+
+                        $productExhibitHistory->user_id = $my->id;
+                        $productExhibitHistory->product_id = $product->id;
+                        $productExhibitHistory->product_batch_id = $exhibitToJPProductBatch->id;
+                        $productExhibitHistory->action = "exhibit_to_amazon_jp";
+                        $productExhibitHistory->amazon_jp_sku = $product->asin;
+                        $productExhibitHistory->amazon_jp_price = $canBeExhibitToAmazonJP["exhibitPrice"];
+                        $productExhibitHistory->amazon_jp_quantity = $my->amazon_stock;
+                        $productExhibitHistory->amazon_jp_product_id_type = "ASIN";
+                        $productExhibitHistory->amazon_jp_product_id = $product->asin;
+                        $productExhibitHistory->amazon_jp_condition_type = "New";
+                        $productExhibitHistory->amazon_jp_condition_note = "";
+                        $productExhibitHistory->amazon_jp_leadtime_to_ship = 10;
+
+                        $productExhibitHistory->save();
                     }
                 }
                 
@@ -302,7 +331,7 @@ class ExhibitHistoryController extends Controller
                 throw new \Exception("act is invalid", 442);
             }
 
-            return response()->json(array("status" => "success"));
+            return response()->json(array("status" => "success", "act" => $params["act"]));
 
         } catch (\Exception $e) {
             return response($e->getMessage(), 442);

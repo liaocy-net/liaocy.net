@@ -66,6 +66,11 @@ class Product extends Model
         return $this->belongsToMany(ProductBatch::class);
     }
 
+    public function productExhibitHistories()
+    {
+        return $this->hasMany(ProductExhibitHistory::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);

@@ -107,7 +107,7 @@ class AmazonInfoController extends Controller
                     $filename = $filename . "_" . ($existing_file_count + 1);
                 }
 
-                $productBatch->filename = $filename . ".csv";
+                $productBatch->filename = $filename . ".xlsx";
                 $productBatch->save();
 
                 $extractAmazonInfos = array();

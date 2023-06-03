@@ -388,7 +388,7 @@ class UtilityService
             return array(
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
-                'message' => 'ブランドがブラックリストに入っていません'
+                'message' => 'ブランドがホワイトリストに入っていません'
             );
         }
 

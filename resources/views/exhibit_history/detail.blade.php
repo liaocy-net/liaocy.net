@@ -116,11 +116,11 @@
                                 <input id="formact" type="hidden" name="act" value="" />
                                 @if ($has_exhibited)
                                     <p class="text-danger">※上記商品は出品済みです。</p>
-                                    <button type="button" class="btn btn-danger waves-effect waves-light me-sm-3 mb-2" disabled><i class="fas fa-trash me-1"></i>チェックした商品を削除する</button>
-                                    <button type="button" class="btn btn-primary waves-effect waves-light mb-2" disabled><i class="fas fa-save me-1"></i>出品する</button>
+                                    <button id="btn_delete_product" type="button" class="btn btn-danger waves-effect waves-light me-sm-3 mb-2" disabled><i class="fas fa-trash me-1"></i>チェックした商品を削除する</button>
+                                    <button id="btn_exhibit_to_amazon_jp" type="button" class="btn btn-primary waves-effect waves-light mb-2" disabled><i class="fas fa-save me-1"></i>出品する</button>
                                 @else
-                                    <button type="submit" onclick="$(this).closest('form').find('#formact').val('cancel_exhibit_to_amazon_jp');" class="btn btn-danger waves-effect waves-light me-sm-3 mb-2"><i class="fas fa-trash me-1"></i>チェックした商品を削除する</button>
-                                    <button type="submit" onclick="$(this).closest('form').find('#formact').val('exhibit_to_amazon_jp');" class="btn btn-primary waves-effect waves-light mb-2"><i class="fas fa-save me-1"></i>出品する</button>
+                                    <button id="btn_delete_product" type="submit" onclick="$(this).closest('form').find('#formact').val('cancel_exhibit_to_amazon_jp');" class="btn btn-danger waves-effect waves-light me-sm-3 mb-2"><i class="fas fa-trash me-1"></i>チェックした商品を削除する</button>
+                                    <button id="btn_exhibit_to_amazon_jp" type="submit" onclick="$(this).closest('form').find('#formact').val('exhibit_to_amazon_jp');" class="btn btn-primary waves-effect waves-light mb-2"><i class="fas fa-save me-1"></i>出品する</button>
                                 @endif
                             </div>
                         </div>
@@ -150,8 +150,16 @@
         refresh();
 
         submitForm("formProductsList", function(data){
+            console.log(data);
+            if (data["act"] == "exhibit_to_amazon_jp") {
+                alert("出品リストに追加しました。");
+                location.reload();
+            }
             refresh();
         }, function(){
+            $('#btn_delete_product').prop('disabled', true);
+            $('#btn_exhibit_to_amazon_jp').prop('disabled', true);
+            alert("出品中です。しばらくお待ちください。")
             showLoading('tab_products');
         });
     });
@@ -179,9 +187,8 @@
         $('#' + tableId + ' .table tbody').html(loading);
     };
 
-    var refresh = function(page = 1) {  
+    var refresh = function(page = 1) {
         showLoading('tab_products');
-        
         getData("{{route('exhibit_history.get_products')}}", {
             product_batch_id: {{ request()->input('product_batch_id') }},
             page: page,

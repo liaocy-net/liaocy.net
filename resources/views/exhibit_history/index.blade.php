@@ -215,11 +215,11 @@
                     html += '<td>' + (history.total_jobs - history.pending_jobs) + '</td>';
                     html += '<td>' + history.failed_jobs + '</td>';
                 } else {
-                    html += '<td>' + history.products_count + '</td>';
+                    html += '<td>-</td>';
                     html += '<td>-</td>';
                     html += '<td>-</td>';
                 }
-                if (history.has_message) {
+                if (history.has_message && history.end_at) {
                     html += '<td><a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">詳細</a></td>';
                 } else {
                     html += '<td>-</td>';

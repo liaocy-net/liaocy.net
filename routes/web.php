@@ -12,6 +12,7 @@ use App\Http\Controllers\AmazonInfoController;
 use App\Models\Product;
 use App\Services\AmazonService;
 use App\Models\User;
+use App\Models\ProductBatch;
 use App\Services\FeedTypes;
 use App\Http\Controllers\ExhibitController;
 use App\Http\Controllers\ExhibitHistoryController;
@@ -133,32 +134,43 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
         // return $amazonService->createFeed($feedType);
         // return $amazonService->CreateFeedWithFile();
 
-        // $user = User::find(auth()->id());
-        // $client_id = env("AMAZON_JP_CLIENT_ID");
-        // $client_secret = env("AMAZON_JP_CLIENT_SECRET");
-        // $refresh_token = $user->amazon_jp_refresh_token;
-        // $product = new Product();
-        // $product->asin = "B09TZWLFLY";
+        $user = User::find(auth()->id());
+        $client_id = env("AMAZON_JP_CLIENT_ID");
+        $client_secret = env("AMAZON_JP_CLIENT_SECRET");
+        $refresh_token = $user->amazon_jp_refresh_token;
+        $product = new Product();
+        $product->asin = "50084019510";
         
-        // $amazonService = new AmazonService(
-        //     $client_id,
-        //     $client_secret,
-        //     $refresh_token,
-        //     $user,
-        //     "jp",
-        // );
-        // return $amazonService->getFeedDocument("50080019497");
-
-        $product = Product::find(535);
-        return array(
-            "calAmazonJPHopePrice" => UtilityService::calAmazonJPHopePrice($user, $product),
-            "calAmazonJPMinHopePrice" => UtilityService::calAmazonJPMinHopePrice($user, $product),
-            "calAmazonJPRatePrice" => UtilityService::calAmazonJPRatePrice($user, $product),
-            "calAmazonJPMinRatePrice" => UtilityService::calAmazonJPMinRatePrice($user, $product),
-            "canBeExhibitToAmazonJP" => UtilityService::canBeExhibitToAmazonJP($user, $product),
+        $amazonService = new AmazonService(
+            $client_id,
+            $client_secret,
+            $refresh_token,
+            $user,
+            "jp",
         );
+        return $amazonService->getFeedDocument("50106019510");
 
-        
+        // $product = Product::find(185);
+        // return array(
+        //     "calAmazonJPHopePrice" => UtilityService::calAmazonJPHopePrice($user, $product),
+        //     "calAmazonJPMinHopePrice" => UtilityService::calAmazonJPMinHopePrice($user, $product),
+        //     "calAmazonJPRatePrice" => UtilityService::calAmazonJPRatePrice($user, $product),
+        //     "calAmazonJPMinRatePrice" => UtilityService::calAmazonJPMinRatePrice($user, $product),
+        //     "canBeExhibitToAmazonJP" => UtilityService::canBeExhibitToAmazonJP($user, $product),
+        //     "product" => $product,
+        // );
+
+        $productBatch = ProductBatch::find(140);
+        $productExhibitHistories = $productBatch->productExhibitHistories;
+        $results = $amazonService->genInvloaderTXT($productExhibitHistories);
+        $fileName = "file.txt";
+        header('Content-Type: text/plain');
+        header('Content-Disposition: attachment; filename='.$fileName);
+        echo mb_convert_encoding($results, "SJIS", "UTF-8");
+
+        // $results = $amazonService->CreateFeedWithFile($productExhibitHistories);
+        // $feed_id = $results->getFeedId();
+        // var_dump($results);
     });
 });
 

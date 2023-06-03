@@ -61,9 +61,10 @@ class ExhibitToAmazonJP implements ShouldQueue
             );
 
             // Exhibit and save feed_id
-            if (empty($this->productBatch->feed_id)) {
-                $exhibitProducts = $this->productBatch->products;
-                $results = $amazonService->CreateFeedWithFile($exhibitProducts);
+            if (empty($this->productBatch->feed_id)) { // has not exhibited yet
+                $productExhibitHistories = $this->productBatch->productExhibitHistories;
+
+                $results = $amazonService->CreateFeedWithFile($productExhibitHistories);
                 $feed_id = $results->getFeedId();
                 $this->productBatch->feed_id = $feed_id;
                 $this->productBatch->save();
@@ -71,6 +72,9 @@ class ExhibitToAmazonJP implements ShouldQueue
             }
 
             $feed_id = $this->productBatch->feed_id;
+            $this->productBatch->message = "Amazon出品状態確認がタイムアウトしました。Amazonセーラーコンソールで確認してください。";
+            $this->productBatch->save();
+
             $url = $amazonService->getFeedDocument($feed_id)->getUrl();
             $message = file_get_contents($url);
             $message = mb_convert_encoding($message,"utf-8","sjis");
@@ -79,8 +83,10 @@ class ExhibitToAmazonJP implements ShouldQueue
             $this->productBatch->save();
 
         } catch (Throwable $e) {
-            if ($this->attempts() < $this->tries) {
-                $this->release(5 * 60);
+            $attempts = $this->attempts();
+            var_dump($attempts);
+            if ($attempts < $this->tries) {
+                $this->release(5 * 60 + ($attempts - 1) * 10 * 60);
             } else {
                 throw $e;
             }

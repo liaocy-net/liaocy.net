@@ -242,10 +242,6 @@ class AmazonService
         $offices = $item->getPayload()->getOffers();
         $result['nc'] = count($offices);
 
-        if ($result['nc'] == 0) {
-            throw new \Exception("No seller on Amazon " . $this->nation);
-        }
-
         // np: 新品最低価格
         // pp: プライム価格
         // cp_point: カート価格のポイント数
@@ -264,9 +260,9 @@ class AmazonService
             $result['np'] = $office->getListingPrice()->getAmount();
             $result['seller_id'] = $office->getSellerId();
             $result['is_amazon'] = $office->getIsFulfilledByAmazon();
-            $result['maximum_hours'] = $office->getShippingTime()->getMaximumHours();
-            $result['minimum_hours'] = $office->getShippingTime()->getMinimumHours();
-            $result['is_prime'] = $office->getPrimeInformation()->getIsPrime();
+            $result['maximum_hours'] = $office->getShippingTime() ? $office->getShippingTime()->getMaximumHours() : null;
+            $result['minimum_hours'] = $office->getShippingTime() ? $office->getShippingTime()->getMinimumHours() : null;
+            $result['is_prime'] = $office->getPrimeInformation() ? $office->getPrimeInformation()->getIsPrime() : null;
             $result['shipping_cost'] = $office->getShipping()->getAmount();
             if ($this->nation == 'jp') {
                 if($office->getPoints() != null) {
@@ -328,34 +324,59 @@ class AmazonService
         return $results;
     }
 
-    protected function genInvloaderTXT($products)
+    public function genInvloaderTXT($productExhibitHistories)
     {
+        $tsv = "";
         $headers = [
-            "sku",
+            ["TemplateType=Offer",
+            "Version=2020.000",
+            "",
+            "",
+            "",
+            "",
+            "",
+            "",
+            ""],
+            ["商品管理番号",
+            "販売価格",
+            "在庫数",
+            "商品コード(JANコード等)",
+            "商品コードのタイプ",
+            "商品のコンディション",
+            "商品のコンディション説明",
+            "ポイント",
+            "リードタイム(出荷までにかかる作業日数)"],
+            ["sku",
+            "price",
+            "quantity",
             "product-id",
             "product-id-type",
-            "quantity",
-            "price",
-            "item-condition",
-            "item-note"
+            "condition-type",
+            "condition-note",
+            "standard-price-points",
+            "leadtime-to-ship"]
         ];
-        $tsv = join("\t", $headers) . "\n";
-        foreach ($products as $product) {
+        foreach ($headers as $header) {
+            $tsv .= join("\t", $header) . "\n";
+        }
+        foreach ($productExhibitHistories as $productExhibitHistory) {
             $contents = [
-                $product->sku,
-                $product->asin,
-                "ASIN",
-                $this->user->amazon_stock,
-                UtilityService::calAmazonJPPurchaseCost($this->user, $product),
-                "New",
-                $product->note
+                $productExhibitHistory->amazon_jp_sku,
+                $productExhibitHistory->amazon_jp_price,
+                $productExhibitHistory->amazon_jp_quantity,
+                $productExhibitHistory->amazon_jp_product_id,
+                $productExhibitHistory->amazon_jp_product_id_type,
+                $productExhibitHistory->amazon_jp_condition_type,
+                $productExhibitHistory->amazon_jp_condition_note,
+                $productExhibitHistory->amazon_jp_standard_price_points,
+                $productExhibitHistory->amazon_jp_leadtime_to_ship,
             ];
             $tsv .= join("\t", $contents) . "\n";
         }
         return $tsv;
     }
 
-    public function CreateFeedWithFile($products)
+    public function CreateFeedWithFile($productExhibitHistories)
     {
         $sdk = $this->getSDK();
 
@@ -375,7 +396,7 @@ class AmazonService
         $feedURL = $results->getUrl();
 
         //Step 2. Construct a feed
-        $feedDocument = $this->genInvloaderTXT($products);
+        $feedDocument = $this->genInvloaderTXT($productExhibitHistories);
 
         //Step 3. Upload the feed
         $options = [
@@ -388,7 +409,7 @@ class AmazonService
         //Step 4. Create a feed
         $createFeedSpecification = new CreateFeedSpecification(
             data: array(
-                'feed_type' => FeedTypes::POST_FLAT_FILE_INVLOADER_DATA->value,
+                'feed_type' => FeedTypes::POST_FLAT_FILE_LISTINGS_DATA->value,
                 'marketplace_ids' => $this->marketplace_ids,
                 'input_feed_document_id' => $feedDocumentId,
             )

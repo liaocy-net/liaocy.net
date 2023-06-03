@@ -35,6 +35,11 @@ class ProductBatch extends Model
         return $this->belongsToMany(Product::class);
     }
 
+    public function productExhibitHistories(): HasMany
+    {
+        return $this->hasMany(ProductExhibitHistory::class);
+    }
+
     public function user()
     {
         return $this->belongsTo(User::class);
