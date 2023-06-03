@@ -1,4 +1,4 @@
-name: Deploy Stg Lambda Laravel Function
+name: Deploy Staging App
 on: 
   workflow_dispatch: null
   push:
@@ -7,106 +7,103 @@ on:
 concurrency:
   group: deploy-stg-app
   cancel-in-progress: true
+env:
+  REGISTRY: ghcr.io
+  GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+  SERVER_HOST: test.charing.biz
+  SERVER_PORT: 22
+  SERVER_USER: ubuntu
+  SERVER_SSH_KEY: ${{secrets.SERVER_SSH_KEY}}
+  QUEUE_COUNT: 1
+  APP_ENV: stg
+  APP_PORT: 5000
+  DOCKER_COMMON_ENVS: |- 
+    -e APP_NAME=charing \
+    -e APP_KEY=${{secrets.APP_KEY_STG}} \
+    -e APP_DEBUG=true \
+    -e APP_URL=https://test.charing.biz/ \
+    -e LOG_CHANNEL=stack \
+    -e LOG_DEPRECATIONS_CHANNEL=null \
+    -e LOG_LEVEL=debug \
+    -e DB_CONNECTION=mysql \
+    -e DB_HOST=${{secrets.DB_HOST}} \
+    -e DB_PORT=${{secrets.DB_PORT}} \
+    -e DB_DATABASE=charing_stg \
+    -e DB_USERNAME=${{secrets.DB_USERNAME}} \
+    -e DB_PASSWORD=${{secrets.DB_PASSWORD}} \
+    -e BROADCAST_DRIVER=log \
+    -e CACHE_DRIVER=file \
+    -e FILESYSTEM_DISK=local \
+    -e QUEUE_CONNECTION=database \
+    -e SESSION_DRIVER=file \
+    -e SESSION_LIFETIME=120 \
+    -e MEMCACHED_HOST=127.0.0.1 \
+    -e REDIS_HOST=127.0.0.1 \
+    -e REDIS_PASSWORD=null \
+    -e REDIS_PORT=6479 \
+    -e MAIL_MAILER=smtp \
+    -e MAIL_HOST=mailpit \
+    -e MAIL_PORT=1025 \
+    -e MAIL_USERNAME=null \
+    -e MAIL_PASSWORD=null \
+    -e MAIL_ENCRYPTION=null \
+    -e MAIL_FROM_ADDRESS=hello@example.com \
+    -e MAIL_FROM_NAME=HelloWorld \
+    -e AWS_DEFAULT_REGION=ap-northeast-1 \
+    -e AWS_BUCKET="" \
+    -e AWS_USE_PATH_STYLE_ENDPOINT=false \
+    -e PUSHER_APP_ID="" \
+    -e PUSHER_APP_KEY="" \
+    -e PUSHER_APP_SECRET="" \
+    -e PUSHER_HOST="" \
+    -e PUSHER_PORT=443 \
+    -e PUSHER_SCHEME=https \
+    -e PUSHER_APP_CLUSTER="" \
+    -e VITE_PUSHER_APP_KEY="" \
+    -e VITE_PUSHER_HOST="" \
+    -e VITE_PUSHER_PORT="" \
+    -e VITE_PUSHER_SCHEME="" \
+    -e VITE_PUSHER_APP_CLUSTER="" \
+    -e PAGE_MAX_LIMIT=50 \
+    -e IAM_ARN=${{secrets.IAM_ARN_STG}} \
+    -e IAM_ACCESS_KEY=${{secrets.IAM_ACCESS_KEY_STG}} \
+    -e IAM_SECRECT_KEY=${{secrets.IAM_SECRECT_KEY_STG}} \
+    -e AMAZON_JP_APPLICATION_ID=${{secrets.AMAZON_JP_APPLICATION_ID_STG}} \
+    -e AMAZON_JP_CLIENT_ID=${{secrets.AMAZON_JP_CLIENT_ID_STG}} \
+    -e AMAZON_JP_CLIENT_SECRET=${{secrets.AMAZON_JP_CLIENT_SECRET_STG}} \
+    -e AMAZON_US_APPLICATION_ID=${{secrets.AMAZON_US_APPLICATION_ID_STG}} \
+    -e AMAZON_US_CLIENT_ID=${{secrets.AMAZON_US_CLIENT_ID_STG}} \
+    -e AMAZON_US_CLIENT_SECRET=${{ secrets.AMAZON_US_CLIENT_SECRET_STG}}
 jobs:
-  deploy-stg-app:
+  deploy-app:
     runs-on: ubuntu-latest
-    env:
-      SERVER_HOST: test.charing.biz
-      SERVER_PORT: 22
-      SERVER_USER: ubuntu
-      SERVER_SSH_KEY: ${{secrets.SERVER_SSH_KEY}}
-      APP_ENV: stg
-      APP_PORT: 5000
-      DOCKER_COMMON_ENVS: |- 
-        -e APP_NAME=charing \
-        -e APP_KEY=${{secrets.APP_KEY_STG}} \
-        -e APP_DEBUG=true \
-        -e APP_URL=https://test.charing.biz/ \
-        -e LOG_CHANNEL=stack \
-        -e LOG_DEPRECATIONS_CHANNEL=null \
-        -e LOG_LEVEL=debug \
-        -e DB_CONNECTION=mysql \
-        -e DB_HOST=${{secrets.DB_HOST}} \
-        -e DB_PORT=${{secrets.DB_PORT}} \
-        -e DB_DATABASE=charing_stg \
-        -e DB_USERNAME=${{secrets.DB_USERNAME}} \
-        -e DB_PASSWORD=${{secrets.DB_PASSWORD}} \
-        -e BROADCAST_DRIVER=log \
-        -e CACHE_DRIVER=file \
-        -e FILESYSTEM_DISK=local \
-        -e QUEUE_CONNECTION=database \
-        -e SESSION_DRIVER=file \
-        -e SESSION_LIFETIME=120 \
-        -e MEMCACHED_HOST=127.0.0.1 \
-        -e REDIS_HOST=127.0.0.1 \
-        -e REDIS_PASSWORD=null \
-        -e REDIS_PORT=6479 \
-        -e MAIL_MAILER=smtp \
-        -e MAIL_HOST=mailpit \
-        -e MAIL_PORT=1025 \
-        -e MAIL_USERNAME=null \
-        -e MAIL_PASSWORD=null \
-        -e MAIL_ENCRYPTION=null \
-        -e MAIL_FROM_ADDRESS=hello@example.com \
-        -e MAIL_FROM_NAME=HelloWorld \
-        -e AWS_DEFAULT_REGION=ap-northeast-1 \
-        -e AWS_BUCKET="" \
-        -e AWS_USE_PATH_STYLE_ENDPOINT=false \
-        -e PUSHER_APP_ID="" \
-        -e PUSHER_APP_KEY="" \
-        -e PUSHER_APP_SECRET="" \
-        -e PUSHER_HOST="" \
-        -e PUSHER_PORT=443 \
-        -e PUSHER_SCHEME=https \
-        -e PUSHER_APP_CLUSTER="" \
-        -e VITE_PUSHER_APP_KEY="" \
-        -e VITE_PUSHER_HOST="" \
-        -e VITE_PUSHER_PORT="" \
-        -e VITE_PUSHER_SCHEME="" \
-        -e VITE_PUSHER_APP_CLUSTER="" \
-        -e PAGE_MAX_LIMIT=50 \
-        -e IAM_ARN=${{secrets.IAM_ARN_STG}} \
-        -e IAM_ACCESS_KEY=${{secrets.IAM_ACCESS_KEY_STG}} \
-        -e IAM_SECRECT_KEY=${{secrets.IAM_SECRECT_KEY_STG}} \
-        -e AMAZON_JP_APPLICATION_ID=${{secrets.AMAZON_JP_APPLICATION_ID_STG}} \
-        -e AMAZON_JP_CLIENT_ID=${{secrets.AMAZON_JP_CLIENT_ID_STG}} \
-        -e AMAZON_JP_CLIENT_SECRET=${{secrets.AMAZON_JP_CLIENT_SECRET_STG}} \
-        -e AMAZON_US_APPLICATION_ID=${{secrets.AMAZON_US_APPLICATION_ID_STG}} \
-        -e AMAZON_US_CLIENT_ID=${{secrets.AMAZON_US_CLIENT_ID_STG}} \
-        -e AMAZON_US_CLIENT_SECRET=${{secrets.AMAZON_US_CLIENT_SECRET_STG}}
+    permissions:
+      contents: read
+      packages: write
     steps:
-      - name: Git clone the repository
+      - name: Checkout repository
         uses: actions/checkout@v3
-      - name: Remove Source Folder If Exist
-        uses: appleboy/ssh-action@v0.1.10
+      - name: Log in to the Container registry
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
-          host: ${{ env.SERVER_HOST }}
-          username: ${{ env.SERVER_USER }}
-          key: ${{ env.SERVER_SSH_KEY }}
-          port: ${{ env.SERVER_PORT }}
-          script: |
-            if [ -d /home/ubuntu/${{ env.APP_ENV }}-charing/ ]; then rm -Rf /home/ubuntu/${{ env.APP_ENV }}-charing/; fi
-      - name: Upload Source File
-        uses: appleboy/scp-action@v0.1.4
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build & Push Web Docker Image
+        uses: docker/build-push-action@v4
         with:
-          host: ${{ env.SERVER_HOST }}
-          username: ${{ env.SERVER_USER }}
-          key: ${{ env.SERVER_SSH_KEY }}
-          port: ${{ env.SERVER_PORT }}
-          source: "./,!.github/**,!.git/**,!.gitignore,!.gitmodules,!.vscode/**"
-          target: /home/ubuntu/${{ env.APP_ENV }}-charing
-      - name: Build Web & Queue Docker
-        uses: appleboy/ssh-action@v0.1.10
+          context: .
+          file: ./DockerfileWeb
+          push: true
+          tags: ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing-web:latest
+      - name: Build & Push Queue Docker Image
+        uses: docker/build-push-action@v4
         with:
-          host: ${{ env.SERVER_HOST }}
-          username: ${{ env.SERVER_USER }}
-          key: ${{ env.SERVER_SSH_KEY }}
-          port: ${{ env.SERVER_PORT }}
-          script: |-
-            cd /home/ubuntu/${{env.APP_ENV}}-charing
-            sudo docker build -f DockerfileWeb -t ${{ env.APP_ENV }}-charing-web:latest .
-            sudo docker build -f DockerfileQueue -t ${{ env.APP_ENV }}-charing-queue:latest .
-      - name: Run Web Docker
+          context: .
+          file: ./DockerfileQueue
+          push: true
+          tags: ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing-queue:latest
+      - name: Pull Web & Queue Docker
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ env.SERVER_HOST }}
@@ -114,17 +111,30 @@ jobs:
           key: ${{ env.SERVER_SSH_KEY }}
           port: ${{ env.SERVER_PORT }}
           script: |-
-            if [[ $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-web") ]]; then
-              sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-web" | xargs sudo docker stop | xargs sudo docker rm
-            fi
-            sudo docker run \
-              -p ${{ env.APP_PORT }}:8000 \
-              -d --name ${{ env.APP_ENV }}-charing-web \
-              --restart=always \
-              -e APP_ENV=${{ env.APP_ENV }} \
-              ${{ env.DOCKER_COMMON_ENVS }} \
-              ${{ env.APP_ENV }}-charing-web:latest
-      - name: Run Queue Docker
+            export CR_PAT=${{ secrets.GITHUB_TOKEN }}
+            echo $CR_PAT | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
+            sudo docker pull ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing-web:latest
+            sudo docker pull ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing-queue:latest
+            sudo docker logout ghcr.io
+            - name: Run Web Docker
+            uses: appleboy/ssh-action@v0.1.10
+            with:
+              host: ${{ env.SERVER_HOST }}
+              username: ${{ env.SERVER_USER }}
+              key: ${{ env.SERVER_SSH_KEY }}
+              port: ${{ env.SERVER_PORT }}
+              script: |-
+                if [[ $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-web") ]]; then
+                  sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-web" | xargs sudo docker stop | xargs sudo docker rm
+                fi
+                sudo docker run \
+                  -p ${{ env.APP_PORT }}:8000 \
+                  -d --name ${{ env.APP_ENV }}-charing-web \
+                  --restart=always \
+                  -e APP_ENV=${{ env.APP_ENV }} \
+                  ${{ env.DOCKER_COMMON_ENVS }} \
+                  ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing-web:latest
+      - name: Run Queue Dockers
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ env.SERVER_HOST }}
@@ -132,15 +142,21 @@ jobs:
           key: ${{ env.SERVER_SSH_KEY }}
           port: ${{ env.SERVER_PORT }}
           script: |
-            if [[ $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-queue") ]]; then
-              sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-queue" | xargs sudo docker stop | xargs sudo docker rm
-            fi
-            sudo docker run \
-              -d --name ${{ env.APP_ENV }}-charing-queue \
-              --restart=always \
-              -e APP_ENV=${{ env.APP_ENV }} \
-              ${{ env.DOCKER_COMMON_ENVS }} \
-              ${{ env.APP_ENV }}-charing-queue:latest
+            for i in $(seq -f "%03g" 1 100)
+            do
+              if [[ $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-queue-$i") ]]; then
+                sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-queue-$i" | xargs sudo docker stop | xargs sudo docker rm
+              fi
+            done
+            for i in $(seq -f "%03g" 1 ${{ env.QUEUE_COUNT }})
+            do
+              sudo docker run \
+                -d --name ${{ env.APP_ENV }}-charing-queue-$i \
+                --restart=always \
+                -e APP_ENV=${{ env.APP_ENV }} \
+                ${{ env.DOCKER_COMMON_ENVS }} \
+                ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing-queue:latest
+            done
       - name: Database Migration
         uses: appleboy/ssh-action@v0.1.10
         with:
