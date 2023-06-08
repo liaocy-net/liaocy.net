@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use AmazonPHP\SellingPartner\Model\Feeds\Feed;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -9,6 +10,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use App\Services\AmazonService;
+use App\Services\FeedTypes;
 use App\Models\ProductBatch;
 use Throwable;
 
@@ -62,9 +64,9 @@ class ExhibitToAmazonJP implements ShouldQueue
 
             // Exhibit and save feed_id
             if (empty($this->productBatch->feed_id)) { // has not exhibited yet
-                $productExhibitHistories = $this->productBatch->productExhibitHistories;
+                $products = $this->productBatch->products;
 
-                $results = $amazonService->CreateFeedWithFile($productExhibitHistories);
+                $results = $amazonService->CreateFeedWithFile($products, FeedTypes::POST_FLAT_FILE_LISTINGS_DATA);
                 $feed_id = $results->getFeedId();
                 $this->productBatch->feed_id = $feed_id;
                 $this->productBatch->save();

@@ -26,6 +26,7 @@ enum FeedTypes: string
     case POST_PRODUCT_PRICING_DATA = 'POST_PRODUCT_PRICING_DATA';
     case POST_FLAT_FILE_INVLOADER_DATA = 'POST_FLAT_FILE_INVLOADER_DATA';
     case POST_FLAT_FILE_LISTINGS_DATA = 'POST_FLAT_FILE_LISTINGS_DATA';
+    case POST_FLAT_FILE_PRICEANDQUANTITYONLY_UPDATE_DATA = 'POST_FLAT_FILE_PRICEANDQUANTITYONLY_UPDATE_DATA';
 }
 
 class AmazonService
@@ -201,8 +202,10 @@ class AmazonService
         ) {
             if ($item->getAttributes()['item_package_weight'][0]->unit == 'kilograms') {
                 $result['weight'] = $item->getAttributes()['item_package_weight'][0]->value;
-            } if ($item->getAttributes()['item_package_weight'][0]->unit == 'grams') {
+            } else if ($item->getAttributes()['item_package_weight'][0]->unit == 'grams') {
                 $result['weight'] = $item->getAttributes()['item_package_weight'][0]->value / 1000;
+            } else {
+                $result['weight'] = null;
             }
         } else {
             $result['weight'] = null;
@@ -224,7 +227,7 @@ class AmazonService
         return $result;
     }
 
-    public function getProductPricing(Product $product)
+    public function getProductPricing(Product $product, $skipSellerId = null)
     {
         $sdk = $this->getSDK();
         //AccessToken $accessToken, string $region, string $marketplace_id, string $item_condition, string $asin, ?string $customer_type = null
@@ -240,8 +243,6 @@ class AmazonService
 
         // nc: 新品出品者数
         $offices = $item->getPayload()->getOffers();
-        $result['nc'] = count($offices);
-
         // np: 新品最低価格
         // pp: プライム価格
         // cp_point: カート価格のポイント数
@@ -252,9 +253,24 @@ class AmazonService
         // shippingcost: 配送料
         // ap: ポイント数
         // sellerId: 出品者ID
+        $result['nc'] = count($offices);
+        $result['np'] = null;
+        $result['seller_id'] = null;
+        $result['is_amazon'] = null;
+        $result['maximum_hours'] = null;
+        $result['minimum_hours'] = null;
+        $result['is_prime'] = null;
+        $result['shipping_cost'] = null;
+        $result['ap'] = null;
+        $result['cp'] = null;
+        $result['cp_point'] = null;
+        $result['pp'] = null;
         $offices = $item->getPayload()->getOffers();
         foreach ($offices as $office) {
             if ($office->getSubCondition() != 'new' && $office->getSubCondition() != 'New') {
+                continue;
+            }
+            if ($skipSellerId != null && $office->getSellerId() == $skipSellerId) {
                 continue;
             }
             $result['np'] = $office->getListingPrice()->getAmount();
@@ -324,7 +340,7 @@ class AmazonService
         return $results;
     }
 
-    public function genInvloaderTXT($productExhibitHistories)
+    public function genPostFlatFileListingsData($products)
     {
         $tsv = "";
         $headers = [
@@ -353,30 +369,28 @@ class AmazonService
             "product-id-type",
             "condition-type",
             "condition-note",
-            "standard-price-points",
             "leadtime-to-ship"]
         ];
         foreach ($headers as $header) {
             $tsv .= join("\t", $header) . "\n";
         }
-        foreach ($productExhibitHistories as $productExhibitHistory) {
+        foreach ($products as $product) {
             $contents = [
-                $productExhibitHistory->amazon_jp_sku,
-                $productExhibitHistory->amazon_jp_price,
-                $productExhibitHistory->amazon_jp_quantity,
-                $productExhibitHistory->amazon_jp_product_id,
-                $productExhibitHistory->amazon_jp_product_id_type,
-                $productExhibitHistory->amazon_jp_condition_type,
-                $productExhibitHistory->amazon_jp_condition_note,
-                $productExhibitHistory->amazon_jp_standard_price_points,
-                $productExhibitHistory->amazon_jp_leadtime_to_ship,
+                $product->sku,
+                $product->amazon_jp_latest_exhibit_price,
+                $product->amazon_jp_latest_exhibit_quantity,
+                $product->asin,
+                "ASIN",
+                "New",
+                "",
+                $product->amazon_jp_leadtime_to_ship,
             ];
             $tsv .= join("\t", $contents) . "\n";
         }
         return $tsv;
     }
 
-    public function CreateFeedWithFile($productExhibitHistories)
+    public function CreateFeedWithFile($products, $feedType = FeedTypes::POST_FLAT_FILE_LISTINGS_DATA)
     {
         $sdk = $this->getSDK();
 
@@ -396,7 +410,13 @@ class AmazonService
         $feedURL = $results->getUrl();
 
         //Step 2. Construct a feed
-        $feedDocument = $this->genInvloaderTXT($productExhibitHistories);
+        if ($feedType == FeedTypes::POST_FLAT_FILE_LISTINGS_DATA) {
+            $feedDocument = $this->genPostFlatFileListingsData($products);
+        } else if ($feedType == FeedTypes::POST_FLAT_FILE_PRICEANDQUANTITYONLY_UPDATE_DATA) {
+            throw new \Exception("not implemented.");
+        } else {
+            throw new \Exception("feedType is not available.");
+        }
 
         //Step 3. Upload the feed
         $options = [
@@ -409,7 +429,7 @@ class AmazonService
         //Step 4. Create a feed
         $createFeedSpecification = new CreateFeedSpecification(
             data: array(
-                'feed_type' => FeedTypes::POST_FLAT_FILE_LISTINGS_DATA->value,
+                'feed_type' => $feedType->value,
                 'marketplace_ids' => $this->marketplace_ids,
                 'input_feed_document_id' => $feedDocumentId,
             )

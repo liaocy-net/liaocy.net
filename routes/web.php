@@ -11,12 +11,16 @@ use App\Http\Controllers\BlackListController;
 use App\Http\Controllers\AmazonInfoController;
 use App\Models\Product;
 use App\Services\AmazonService;
+use App\Jobs\UpdateAmazonInfo;
 use App\Models\User;
 use App\Models\ProductBatch;
 use App\Services\FeedTypes;
 use App\Http\Controllers\ExhibitController;
 use App\Http\Controllers\ExhibitHistoryController;
 use App\Services\UtilityService;
+use Illuminate\Support\Facades\DB;
+use AmazonPHP\SellingPartner\Exception\ApiException;
+use Carbon\Carbon;
 
 /*
 |--------------------------------------------------------------------------
@@ -111,12 +115,12 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
 
     /* test */
     Route::get('/test', function () {
-        $user = User::find(auth()->id());
+        // $user = User::find(auth()->id());
         // $client_id = env("AMAZON_US_CLIENT_ID");
         // $client_secret = env("AMAZON_US_CLIENT_SECRET");
         // $refresh_token = $user->amazon_us_refresh_token;
         // $product = new Product();
-        // $product->asin = "B0B928B6BC";
+        // $product->asin = "B09WTM88B6";
         
         // $client_id = env("AMAZON_US_CLIENT_ID");
         // $client_secret = env("AMAZON_US_CLIENT_SECRET");
@@ -129,26 +133,24 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
         //     "us",
         // );
         // return $amazonService->getCatalogItem($product);
-        // return $amazonService->getProductPricing();
+        // return $amazonService->getProductPricing($product);
         // $feedType = FeedTypes::POST_PRODUCT_PRICING_DATA;
         // return $amazonService->createFeed($feedType);
         // return $amazonService->CreateFeedWithFile();
 
-        $user = User::find(auth()->id());
-        $client_id = env("AMAZON_JP_CLIENT_ID");
-        $client_secret = env("AMAZON_JP_CLIENT_SECRET");
-        $refresh_token = $user->amazon_jp_refresh_token;
-        $product = new Product();
-        $product->asin = "50084019510";
+        // $user = User::find(auth()->id());
+        // $client_id = env("AMAZON_JP_CLIENT_ID");
+        // $client_secret = env("AMAZON_JP_CLIENT_SECRET");
+        // $refresh_token = $user->amazon_jp_refresh_token;
         
-        $amazonService = new AmazonService(
-            $client_id,
-            $client_secret,
-            $refresh_token,
-            $user,
-            "jp",
-        );
-        return $amazonService->getFeedDocument("50106019510");
+        // $amazonService = new AmazonService(
+        //     $client_id,
+        //     $client_secret,
+        //     $refresh_token,
+        //     $user,
+        //     "jp",
+        // );
+        // return $amazonService->getFeedDocument("50109019512");
 
         // $product = Product::find(185);
         // return array(
@@ -160,17 +162,34 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
         //     "product" => $product,
         // );
 
-        $productBatch = ProductBatch::find(140);
-        $productExhibitHistories = $productBatch->productExhibitHistories;
-        $results = $amazonService->genInvloaderTXT($productExhibitHistories);
-        $fileName = "file.txt";
-        header('Content-Type: text/plain');
-        header('Content-Disposition: attachment; filename='.$fileName);
-        echo mb_convert_encoding($results, "SJIS", "UTF-8");
+        // $productBatch = ProductBatch::find(140);
+        // $productExhibitHistories = $productBatch->productExhibitHistories;
+        // $results = $amazonService->genInvloaderTXT($productExhibitHistories);
+        // $fileName = "file.txt";
+        // header('Content-Type: text/plain');
+        // header('Content-Disposition: attachment; filename='.$fileName);
+        // echo mb_convert_encoding($results, "SJIS", "UTF-8");
 
         // $results = $amazonService->CreateFeedWithFile($productExhibitHistories);
         // $feed_id = $results->getFeedId();
         // var_dump($results);
+
+        // 
+        // $products = Product::where([
+        //     ["amazon_jp_has_exhibited", true],
+        //     ["amazon_is_in_checklist", "!=", true],
+        //     ["amazon_latest_check_at", "<", Carbon::now()->subHour(0)],
+        //     ["is_deleted", "=", false],
+        // ])->cursor();
+
+        // foreach($products as $product) {
+        //     $product->amazon_is_in_checklist = true;
+        //     $product->save();
+
+        //     UpdateAmazonInfo::dispatch($product)->onQueue('default');
+
+        //     var_dump($product->title_us);
+        // }
     });
 });
 

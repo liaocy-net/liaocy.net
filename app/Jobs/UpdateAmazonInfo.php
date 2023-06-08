@@ -12,8 +12,9 @@ use App\Services\AmazonService;
 use App\Models\Product;
 use AmazonPHP\SellingPartner\Exception\ApiException;
 use App\Services\UtilityService;
+use Carbon\Carbon;
 
-class ExtractAmazonInfo implements ShouldQueue
+class UpdateAmazonInfo implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -43,23 +44,43 @@ class ExtractAmazonInfo implements ShouldQueue
      */
     public function handle()
     {
-        if ($this->batch()->cancelled()) {
-            return;
-        }
-
         try {
+            $this->product->amazon_latest_check_at = Carbon::now(); //最新チェック日時
+            $this->product->amazon_is_in_checklist = false;
+            $this->product->save();
+
             UtilityService::updateUSAmazonInfo($this->product);
             UtilityService::updateJPAmazonInfo($this->product);
 
             $this->product->message = "正常";
             $this->product->is_exhibit_to_amazon_jp = true;
             $this->product->save();
+
+            $user = $this->product->user;
+
+            $canBeExhibitToAmazonJP = UtilityService::canBeExhibitToAmazonJP($user, $this->product);
+            if ($canBeExhibitToAmazonJP["canBeExhibit"]) {
+                $newPrice = $canBeExhibitToAmazonJP["exhibitPrice"]; //最新出品価格
+
+                if ($newPrice != $this->product->amazon_jp_latest_exhibit_price) {
+                    //出品価格が変更されている場合は、出品価格を更新する
+                    $this->product->amazon_jp_latest_exhibit_price = $newPrice;
+                    $this->product->amazon_jp_need_update_exhibit_info = true;
+                    $this->product->save();
+                }
+            } else {
+                //出品できない場合は、在庫を0にする
+                $this->product->amazon_jp_latest_exhibit_quantity = 0;
+                $this->product->amazon_jp_need_update_exhibit_info = true;
+                $this->product->save();
+            }
         } catch (\Exception $e) {
             if ($this->attempts() < $this->tries) {
                 $this->release(10);
             } else {
-                $this->product->message = $e->getMessage();
-                $this->product->is_exhibit_to_amazon_jp = false;
+                //異常が起こした場合は、在庫を0にする
+                $this->product->amazon_jp_latest_exhibit_quantity = 0;
+                $this->product->amazon_jp_need_update_exhibit_info = true;
                 $this->product->save();
                 throw $e;
             }

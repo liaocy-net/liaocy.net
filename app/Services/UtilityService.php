@@ -9,7 +9,7 @@ use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use App\Models\WhiteList;
 use App\Models\BlackList;
-
+use AmazonPHP\SellingPartner\Exception\ApiException;
 
 class UtilityService
 {
@@ -429,6 +429,16 @@ class UtilityService
             );
         }
 
+
+        // 仕入れ価格が取得できません
+        if ($product->cp_us == null) {
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => '仕入れ価格が取得できません'
+            );
+        }
+
         // 仕入れ価格よりも低い
         if ($product->cp_us < $user->common_purchase_price_from) {
             return array(
@@ -585,5 +595,108 @@ class UtilityService
     public static function genSKU(Product $product)
     {
         return $product->asin;
+    }
+
+    public static function updateUSAmazonInfo($product)
+    {
+        $user = $product->user;
+
+        // extract Amazon US info
+        $client_id = env("AMAZON_US_CLIENT_ID"); //must fix on prd
+        $client_secret = env("AMAZON_US_CLIENT_SECRET"); //must fix on prd
+        $amazon_refresh_token = $user->amazon_us_refresh_token;
+        $amazonService = new AmazonService(
+            $client_id,
+            $client_secret,
+            $amazon_refresh_token,
+            $user,
+            "us",
+        );
+
+        try {
+            $catalogItem = $amazonService->getCatalogItem($product);
+            $productPricing = $amazonService->getProductPricing($product);
+        } catch (ApiException $e) {
+            $product->is_amazon_us = false;
+            $product->save();
+            throw new \Exception("No such product on Amazon US");
+        }
+        $product->title_us = $catalogItem['title'];
+        $product->brand_us = $catalogItem['brand'];
+        // $product->cate_us = $catalogItem['cate'];
+        $product->color_us = $catalogItem['color'];
+
+        $product->img_url_01 = $catalogItem['img_url_01'];
+        $product->img_url_02 = $catalogItem['img_url_02'];
+        $product->img_url_03 = $catalogItem['img_url_03'];
+        $product->img_url_04 = $catalogItem['img_url_04'];
+        $product->img_url_05 = $catalogItem['img_url_05'];
+        $product->img_url_06 = $catalogItem['img_url_06'];
+        $product->img_url_07 = $catalogItem['img_url_07'];
+        $product->img_url_08 = $catalogItem['img_url_08'];
+        $product->img_url_09 = $catalogItem['img_url_09'];
+        $product->img_url_10 = $catalogItem['img_url_10'];
+        $product->material_type_us = $catalogItem['material_type'];
+        $product->model_us = $catalogItem['model'];
+        $product->rank_us = $catalogItem['rank'];
+        $product->size_h_us = $catalogItem['size_h'];
+        $product->size_l_us = $catalogItem['size_l'];
+        $product->size_w_us = $catalogItem['size_w'];
+        $product->size_us = $catalogItem['size'];
+        $product->weight_us = $catalogItem['weight'];
+
+
+        $product->maximum_hours_us = $productPricing['maximum_hours'];
+        $product->minimum_hours_us = $productPricing['minimum_hours'];
+        $product->cp_us = $productPricing['cp'];
+        $product->nc_us = $productPricing['nc'];
+        $product->pp_us = $productPricing['pp'];
+
+        $product->is_amazon_us = true;
+        $product->save();
+    }
+
+    public static function updateJPAmazonInfo($product)
+    {
+        $user = $product->user;
+
+        // extract Amazon JP info
+        $client_id = env("AMAZON_JP_CLIENT_ID");
+        $client_secret = env("AMAZON_JP_CLIENT_SECRET");
+        $amazon_refresh_token = $user->amazon_jp_refresh_token;
+        $amazonService = new AmazonService(
+            $client_id,
+            $client_secret,
+            $amazon_refresh_token,
+            $user,
+            "jp",
+        );
+
+        try {
+            $catalogItem = $amazonService->getCatalogItem($product);
+            $productPricing = $amazonService->getProductPricing($product);
+        } catch (ApiException $e) {
+            $product->is_amazon_us = false;
+            $product->save();
+            throw new \Exception("No such product on Amazon JP");
+        }
+        $product->title_jp = $catalogItem['title'];
+        $product->brand_jp = $catalogItem['brand'];
+        $product->rank_id_jp = $catalogItem['rank_id'];
+        $product->rank_jp = $catalogItem['rank'];
+
+        $product->cp_jp = $productPricing['cp'];
+        $product->cp_point = $productPricing['cp_point'];
+        $product->maximum_hours_jp = $productPricing['maximum_hours'];
+        $product->minimum_hours_jp = $productPricing['minimum_hours'];
+        $product->nc_jp = $productPricing['nc'];
+        $product->np_jp = $productPricing['np'];
+        $product->pp_jp = $productPricing['pp'];
+        $product->ap_jp = $productPricing['ap'];
+        $product->seller_id = $productPricing['seller_id'];
+        $product->shipping_cost = $productPricing['shipping_cost'];
+
+        $product->is_amazon_jp = true;
+        $product->save();
     }
 }

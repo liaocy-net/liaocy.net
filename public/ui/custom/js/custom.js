@@ -109,10 +109,6 @@ var submitForm = function(form_id, call_back, preProcess = null, additonal_data 
   
   
   $("#" + form_id).submit(function(event) {
-    if(preProcess != null){
-      preProcess();
-    }
-
     // HTMLでの送信をキャンセル
     event.preventDefault();
 
@@ -120,6 +116,10 @@ var submitForm = function(form_id, call_back, preProcess = null, additonal_data 
 
     for (const [key, value] of Object.entries(additonal_data)) {
       data += "&" + key + "=" + value;
+    }
+
+    if(preProcess != null){
+      preProcess();
     }
 
     // 送信

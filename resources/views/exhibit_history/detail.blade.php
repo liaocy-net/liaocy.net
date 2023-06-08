@@ -157,9 +157,11 @@
             }
             refresh();
         }, function(){
-            $('#btn_delete_product').prop('disabled', true);
-            $('#btn_exhibit_to_amazon_jp').prop('disabled', true);
-            alert("出品中です。しばらくお待ちください。")
+            // if (data["act"] == "exhibit_to_amazon_jp") {
+            //     $('#btn_delete_product').prop('disabled', true);
+            //     $('#btn_exhibit_to_amazon_jp').prop('disabled', true);
+            //     alert("出品中です。しばらくお待ちください。")
+            // }
             showLoading('tab_products');
         });
     });
@@ -214,7 +216,9 @@
                 html += '<td><img style="max-width:50px;" src="' + product.img_url_01 + '" /></td>';
                 html += '<td>' + (product.title_jp ? product.title_jp : '-') + '</div></td>';
                 html += '<td>' + (product.brand_jp ? product.brand_jp : '-') + '</div></td>';
-                html += '<td>' + product.cp_us + '</td>';
+
+                html += '<td>' + (product.cp_us ? product.cp_us : '-') + '</td>';
+
                 html += '<td>' + product.hope_price_jpy + '</td>';
                 html += '<td>' + product.min_hope_price_jpy + '</td>';
                 html += '<td>' + product.rate_price_jpy + '</td>';
@@ -227,7 +231,7 @@
                     html += '<td>-</td>';
                 }
 
-                html += '<td>' + product.size_l_us + '<br />' + product.size_w_us + '<br />' + product.size_h_us + '</td>';
+                html += '<td>' + (product.size_l_us ? product.size_l_us : '-') + '<br />' + (product.size_w_us ? product.size_w_us : '-') + '<br />' + (product.size_h_us ? product.size_h_us : '-') + '</td>';
                 html += '<td>' + product.weight_us + '</td>';
                 html += '<td>' + product.can_be_exhibit_to_amazon_jp_message + '</td>';
                 html += '</tr>';

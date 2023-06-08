@@ -11,10 +11,13 @@ use Illuminate\Support\Facades\Validator;
 use PhpParser\Node\Expr\Cast\Array_;
 use App\Services\UtilityService;
 use App\Models\Product;
+use App\Models\Setting;
 use App\Models\ProductExhibitHistory;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Bus\Batch;
 use Throwable;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
 
 class ExhibitHistoryController extends Controller
 {
@@ -289,22 +292,32 @@ class ExhibitHistoryController extends Controller
                     if ($canBeExhibitToAmazonJP["canBeExhibit"]) {
                         $exhibitToJPProductBatch->products()->attach($product);
 
-                        $productExhibitHistory = new ProductExhibitHistory();
+                        // 同じユーザ/SKUの商品のAmazonJP出品済みフラグをFalseにする
+                        DB::table('products')
+                            ->where([
+                                ['user_id', $my->id],
+                                ['sku', $product->sku]
+                            ])
+                            ->update([
+                                'amazon_jp_has_exhibited' => false,
+                            ]);
 
-                        $productExhibitHistory->user_id = $my->id;
-                        $productExhibitHistory->product_id = $product->id;
-                        $productExhibitHistory->product_batch_id = $exhibitToJPProductBatch->id;
-                        $productExhibitHistory->action = "exhibit_to_amazon_jp";
-                        $productExhibitHistory->amazon_jp_sku = $product->asin;
-                        $productExhibitHistory->amazon_jp_price = $canBeExhibitToAmazonJP["exhibitPrice"];
-                        $productExhibitHistory->amazon_jp_quantity = $my->amazon_stock;
-                        $productExhibitHistory->amazon_jp_product_id_type = "ASIN";
-                        $productExhibitHistory->amazon_jp_product_id = $product->asin;
-                        $productExhibitHistory->amazon_jp_condition_type = "New";
-                        $productExhibitHistory->amazon_jp_condition_note = "";
-                        $productExhibitHistory->amazon_jp_leadtime_to_ship = 10;
+                        // 出品済みフラグ/価格を保存
+                        $product->amazon_jp_latest_exhibit_price = $canBeExhibitToAmazonJP["exhibitPrice"]; //最新出品価格
+                        $product->amazon_jp_latest_exhibit_quantity = $my->amazon_stock; //最新出品数量
+                        $product->amazon_jp_has_exhibited = true; //AmazonJP出品済みフラグ
+                        $product->amazon_is_in_checklist = false; //Amazon CheckList に入っているかどうか
+                        $product->amazon_latest_check_at = Carbon::now(); //最新チェック日時
 
-                        $productExhibitHistory->save();
+                        $product->amazon_jp_leadtime_to_ship = Setting::getInt("global_amazon_lead_time", 15);
+                        if ($product->maximum_hours_us && $product->maximum_hours_us > $my->amazon_lead_time_more) {
+                            $product->amazon_jp_leadtime_to_ship = $my->amazon_lead_time_more;
+                        }
+                        if ($product->maximum_hours_us && $product->maximum_hours_us < $product->amazon_lead_time_less) {
+                            $product->amazon_jp_leadtime_to_ship = $my->amazon_lead_time_less;
+                        }
+
+                        $product->save();
                     }
                 }
                 
