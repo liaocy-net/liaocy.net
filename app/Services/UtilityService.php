@@ -62,6 +62,19 @@ class UtilityService
         }
     }
 
+    public static function getUpdatePatchStatus($jobBatch)
+    {
+        if (!empty($jobBatch->finished_at)) {
+            return "改定完了";
+        } elseif ($jobBatch->total_jobs == $jobBatch->failed_jobs) {
+            return "改定完了(全て失敗)";
+        } elseif ($jobBatch->pending_jobs != 0 && $jobBatch->pending_jobs == $jobBatch->failed_jobs) {
+            return "改定完了(部分失敗)";
+        } else {
+            return "改定中";
+        }
+    }
+
     public static function getProductsExcel($products) {
         $headers = [
             "asin",
@@ -115,7 +128,7 @@ class UtilityService
 
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle('ASIN');
+        $sheet->setTitle('Amazon商品情報');
 
         $sheet->fromArray($headers, null, 'A1');
 

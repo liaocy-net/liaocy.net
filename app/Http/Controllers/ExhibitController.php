@@ -104,7 +104,7 @@ class ExhibitController extends Controller
                     $filename = $filename . "_" . ($existing_file_count + 1);
                 }
 
-                $productBatch->filename = $filename . ".csv";
+                $productBatch->filename = $filename . ".xlsx";
                 if (in_array("amazon", $request->exhibit_to)) {
                     $productBatch->is_exhibit_to_amazon = true;
                 } else {

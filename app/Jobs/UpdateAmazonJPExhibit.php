@@ -14,7 +14,7 @@ use App\Services\FeedTypes;
 use App\Models\ProductBatch;
 use Throwable;
 
-class ExhibitToAmazonJP implements ShouldQueue
+class UpdateAmazonJPExhibit implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -25,7 +25,7 @@ class ExhibitToAmazonJP implements ShouldQueue
      *
      * @var int
      */
-    public $tries = 5;
+    public $tries = 2;
 
     /**
      * Create a new job instance.
@@ -62,11 +62,11 @@ class ExhibitToAmazonJP implements ShouldQueue
                 "jp",
             );
 
-            // Exhibit and save feed_id
+            // Update Exhibit and save feed_id
             if (empty($this->productBatch->feed_id)) { // has not exhibited yet
                 $products = $this->productBatch->products;
 
-                $results = $amazonService->CreateFeedWithFile($products, FeedTypes::POST_FLAT_FILE_LISTINGS_DATA);
+                $results = $amazonService->CreateFeedWithFile($products, FeedTypes::POST_FLAT_FILE_PRICEANDQUANTITYONLY_UPDATE_DATA);
                 $feedId = $results["feedResults"]->getFeedId();
                 $this->productBatch->feed_id = $feedId;
                 $this->productBatch->feed_document = $results["feedDocument"];
@@ -75,7 +75,7 @@ class ExhibitToAmazonJP implements ShouldQueue
             }
 
             $feedId = $this->productBatch->feed_id;
-            $this->productBatch->message = "AmazonJP出品状態確認がタイムアウトしました。Amazonセーラーコンソールで確認してください。";
+            $this->productBatch->message = "AmazonJP価格改定状態確認がタイムアウトしました。Amazonセーラーコンソールで確認してください。";
             $this->productBatch->save();
 
             $url = $amazonService->getFeedDocument($feedId)->getUrl();

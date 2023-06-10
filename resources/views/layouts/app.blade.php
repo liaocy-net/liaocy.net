@@ -92,8 +92,8 @@
                         <div data-i18n="出品履歴">出品履歴</div>
                     </a>
                 </li>
-                <li class="menu-item @if(request()->is('price_history')) active @endif">
-                    <a href="{{url('/price_history')}}" class="menu-link">
+                <li class="menu-item @if(request()->is('update_history')) active @endif">
+                    <a href="{{url('/update_history')}}" class="menu-link">
                         <i class="menu-icon tf-icons ti ti-file-dollar"></i>
                         <div data-i18n="価格改定履歴">価格改定履歴</div>
                     </a>

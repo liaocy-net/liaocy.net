@@ -12,15 +12,19 @@ use App\Http\Controllers\AmazonInfoController;
 use App\Models\Product;
 use App\Services\AmazonService;
 use App\Jobs\UpdateAmazonInfo;
+use App\Jobs\UpdateAmazonJPExhibit;
 use App\Models\User;
 use App\Models\ProductBatch;
 use App\Services\FeedTypes;
 use App\Http\Controllers\ExhibitController;
 use App\Http\Controllers\ExhibitHistoryController;
+use App\Http\Controllers\UpdateHistoryController;
 use App\Services\UtilityService;
 use Illuminate\Support\Facades\DB;
 use AmazonPHP\SellingPartner\Exception\ApiException;
 use Carbon\Carbon;
+use Illuminate\Bus\Batch;
+use Illuminate\Support\Facades\Bus;
 
 /*
 |--------------------------------------------------------------------------
@@ -77,13 +81,13 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
     Route::get('/exhibit_history/get_products', [ExhibitHistoryController::class, 'getProducts'])->name('exhibit_history.get_products');
     Route::get('/exhibit_history/detail', [ExhibitHistoryController::class, 'detail'])->name('exhibit_history.detail');
     Route::get('/exhibit_history/product_batch_message', [ExhibitHistoryController::class, 'getProductBatchMessage'])->name('exhibit_history.product_batch_message');
+    Route::get('/exhibit_history/download_batch_feed_document_tsv', [ExhibitHistoryController::class, 'downloadProductBatchFeedDocumentTSV'])->name('exhibit_history.download_batch_feed_document_tsv');
     Route::post('/exhibit_history/process_products', [ExhibitHistoryController::class, 'processProducts'])->name('exhibit_history.process_products');
     Route::resource('/exhibit_history', ExhibitHistoryController::class);
 
     /* 価格改定履歴 */
-    Route::get('/price_history', function () {
-        return view('price_history');
-    });
+    Route::get('/update_history/get_update_histories', [UpdateHistoryController::class, 'getUpdateHistories'])->name('update_history.get_update_histories');
+    Route::resource('/update_history', UpdateHistoryController::class);
 
     /* ブラックリスト */
     Route::put('/black_list/store_multiple', [BlackListController::class, 'storeMultiple'])->name('black_list.store_multiple');
@@ -150,7 +154,7 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
         //     $user,
         //     "jp",
         // );
-        // return $amazonService->getFeedDocument("50109019512");
+        // return $amazonService->getFeedDocument("50115019518")->getUrl();
 
         // $product = Product::find(185);
         // return array(
@@ -190,6 +194,50 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
 
         //     var_dump($product->title_us);
         // }
+
+        //改定必須の商品を抽出
+        $product_users = Product::select("user_id")
+            ->where([
+                ["amazon_jp_need_update_exhibit_info", true], //AmazonJPAmazonJPへ出品情報更新要
+            ])->groupBy("user_id")->cursor();
+
+        foreach($product_users as $product_user) {
+
+            $products = Product::where([
+                ["user_id", $product_user->user_id],
+                ["amazon_jp_need_update_exhibit_info", true],
+            ])->limit(1000)->cursor();
+
+            $productBatch = new ProductBatch();
+            $productBatch->user_id = auth()->id();
+            $productBatch->action = "update_amazon_jp_exhibit";
+            $productBatch->save();
+
+            
+            foreach($products as $product) {
+                $product->amazon_jp_need_update_exhibit_info = false; //AmazonJPへ出品情報更新要フラグをリセット
+                $product->save();
+
+                $product->productBatches()->attach($productBatch);
+            }
+
+            $updateAmazonJPExhibits = array();
+            array_push($updateAmazonJPExhibits, new UpdateAmazonJPExhibit($productBatch));
+
+            $batch = Bus::batch($updateAmazonJPExhibits)->name("update_amazon_jp_exhibit")->then(function (Batch $batch) {
+                // すべてのジョブが正常に完了
+            })->catch(function (Batch $batch, Throwable $e) {
+                // バッチジョブの失敗をはじめて検出
+            })->finally(function (Batch $batch) {
+                // バッチジョブの完了
+                $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
+                $productBatch->finished_at = now();
+                $productBatch->save();
+            })->onQueue('high')->allowFailures()->dispatch();
+
+            $productBatch->job_batch_id = $batch->id;
+            $productBatch->save();
+        }
     });
 });
 

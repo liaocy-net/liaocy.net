@@ -390,6 +390,40 @@ class AmazonService
         return $tsv;
     }
 
+    public function genPostFlatFilePriceandquantityonlyUpdateData($products)
+    {
+        $tsv = "";
+        $headers = [
+            [
+                "TemplateType=PriceInventory",
+                "Version=2018.0924",
+                "",
+            ],
+            [
+                "商品管理番号",
+                "販売価格",
+                "在庫数",
+            ],
+            [
+                "sku",
+                "price",
+                "quantity",
+            ]
+        ];
+        foreach ($headers as $header) {
+            $tsv .= join("\t", $header) . "\n";
+        }
+        foreach ($products as $product) {
+            $contents = [
+                $product->sku,
+                $product->amazon_jp_latest_exhibit_price,
+                $product->amazon_jp_latest_exhibit_quantity,
+            ];
+            $tsv .= join("\t", $contents) . "\n";
+        }
+        return $tsv;
+    }
+
     public function CreateFeedWithFile($products, $feedType = FeedTypes::POST_FLAT_FILE_LISTINGS_DATA)
     {
         $sdk = $this->getSDK();
@@ -413,7 +447,7 @@ class AmazonService
         if ($feedType == FeedTypes::POST_FLAT_FILE_LISTINGS_DATA) {
             $feedDocument = $this->genPostFlatFileListingsData($products);
         } else if ($feedType == FeedTypes::POST_FLAT_FILE_PRICEANDQUANTITYONLY_UPDATE_DATA) {
-            throw new \Exception("not implemented.");
+            $feedDocument = $this->genPostFlatFilePriceandquantityonlyUpdateData($products);
         } else {
             throw new \Exception("feedType is not available.");
         }
@@ -441,6 +475,9 @@ class AmazonService
             $createFeedSpecification
         );
 
-        return $results;
+        return array(
+            'feedResults' => $results,
+            'feedDocument' => $feedDocument,
+        );
     }
 }

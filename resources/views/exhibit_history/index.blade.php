@@ -201,7 +201,7 @@
             let html = '';
             data.data.forEach(history => {
                 html += '<tr>';
-                html += '<td>' + history.filename + '</td>';
+                html += '<td><a href="/amazon_info/' + history.product_batch_id + '">' + history.filename + '</a></td>';
                 if (history.action == 'extract_amazon_info_for_exhibit') {
                     html += '<td>商品情報取得</td>';
                 } else if (history.action == 'exhibit_to_amazon_jp') {
@@ -219,11 +219,14 @@
                     html += '<td>-</td>';
                     html += '<td>-</td>';
                 }
-                if (history.has_message && history.end_at) {
-                    html += '<td><a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">詳細</a></td>';
-                } else {
-                    html += '<td>-</td>';
+                html += '<td>';
+                if (history.has_feed_document) {
+                    html += '<a href="{{route("exhibit_history.download_batch_feed_document_tsv")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">出品ファイル</a> ';
                 }
+                if (history.has_message && history.end_at) {
+                    html += '<br /><a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">出品結果</a>';
+                }
+                html += '</td>';
                 if (history.action == 'extract_amazon_info_for_exhibit' && history.end_at) {
                     html += '<td><a href="{{route("exhibit_history.detail")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
                 } else if (history.action == 'exhibit_to_amazon_jp' && history.end_at){

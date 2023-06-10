@@ -102,6 +102,8 @@ class ExhibitHistoryController extends Controller
                 $productBatch->has_message = !empty($productBatch->message);
                 unset($productBatch->message);
                 unset($productBatch->options);
+                $productBatch->has_feed_document = !empty($productBatch->feed_document);
+                unset($productBatch->feed_document);
             }
 
             return response()->json($productBatches);
@@ -369,6 +371,33 @@ class ExhibitHistoryController extends Controller
             }
 
             return response($productBatch->message, 200)->header('Content-Type', 'text/plain');
+
+        } catch (\Exception $e) {
+            return back()->withErrors($e->getMessage())->withInput();
+        }
+    }
+
+    public function downloadProductBatchFeedDocumentTSV(Request $request) {
+        try {
+            $params = $request->all();
+            $validator = Validator::make($params, [
+                'product_batch_id' => ['required', 'integer', 'min:1'],
+            ]);
+            if ($validator->fails()) {
+                throw new \Exception($validator->errors()->first(), 442);
+            }
+
+            $productBatch = ProductBatch::find($params['product_batch_id']);
+            if (!$productBatch || $productBatch->user_id != auth()->id()) {
+                throw new \Exception('product batch not found', 442);
+            }
+
+            $headers = array(                     //ヘッダー情報を指定する
+                'Content-Type' => 'text/tsv',
+                'Content-Disposition' => 'attachment; filename=feed_doc_' . $productBatch->id . '.tsv'
+            );
+
+            return response($productBatch->feed_document, 200, $headers);
 
         } catch (\Exception $e) {
             return back()->withErrors($e->getMessage())->withInput();

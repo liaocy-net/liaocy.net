@@ -35,13 +35,13 @@
                                 </div>
                             </div>
                             <div class="col-auto mb-2 d-inline-flex align-items-end">
-                                <button type="button" class="btn btn-primary waves-effect waves-light"><i class="fas fa-search me-1"></i>検索</button>
+                                <button type="button" class="btn btn-primary waves-effect waves-light" onclick="refresh();"><i class="fas fa-search me-1"></i>検索</button>
                             </div>
                         </div>
                     </form>
                 </div>
 
-                <div class="mb-4">
+                <div id="tab_amazon" class="mb-4">
                     <h5 class="fw-bold">アマゾン価格改定履歴</h5>
                     <div class="table-responsive text-nowrap">
                         <table class="table table-bordered table-striped text-center">
@@ -55,53 +55,17 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>2023/03/25 12:00:00</td>
-                                    <td>完了</td>
-                                    <td>125</td>
-                                    <td>失敗した場合のエラーメッセージ</td>
-                                </tr>
-                                <tr>
-                                    <td>2023/03/25 12:00:00</td>
-                                    <td>完了</td>
-                                    <td>125</td>
-                                    <td>失敗した場合のエラーメッセージ</td>
+                                    <td>
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
                     </div>
 
-                    <div class="pagination-body mt-3">
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center pagination-info">
-                                <li class="page-item first">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-left ti-xs"></i></a>
-                                </li>
-                                <li class="page-item prev">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevron-left ti-xs"></i></a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">1</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">2</a>
-                                </li>
-                                <li class="page-item active">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">3</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">4</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">5</a>
-                                </li>
-                                <li class="page-item next">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevron-right ti-xs"></i></a>
-                                </li>
-                                <li class="page-item last">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-right ti-xs"></i></a>
-                                </li>
-                            </ul>
-                        </nav>
+                    <div id="nav_amazon" class="pagination-body mt-3">
                     </div>
                 </div>
 
@@ -119,16 +83,11 @@
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td>2023/03/25 12:00:00</td>
-                                    <td>完了</td>
-                                    <td>125</td>
-                                    <td>失敗した場合のエラーメッセージ</td>
-                                </tr>
-                                <tr>
-                                    <td>2023/03/25 12:00:00</td>
-                                    <td>完了</td>
-                                    <td>125</td>
-                                    <td>失敗した場合のエラーメッセージ</td>
+                                    <td>
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -178,12 +137,63 @@
 <script>
     $(document).ready(function(){
         'use strict';
-
+        refreshAmazon();
     });
 
     $(function () {
         
     });
+
+    var showLoading = function(tableId) {
+        var loading = '<tr><td>';
+        loading += '<div class="spinner-border text-primary" role="status">';
+        loading += '<span class="visually-hidden">Loading...</span>';
+        loading += '</div>';
+        loading += '</td></tr>';
+        $('#' + tableId + ' .table tbody').html(loading);
+    };
+
+    var refreshAmazon = function(page = 1) {  
+        showLoading('tab_amazon');
+        
+        getData("{{route('update_history.get_update_histories')}}", {
+            platform: "amazon",
+            page: page,
+            period_from: $('#search_period_from').val(),
+            period_to: $('#search_period_to').val(),
+        }, function(data) {
+            let html = '';
+            data.data.forEach(history => {
+                html += '<tr>';
+                html += '<td>' + (history.start_at ? history.start_at : '-') + '</td>';
+                html += '<td>' + history.patch_status + '</td>';
+                html += '<td>' + history.products_count + '</td>';
+                
+                html += '<td>';
+                if (history.has_feed_document && history.end_at) {
+                    html += '<a href="{{route("exhibit_history.download_batch_feed_document_tsv")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">改定ファイル</a> ';
+                }
+                if (history.has_message && history.end_at) {
+                    html += '<a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">詳細</a>';
+                }
+                html += '</td>';
+
+                html += '</tr>';
+            });
+            $('#tab_amazon .table tbody').html(html);
+
+            var navAmazon = getNavigator(data, 'refreshAmazon');
+
+            $('#nav_amazon').html(navAmazon);
+
+        }, function() {
+
+        });
+    };
+
+    var refresh = function() {
+        refreshAmazon();
+    };
 </script>
 @endsection
 
