@@ -689,7 +689,7 @@ class UtilityService
             $catalogItem = $amazonService->getCatalogItem($product);
             $productPricing = $amazonService->getProductPricing($product);
         } catch (ApiException $e) {
-            $product->is_amazon_us = false;
+            $product->is_amazon_jp = false;
             $product->save();
             throw new \Exception("No such product on Amazon JP");
         }

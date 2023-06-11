@@ -119,6 +119,28 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
 
     /* test */
     Route::get('/test', function () {
+        // $product = new Product();
+        // $product->asin = "B09WTM88B6";
+        // $product->user = User::find(auth()->id());
+
+        // UtilityService::updateJPAmazonInfo($product);
+
+        $user = User::find(auth()->id());
+        $client_id = env("AMAZON_JP_CLIENT_ID");
+        $client_secret = env("AMAZON_JP_CLIENT_SECRET");
+        $refresh_token = $user->amazon_jp_refresh_token;
+        $product = new Product();
+        $product->asin = "B09WTM88B6";
+        $amazonService = new AmazonService(
+            $client_id,
+            $client_secret,
+            $refresh_token,
+            $user,
+            "jp",
+        );
+        // return $amazonService->getCatalogItem($product);
+        return $amazonService->getProductPricing($product);
+
         // $user = User::find(auth()->id());
         // $client_id = env("AMAZON_US_CLIENT_ID");
         // $client_secret = env("AMAZON_US_CLIENT_SECRET");
@@ -196,48 +218,50 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
         // }
 
         //改定必須の商品を抽出
-        $product_users = Product::select("user_id")
-            ->where([
-                ["amazon_jp_need_update_exhibit_info", true], //AmazonJPAmazonJPへ出品情報更新要
-            ])->groupBy("user_id")->cursor();
+        // $product_users = Product::select("user_id")
+        //     ->where([
+        //         ["amazon_jp_need_update_exhibit_info", true], //AmazonJPAmazonJPへ出品情報更新要
+        //     ])->groupBy("user_id")->cursor();
 
-        foreach($product_users as $product_user) {
+        // foreach($product_users as $product_user) {
 
-            $products = Product::where([
-                ["user_id", $product_user->user_id],
-                ["amazon_jp_need_update_exhibit_info", true],
-            ])->limit(1000)->cursor();
+        //     $products = Product::where([
+        //         ["user_id", $product_user->user_id],
+        //         ["amazon_jp_need_update_exhibit_info", true],
+        //     ])->limit(1000)->cursor();
 
-            $productBatch = new ProductBatch();
-            $productBatch->user_id = auth()->id();
-            $productBatch->action = "update_amazon_jp_exhibit";
-            $productBatch->save();
+        //     $productBatch = new ProductBatch();
+        //     $productBatch->user_id = auth()->id();
+        //     $productBatch->action = "update_amazon_jp_exhibit";
+        //     $productBatch->save();
 
             
-            foreach($products as $product) {
-                $product->amazon_jp_need_update_exhibit_info = false; //AmazonJPへ出品情報更新要フラグをリセット
-                $product->save();
+        //     foreach($products as $product) {
+        //         $product->amazon_jp_need_update_exhibit_info = false; //AmazonJPへ出品情報更新要フラグをリセット
+        //         $product->save();
 
-                $product->productBatches()->attach($productBatch);
-            }
+        //         $product->productBatches()->attach($productBatch);
+        //     }
 
-            $updateAmazonJPExhibits = array();
-            array_push($updateAmazonJPExhibits, new UpdateAmazonJPExhibit($productBatch));
+        //     $updateAmazonJPExhibits = array();
+        //     array_push($updateAmazonJPExhibits, new UpdateAmazonJPExhibit($productBatch));
 
-            $batch = Bus::batch($updateAmazonJPExhibits)->name("update_amazon_jp_exhibit")->then(function (Batch $batch) {
-                // すべてのジョブが正常に完了
-            })->catch(function (Batch $batch, Throwable $e) {
-                // バッチジョブの失敗をはじめて検出
-            })->finally(function (Batch $batch) {
-                // バッチジョブの完了
-                $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
-                $productBatch->finished_at = now();
-                $productBatch->save();
-            })->onQueue('high')->allowFailures()->dispatch();
+        //     $batch = Bus::batch($updateAmazonJPExhibits)->name("update_amazon_jp_exhibit")->then(function (Batch $batch) {
+        //         // すべてのジョブが正常に完了
+        //     })->catch(function (Batch $batch, Throwable $e) {
+        //         // バッチジョブの失敗をはじめて検出
+        //     })->finally(function (Batch $batch) {
+        //         // バッチジョブの完了
+        //         $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
+        //         $productBatch->finished_at = now();
+        //         $productBatch->save();
+        //     })->onQueue('high')->allowFailures()->dispatch();
 
-            $productBatch->job_batch_id = $batch->id;
-            $productBatch->save();
-        }
+        //     $productBatch->job_batch_id = $batch->id;
+        //     $productBatch->save();
+        // }
+
+        return "test";
     });
 });
 
