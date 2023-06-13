@@ -210,7 +210,7 @@
                                 <label class="form-label" for="amazon_price_increase_rate">値上げ率</label>
                                 <div class="input-group" id="amazon_price_increase_rate_group">
                                     <span class="input-group-text col-5">{{ $my->amazon_price_increase_rate * 100 }}%</span>
-                                    <input type="number" id="amazon_price_increase_rate" name="amazon_price_increase_rate" class="form-control" min="0" max="999999" value="{{ $my->amazon_price_increase_rate * 100 }}"/>
+                                    <input type="number" id="amazon_price_increase_rate" name="amazon_price_increase_rate" class="form-control" min="100" max="9999" value="{{ $my->amazon_price_increase_rate * 100 }}"/>
                                     <span class="input-group-text">%</span>
                                 </div>
                             </div>

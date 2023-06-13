@@ -131,7 +131,7 @@ class SettingController extends Controller
                     'amazon_using_profit' => ['required', 'integer', 'min:1', 'max:2'],
                     'amazon_using_sale_commission' => ['required', 'integer', 'min:0', 'max:999999'],
                     'amazon_stock' => ['required', 'integer', 'min:0', 'max:999999'],
-                    'amazon_price_increase_rate' => ['required', 'integer', 'min:0', 'max:999999'],
+                    'amazon_price_increase_rate' => ['required', 'integer', 'min:100', 'max:9999'],
                     'amazon_rival' => ['required', 'integer', 'min:1', 'max:2'],
                     'amazon_point_rate' => ['required', 'integer', 'min:0', 'max:999999'],
                     'amazon_lead_time_less' => ['required', 'integer', 'min:1', 'max:100'],

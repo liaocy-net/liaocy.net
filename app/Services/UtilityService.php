@@ -215,21 +215,13 @@ class UtilityService
                         'exhibitPrice' => null,
                         'message' => '最低利益価格がライバル価格より高いため'
                     );
-                } else {
-                    if ($amazonJPHopePrice < $product->cp_jp) {
-                        return array(
-                            'canBeExhibit' => true,
-                            'exhibitPrice' => $amazonJPHopePrice,
-                            'message' => '出品可能（希望利益価格で出品）'
-                        );
-                    }
-
-                    $price_cut = $product->cp_jp - $user->amazon_price_cut;
+                } else { // AmazonJPの最低希望販売価格 <= ライバル出品価格
+                    $price_cut = $product->cp_jp - $user->amazon_price_cut; // ライバル最低価格から値下げした価格
                     if ($price_cut >= $amazonJPMinHopePrice) {
                         return array(
                             'canBeExhibit' => true,
                             'exhibitPrice' => $price_cut,
-                            'message' => '出品可能（利益額Verでライバル最低価格から値下げして出品）'
+                            'message' => '出品可能（利益額Verでライバル価格から値下げして出品）'
                         );
                     } else {
                         return array(
@@ -242,7 +234,7 @@ class UtilityService
             } else { //ライバル存在しない
                 return array(
                     'canBeExhibit' => true,
-                    'exhibitPrice' => ceil($amazonJPHopePrice * (1 + $user->amazon_price_increase_rate)),
+                    'exhibitPrice' => ceil($amazonJPHopePrice * $user->amazon_price_increase_rate),
                     'message' => '出品可能（ライバルフラグがON、ライバルなし、希望利益価格+値上げで出品）'
                 );
             }
@@ -342,7 +334,7 @@ class UtilityService
                 } else { //ライバル存在しない
                     return array(
                         'canBeExhibit' => true,
-                        'exhibitPrice' => ceil($amazonJPRatePrice * (1 + $user->amazon_price_increase_rate)),
+                        'exhibitPrice' => ceil($amazonJPRatePrice * $user->amazon_price_increase_rate),
                         'message' => '出品可能（ライバルフラグがON、ライバルなし、希望利益率価格+値上げで出品）'
                     );
                 }
@@ -506,7 +498,7 @@ class UtilityService
         } else if ($user->amazon_using_profit == 2) { // 利益率Ver
             return self::getRatePrice($user, $product);
         } else {
-            throw new Exception('amazon_using_profit is invalid');
+            throw new \Exception('amazon_using_profit is invalid');
         }
 
         return array(
