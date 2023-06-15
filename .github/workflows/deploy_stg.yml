@@ -18,7 +18,7 @@ env:
   APP_ENV: stg
   APP_PORT: 5000
   DOCKER_COMMON_ENVS: |- 
-    -e APP_NAME=Charing(STG) \
+    -e APP_NAME=Charing \
     -e APP_KEY=${{secrets.APP_KEY_STG}} \
     -e APP_DEBUG=true \
     -e APP_URL=https://test.charing.biz/ \
@@ -89,21 +89,13 @@ jobs:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Build & Push Web Docker Image
+      - name: Build Docker Image
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: ./DockerfileWeb
           push: true
-          tags: ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing-web:latest
-      - name: Build & Push Queue Docker Image
-        uses: docker/build-push-action@v4
-        with:
-          context: .
-          file: ./DockerfileQueue
-          push: true
-          tags: ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing-queue:latest
-      - name: Pull Web & Queue Docker
+          tags: ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest
+      - name: Pull Docker Image
         uses: appleboy/ssh-action@v0.1.10
         with:
           host: ${{ env.SERVER_HOST }}
@@ -113,27 +105,27 @@ jobs:
           script: |-
             export CR_PAT=${{ secrets.GITHUB_TOKEN }}
             echo $CR_PAT | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            sudo docker pull ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing-web:latest
-            sudo docker pull ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing-queue:latest
+            sudo docker pull ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest
             sudo docker logout ghcr.io
-            - name: Run Web Docker
-            uses: appleboy/ssh-action@v0.1.10
-            with:
-              host: ${{ env.SERVER_HOST }}
-              username: ${{ env.SERVER_USER }}
-              key: ${{ env.SERVER_SSH_KEY }}
-              port: ${{ env.SERVER_PORT }}
-              script: |-
-                if [[ $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-web") ]]; then
-                  sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-web" | xargs sudo docker stop | xargs sudo docker rm
-                fi
-                sudo docker run \
-                  -p ${{ env.APP_PORT }}:8000 \
-                  -d --name ${{ env.APP_ENV }}-charing-web \
-                  --restart=always \
-                  -e APP_ENV=${{ env.APP_ENV }} \
-                  ${{ env.DOCKER_COMMON_ENVS }} \
-                  ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing-web:latest
+      - name: Run Web Docker
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_USER }}
+          key: ${{ env.SERVER_SSH_KEY }}
+          port: ${{ env.SERVER_PORT }}
+          script: |-
+            if [[ $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-web") ]]; then
+              sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-web" | xargs sudo docker stop | xargs sudo docker rm
+            fi
+            sudo docker run \
+              -p ${{ env.APP_PORT }}:8000 \
+              -d --name ${{ env.APP_ENV }}-charing-web \
+              --restart=always \
+              -e APP_ENV=${{ env.APP_ENV }} \
+              ${{ env.DOCKER_COMMON_ENVS }} \
+              ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
+              php artisan serve --host=0.0.0.0 --port=8000
       - name: Run Queue Dockers
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -148,15 +140,13 @@ jobs:
                 sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-queue-$i" | xargs sudo docker stop | xargs sudo docker rm
               fi
             done
-            for i in $(seq -f "%03g" 1 ${{ env.QUEUE_COUNT }})
-            do
-              sudo docker run \
-                -d --name ${{ env.APP_ENV }}-charing-queue-$i \
-                --restart=always \
-                -e APP_ENV=${{ env.APP_ENV }} \
-                ${{ env.DOCKER_COMMON_ENVS }} \
-                ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing-queue:latest
-            done
+            sudo docker run \
+              -d --name ${{ env.APP_ENV }}-charing-queue-001 \
+              --restart=always \
+              -e APP_ENV=${{ env.APP_ENV }} \
+              ${{ env.DOCKER_COMMON_ENVS }} \
+              ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
+              php artisan queue:work --queue=high,default
       - name: Database Migration
         uses: appleboy/ssh-action@v0.1.10
         with:
