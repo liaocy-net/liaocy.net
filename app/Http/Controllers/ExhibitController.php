@@ -148,7 +148,7 @@ class ExhibitController extends Controller
                 return redirect()->route('exhibit.index')->with('success', 'Amazon情報取得ジョブを登録しました。');
                 
             } else {
-                throw new \Exception("CSVファイルが選択されていません。");
+                throw new \Exception("Excel(.xlsx)ファイルが選択されていません。");
             }
         } catch (\Exception $e) {
             return back()->withErrors($e->getMessage());

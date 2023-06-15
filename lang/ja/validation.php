@@ -155,6 +155,7 @@ return [
         'newpassword' => '新しいパスワード',
         'current_password' => '古いパスワード',
         'newpassword_confirmation' => '新しいパスワード（確認用）',
+        'exhibit_to' => '出品先',
     ],
 
 ];

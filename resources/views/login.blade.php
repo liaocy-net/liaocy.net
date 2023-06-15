@@ -15,7 +15,7 @@
                         <!-- Logo -->
                         <div class="app-brand justify-content-center mb-4 mt-2">
                             <a href="" class="app-brand-link gap-2">
-                                <span class="app-brand-text demo text-body fw-bold ms-1">Charing</span>
+                                <span class="app-brand-text demo text-body fw-bold ms-1">{{env('APP_NAME')}}</span>
                             </a>
                         </div>
                         <!-- /Logo -->
@@ -26,7 +26,7 @@
                             @csrf
                             <div class="mb-3">
                                 <label for="email" class="form-label">メールアドレス</label>
-                                <input type="text" class="form-control" id="email" name="email" placeholder="メールアドレス" autofocus value="test@test.com"/>
+                                <input type="text" class="form-control" id="email" name="email" placeholder="メールアドレス" autofocus/>
                                 @error('email')
                                     <span class="invalid-feedback" role="alert">
                                         <strong>{{ $message }}</strong>
@@ -51,7 +51,7 @@
                                     </a>
                                 </div>
                                 <div class="input-group input-group-merge">
-                                    <input type="password" id="password" class="form-control" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password" value="123456"/>
+                                    <input type="password" id="password" class="form-control" name="password" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" aria-describedby="password"/>
                                     <span class="input-group-text cursor-pointer"><i class="ti ti-eye-off"></i></span>
                                 </div>
                             </div>

@@ -18,7 +18,7 @@ env:
   APP_ENV: stg
   APP_PORT: 5000
   DOCKER_COMMON_ENVS: |- 
-    -e APP_NAME=charing \
+    -e APP_NAME=Charing(STG) \
     -e APP_KEY=${{secrets.APP_KEY_STG}} \
     -e APP_DEBUG=true \
     -e APP_URL=https://test.charing.biz/ \
