@@ -21,6 +21,7 @@
                         <!-- /Logo -->
                         <h5 class="mb-3 pt-2">パスワード再設定</h5>
                         <form id="formAuthentication" class="mb-3" action="{{route('password.email')}}" method="POST">
+                            @csrf
                             <div class="mb-3">
                                 <label for="email" class="form-label">メールアドレス</label>
                                 <input type="text" class="form-control" id="email" name="email" placeholder="メールアドレス" autofocus/>

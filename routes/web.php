@@ -25,6 +25,8 @@ use AmazonPHP\SellingPartner\Exception\ApiException;
 use Carbon\Carbon;
 use Illuminate\Bus\Batch;
 use Illuminate\Support\Facades\Bus;
+use App\Http\Controllers\Auth\PasswordResetLinkController;
+use App\Http\Controllers\Auth\NewPasswordController;
 
 /*
 |--------------------------------------------------------------------------
@@ -52,23 +54,33 @@ Route::get('/', function() {
     }
 });
 
-Route::get('/login', function () {
-    return view('login');
-})->name('login');
+Route::middleware('guest')->group(function () { 
 
-Route::post('/login', [AuthenticatedSessionController::class, 'store']);
+    Route::get('/login', function () {
+        return view('login');
+    })->name('login');
 
-Route::get('/logout', [AuthenticatedSessionController::class, 'destroy']);
+    Route::post('/login', [AuthenticatedSessionController::class, 'store']);
 
-Route::get('/forgot_password', function () {
-    return view('forgot-password');
+    Route::get('/forgot-password', function () {
+        return view('forgot-password');
+    });
+
+    Route::post('forgot-password', [PasswordResetLinkController::class, 'store'])
+        ->name('password.email');
+
+    Route::get('reset-password/{token}', [NewPasswordController::class, 'create'])
+        ->name('password.reset');
+
+    Route::post('reset-password', [NewPasswordController::class, 'store'])
+        ->name('password.store');
+
 });
 
-Route::post('/forgot-password', function () {
-    return view('forgot-password');
-})->name('password.email');
-
 Route::group(['middleware' => ['auth', 'check_banned']], function () {
+    /* ログアウト */
+    Route::get('/logout', [AuthenticatedSessionController::class, 'destroy']);
+
     /* Amazon情報取得 */
     Route::get('/amazon_info/download_asin_template_xlsx', [AmazonInfoController::class, 'downloadASINTemplateXLSX'])->name('amazon_info.download_asin_template_xlsx');
     Route::resource('/amazon_info', AmazonInfoController::class)->except(['create', 'edit', 'update']);

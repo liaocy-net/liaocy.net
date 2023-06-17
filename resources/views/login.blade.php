@@ -46,7 +46,7 @@
                                             <small>パスワードをお忘れの方</small>
                                         </a>
                                     @endif  --}}
-                                    <a href="{{url('/forgot_password')}}">
+                                    <a href="{{url('/forgot-password')}}">
                                         <small>パスワードをお忘れの方</small>
                                     </a>
                                 </div>
