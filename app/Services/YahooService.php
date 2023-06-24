@@ -12,6 +12,7 @@ use App\Models\AmazonProductImage;
 use Illuminate\Support\Facades\Storage;
 use ZipArchive;
 use CURLFile;
+use Illuminate\Support\Facades\File;
 
 class YahooService
 {
@@ -101,7 +102,10 @@ class YahooService
     public function uploadItemImagePack($product)
     {
         $productImageURLs = $product->getAmazonUSImageURLs();
-        $zipFileName = storage_path() . "/app/yahoo_product_images/" . $this->getItemCode($product) . ".zip";
+        $zipFileFolder = storage_path() . "/app/yahoo_product_images/";
+        if(!File::isDirectory($zipFileFolder))
+            File::makeDirectory($zipFileFolder, 0777, true, true);
+        $zipFileName = $zipFileFolder . $this->getItemCode($product) . ".zip";
         $zip = new ZipArchive();
         $result = $zip->open($zipFileName, ZipArchive::CREATE);
         if($result === true)
