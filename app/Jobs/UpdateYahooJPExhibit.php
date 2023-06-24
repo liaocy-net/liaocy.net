@@ -2,39 +2,39 @@
 
 namespace App\Jobs;
 
+use AmazonPHP\SellingPartner\Model\Feeds\Feed;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Services\AmazonService;
-use App\Models\Product;
-use AmazonPHP\SellingPartner\Exception\ApiException;
-use App\Services\UtilityService;
-use App\Jobs\DownloadAmazonJPProductImages;
+use App\Services\YahooService;
+use App\Services\FeedTypes;
+use App\Models\ProductBatch;
+use Throwable;
 
-class ExtractAmazonInfo implements ShouldQueue
+class UpdateYahooJPExhibit implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $product;
+    protected ProductBatch $productBatch;
 
     /**
      * The number of times the job may be attempted.
      *
      * @var int
      */
-    public $tries = 3;
+    public $tries = 2;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(Product $product)
+    public function __construct(ProductBatch $productBatch)
     {
-        $this->product = $product;
+        $this->productBatch = $productBatch;
     }
 
     /**
@@ -48,17 +48,15 @@ class ExtractAmazonInfo implements ShouldQueue
             return;
         }
 
-        UtilityService::updateUSAmazonInfo($this->product);
+        $user = $this->productBatch->user;        
+        $products = $this->productBatch->products->all();
+        
+        $yahooService = new YahooService($user);
+        $yahooService->updateItemsPrice($products);
+        $yahooService->setStock($products);
+        
 
-        $imageURLs = $this->product->getAmazonUSImageURLs();
-
-        foreach ($imageURLs as $url) {
-            DownloadAmazonJPProductImages::dispatch($url)->onQueue('download_amazon_jp_product_images'); //キューに追加
-        }
-
-        UtilityService::updateJPAmazonInfo($this->product);
-
-        $this->product->save();
+        var_dump('UpdateYahooJPExhibit: ' . $this->productBatch->id);
     }
 
     /**
@@ -71,11 +69,6 @@ class ExtractAmazonInfo implements ShouldQueue
         return [1, 5, 10];
     }
 
-    /**
-     * 失敗したジョブの処理
-     * @param  \Exception  $exception
-     * @return void
-     */
     public function failed($exception)
     {
         if (env('APP_DEBUG', 'false') == 'true') {

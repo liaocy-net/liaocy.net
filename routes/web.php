@@ -20,13 +20,22 @@ use App\Http\Controllers\ExhibitController;
 use App\Http\Controllers\ExhibitHistoryController;
 use App\Http\Controllers\UpdateHistoryController;
 use App\Services\UtilityService;
+use App\Services\YahooService;
 use Illuminate\Support\Facades\DB;
 use AmazonPHP\SellingPartner\Exception\ApiException;
 use Carbon\Carbon;
 use Illuminate\Bus\Batch;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Storage;
+use App\Models\AmazonProductImage;
+use App\Console\Kernel;
+use App\Jobs\UpdateYahooJPExhibit;
+use YConnect\Constant\ResponseType;
+use YConnect\Credential\ClientCredential;
+use YConnect\YConnectClient;
 use App\Http\Controllers\Auth\PasswordResetLinkController;
 use App\Http\Controllers\Auth\NewPasswordController;
+use App\Http\Controllers\YahooJpCategoryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -91,11 +100,12 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
     /* 出品履歴 */
     Route::get('/exhibit_history/get_exhibit_histories', [ExhibitHistoryController::class, 'getExhibitHistories'])->name('exhibit_history.get_exhibit_histories');
     Route::get('/exhibit_history/get_products', [ExhibitHistoryController::class, 'getProducts'])->name('exhibit_history.get_products');
-    Route::get('/exhibit_history/detail', [ExhibitHistoryController::class, 'detail'])->name('exhibit_history.detail');
+    Route::get('/exhibit_history/detail_amazon_jp', [ExhibitHistoryController::class, 'detailAmazonJP'])->name('exhibit_history.detail_amazon_jp');
+    Route::get('/exhibit_history/detail_yahoo_jp', [ExhibitHistoryController::class, 'detailYahooJP'])->name('exhibit_history.detail_yahoo_jp');
     Route::get('/exhibit_history/product_batch_message', [ExhibitHistoryController::class, 'getProductBatchMessage'])->name('exhibit_history.product_batch_message');
     Route::get('/exhibit_history/download_batch_feed_document_tsv', [ExhibitHistoryController::class, 'downloadProductBatchFeedDocumentTSV'])->name('exhibit_history.download_batch_feed_document_tsv');
     Route::post('/exhibit_history/process_products', [ExhibitHistoryController::class, 'processProducts'])->name('exhibit_history.process_products');
-    Route::resource('/exhibit_history', ExhibitHistoryController::class);
+    Route::resource('/exhibit_history', ExhibitHistoryController::class)->except(['show']);
 
     /* 価格改定履歴 */
     Route::get('/update_history/get_update_histories', [UpdateHistoryController::class, 'getUpdateHistories'])->name('update_history.get_update_histories');
@@ -122,43 +132,24 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
     Route::get('/setting/yahoo/callback', [SettingController::class, 'yahooCallback'])->name('setting.yahoo_callback');
     Route::get('/setting/amazon/callback', [SettingController::class, 'amazonCallback'])->name('setting.amazon_callback');
     Route::get('/setting/download_my_foreign_shippings_xlsx', [ForeignShippingController::class, 'downloadMyXLSX'])->name('setting.download_my_foreign_shippings_xlsx');
+    
 
     /* 管理者のみ */
     Route::group(['middleware' => 'admin'], function () {
         /* ユーザー管理 */
         Route::resource('/users', UserController::class);
+
+        Route::get('/setting/download_yahoo_jp_category_xlsx', [YahooJpCategoryController::class, 'downloadYahooJpCategoryXLSX'])->name('setting.download_yahoo_jp_category_xlsx');
     });
 
     /* test */
     Route::get('/test', function () {
-        // $product = new Product();
-        // $product->asin = "B09WTM88B6";
-        // $product->user = User::find(auth()->id());
-
-        // UtilityService::updateJPAmazonInfo($product);
-
-        $user = User::find(auth()->id());
-        $client_id = env("AMAZON_JP_CLIENT_ID");
-        $client_secret = env("AMAZON_JP_CLIENT_SECRET");
-        $refresh_token = $user->amazon_jp_refresh_token;
-        $product = new Product();
-        $product->asin = "B09WTM88B6";
-        $amazonService = new AmazonService(
-            $client_id,
-            $client_secret,
-            $refresh_token,
-            $user,
-            "jp",
-        );
-        // return $amazonService->getCatalogItem($product);
-        return $amazonService->getProductPricing($product);
-
         // $user = User::find(auth()->id());
         // $client_id = env("AMAZON_US_CLIENT_ID");
         // $client_secret = env("AMAZON_US_CLIENT_SECRET");
         // $refresh_token = $user->amazon_us_refresh_token;
         // $product = new Product();
-        // $product->asin = "B09WTM88B6";
+        // $product->asin = "B09G9FPHY6";
         
         // $client_id = env("AMAZON_US_CLIENT_ID");
         // $client_secret = env("AMAZON_US_CLIENT_SECRET");
@@ -272,6 +263,43 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
         //     $productBatch->job_batch_id = $batch->id;
         //     $productBatch->save();
         // }
+
+        // $url = "https://m.media-amazon.com/images/I/4106JjzoKhL.jpg";
+        // $contents = file_get_contents($url);
+        // $name = md5($url) . '.' . substr($url, strrpos($url, '.') + 1);
+        // $result = Storage::put("public/images/products/" . $name, $contents);
+        // $abs_path = storage_path() . "/app/public/images/products/" . $name;
+        // return $abs_path;
+
+        // $product = Product::find(62);
+        // for ($i = 1; $i <= 10; $i++) {
+        //     $url = $product["img_url_" . str_pad($i, 2, "0", STR_PAD_LEFT)];
+        //     echo $url . "<br>";
+        // }
+
+        // AmazonProductImage::getPathByURL("https://m.media-amazon.com/images/I/4106JjzoKhL.jpg");
+
+        // $product_users = Product::select("user_id")
+        //     ->where([
+        //         ["yahoo_jp_need_update_exhibit_info", true], //YahooJPへ出品情報更新要
+        //     ])->groupBy("user_id")->cursor();
+
+        // $user = User::find(auth()->id());
+        
+        // $yahooService = new YahooService($user);
+        // return $yahooService->getUserAccessToken($user);
+
+        // $product_01 = Product::find(3231);
+        // $product_02 = Product::find(3232);
+        // $product_03 = Product::find(3233);
+
+        // $yahooService->uploadItemImagePack($product);
+
+        // $yahooService->reservePublish();
+
+        // $yahooService->setStock([$product_01, $product_02, $product_03]);
+
+        // $yahooService->updateItemsPrice([$product_01, $product_02, $product_03]);
 
         return "test";
     });

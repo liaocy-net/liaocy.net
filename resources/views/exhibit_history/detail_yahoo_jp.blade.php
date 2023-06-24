@@ -16,7 +16,7 @@
         <div class="content-header card pt-3 pb-3 px-4">
             <div class="row content-header-title">
                 <div class="col-12 d-flex align-items-center">
-                    <h4 class="fw-bold m-0">出品履歴詳細</h4>
+                    <h4 class="fw-bold m-0">Yahoo JP 出品履歴詳細</h4>
                 </div>
             </div>
         </div>
@@ -62,11 +62,8 @@
                                         <th class="">タイトル</th>
                                         <th class="">ブランド</th>
                                         <th class="">仕入価格(USD)</th>
-                                        <th class="">希望利益価格(JPY)</th>
                                         <th class="">最低利益価格(JPY)</th>
-                                        <th class="">希望利益率価格(JPY)</th>
                                         <th class="">最低利益率価格(JPY)</th>
-                                        <th class="">ライバル最低価格(JPY)</th>
                                         <th class="">最終出品価格(JPY)</th>
                                         <th class="">サイズ(cm)</th>
                                         <th class="">重量(kg)</th>
@@ -90,11 +87,8 @@
                                         <th class="">タイトル</th>
                                         <th class="">ブランド</th>
                                         <th class="">仕入価格(USD)</th>
-                                        <th class="">希望利益価格(JPY)</th>
                                         <th class="">最低利益価格(JPY)</th>
-                                        <th class="">希望利益率価格(JPY)</th>
                                         <th class="">最低利益率価格(JPY)</th>
-                                        <th class="">ライバル最低価格(JPY)</th>
                                         <th class="">最終出品価格(JPY)</th>
                                         <th class="">サイズ(cm)</th>
                                         <th class="">重量(kg)</th>
@@ -114,13 +108,13 @@
                             <div class="col-sm-12 text-center">
                                 <input type="hidden" name="product_batch_id" value="{{ request()->input('product_batch_id') }}" />
                                 <input id="formact" type="hidden" name="act" value="" />
-                                @if ($has_exhibited)
-                                    <p class="text-danger">※上記商品は出品済みです。</p>
+                                @if ($has_exhibited_to_yahoo_jp)
+                                    <p class="text-danger">※上記商品はYahooJPへ出品済みです。</p>
                                     <button id="btn_delete_product" type="button" class="btn btn-danger waves-effect waves-light me-sm-3 mb-2" disabled><i class="fas fa-trash me-1"></i>チェックした商品を削除する</button>
-                                    <button id="btn_exhibit_to_amazon_jp" type="button" class="btn btn-primary waves-effect waves-light mb-2" disabled><i class="fas fa-save me-1"></i>出品する</button>
+                                    <button id="btn_exhibit_to_yahoo_jp" type="button" class="btn btn-primary waves-effect waves-light mb-2" disabled><i class="fas fa-save me-1"></i>出品する</button>
                                 @else
-                                    <button id="btn_delete_product" type="submit" onclick="$(this).closest('form').find('#formact').val('cancel_exhibit_to_amazon_jp');" class="btn btn-danger waves-effect waves-light me-sm-3 mb-2"><i class="fas fa-trash me-1"></i>チェックした商品を削除する</button>
-                                    <button id="btn_exhibit_to_amazon_jp" type="submit" onclick="$(this).closest('form').find('#formact').val('exhibit_to_amazon_jp');" class="btn btn-primary waves-effect waves-light mb-2"><i class="fas fa-save me-1"></i>出品する</button>
+                                    <button id="btn_delete_product" type="submit" onclick="$(this).closest('form').find('#formact').val('cancel_exhibit_to_yahoo_jp');" class="btn btn-danger waves-effect waves-light me-sm-3 mb-2"><i class="fas fa-trash me-1"></i>チェックした商品を削除する</button>
+                                    <button id="btn_exhibit_to_yahoo_jp" type="submit" onclick="$(this).closest('form').find('#formact').val('exhibit_to_yahoo_jp');" class="btn btn-primary waves-effect waves-light mb-2"><i class="fas fa-save me-1"></i>出品する</button>
                                 @endif
                             </div>
                         </div>
@@ -151,15 +145,15 @@
 
         submitForm("formProductsList", function(data){
             console.log(data);
-            if (data["act"] == "exhibit_to_amazon_jp") {
+            if (data["act"] == "exhibit_to_yahoo_jp") {
                 alert("出品リストに追加しました。");
                 location.reload();
             }
             refresh();
         }, function(){
-            // if (data["act"] == "exhibit_to_amazon_jp") {
+            // if (data["act"] == "exhibit_to_yahoo_jp") {
             //     $('#btn_delete_product').prop('disabled', true);
-            //     $('#btn_exhibit_to_amazon_jp').prop('disabled', true);
+            //     $('#btn_exhibit_to_yahoo_jp').prop('disabled', true);
             //     alert("出品中です。しばらくお待ちください。")
             // }
             showLoading('tab_products');
@@ -200,40 +194,37 @@
         }, function(data) {
             let html = '';
             data.data.forEach(product => {
-                if (product.can_be_exhibit_to_amazon_jp) {
+                if (product.can_be_exhibit_to_yahoo_jp) {
                     html += '<tr>';
                 } else {
                     html += '<tr class="bg-secondary bg-gradient">';
                 }
                 
                 html += '<td>';
-                if (product.can_be_exhibit_to_amazon_jp) {
+                if (product.can_be_exhibit_to_yahoo_jp) {
                     html += '<input type="checkbox" name="product_ids[]" value="' + product.id + '" class="sub_checkbox form-check-input" />';
                 }
                 html += '</td>';
                 
-                html += '<td>' + product.asin + '<br />' + '<a target="_blank" href="https://www.amazon.com/dp/' + product.asin + '">US</a> <a target="_blank" href="https://www.amazon.co.jp/dp/' + product.asin + '">JP</a>' + '</td>';
+                html += '<td>' + product.asin + '<br />' + '<a target="_blank" href="https://www.amazon.com/dp/' + product.asin + '">US</a>' + '</td>';
                 html += '<td><img style="max-width:50px;" src="' + product.img_url_01 + '" /></td>';
                 html += '<td>' + (product.title_jp ? product.title_jp : '-') + '</div></td>';
                 html += '<td>' + (product.brand_jp ? product.brand_jp : '-') + '</div></td>';
 
                 html += '<td>' + (product.cp_us ? product.cp_us : '-') + '</td>';
 
-                html += '<td>' + product.hope_price_jpy + '</td>';
-                html += '<td>' + product.min_hope_price_jpy + '</td>';
-                html += '<td>' + product.rate_price_jpy + '</td>';
-                html += '<td>' + product.min_rate_price_jpy + '</td>';
-                html += '<td>' + (product.cp_jp ? product.cp_jp : '-') + '</td>';
+                html += '<td>' + product.yahoo_jp_min_hope_price_jpy + '</td>';
+                html += '<td>' + product.yahoo_jp_min_rate_price_jpy + '</td>';
 
-                if (product.can_be_exhibit_to_amazon_jp_price) {
-                    html += '<td>' + product.can_be_exhibit_to_amazon_jp_price + '</td>';
+                if (product.can_be_exhibit_to_yahoo_jp_price) {
+                    html += '<td>' + product.can_be_exhibit_to_yahoo_jp_price + '</td>';
                 } else {
                     html += '<td>-</td>';
                 }
 
                 html += '<td>' + (product.size_l_us ? product.size_l_us : '-') + '<br />' + (product.size_w_us ? product.size_w_us : '-') + '<br />' + (product.size_h_us ? product.size_h_us : '-') + '</td>';
-                html += '<td>' + product.weight_us + '</td>';
-                html += '<td>' + product.can_be_exhibit_to_amazon_jp_message + '</td>';
+                html += '<td>' + (product.weight_us ? product.weight_us : '-') + '</td>';
+                html += '<td>' + product.can_be_exhibit_to_yahoo_jp_message + '</td>';
                 html += '</tr>';
             });
             $('#tab_products .table tbody').html(html);

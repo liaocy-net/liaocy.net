@@ -2,30 +2,30 @@
 
 namespace App\Jobs;
 
+use AmazonPHP\SellingPartner\Model\Feeds\Feed;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Services\AmazonService;
+use App\Services\YahooService;
+use App\Services\FeedTypes;
 use App\Models\Product;
-use AmazonPHP\SellingPartner\Exception\ApiException;
-use App\Services\UtilityService;
-use App\Jobs\DownloadAmazonJPProductImages;
+use Throwable;
 
-class ExtractAmazonInfo implements ShouldQueue
+class ExhibitToYahooJP implements ShouldQueue
 {
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $product;
+    protected Product $product;
 
     /**
      * The number of times the job may be attempted.
      *
      * @var int
      */
-    public $tries = 3;
+    public $tries = 5;
 
     /**
      * Create a new job instance.
@@ -48,17 +48,11 @@ class ExtractAmazonInfo implements ShouldQueue
             return;
         }
 
-        UtilityService::updateUSAmazonInfo($this->product);
+        $user = $this->product->user;
 
-        $imageURLs = $this->product->getAmazonUSImageURLs();
-
-        foreach ($imageURLs as $url) {
-            DownloadAmazonJPProductImages::dispatch($url)->onQueue('download_amazon_jp_product_images'); //キューに追加
-        }
-
-        UtilityService::updateJPAmazonInfo($this->product);
-
-        $this->product->save();
+        $yahooService = new YahooService($user);
+        $yahooService->editItem($this->product);
+        $yahooService->uploadItemImagePack($this->product);
     }
 
     /**
@@ -71,11 +65,6 @@ class ExtractAmazonInfo implements ShouldQueue
         return [1, 5, 10];
     }
 
-    /**
-     * 失敗したジョブの処理
-     * @param  \Exception  $exception
-     * @return void
-     */
     public function failed($exception)
     {
         if (env('APP_DEBUG', 'false') == 'true') {

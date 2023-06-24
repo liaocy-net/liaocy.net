@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Product;
 use App\Models\ProductBatch;
+use App\Models\YahooJpCategory;
 use App\Services\UtilityService;
 use App\Jobs\ExtractAmazonInfo;
 use Illuminate\Support\Facades\Bus;
@@ -27,7 +28,8 @@ class ExhibitController extends Controller
     {
         $my = User::find(auth()->id());
         return view('exhibit.index', [
-            'my' => $my
+            'my' => $my,
+            'yahooJpCategories' => YahooJpCategory::all(),
         ]);
     }
 
@@ -53,7 +55,7 @@ class ExhibitController extends Controller
             $validator = Validator::make($request->all(), [
                 'exhibit_to' => ['required'],
                 'exhibit_to.*' => ['in:amazon,yahoo'],
-                'exhibit_yahoo_category' => ['required', 'string', 'max:255']
+                'yahoo_jp_category_id' => ['required', 'integer']
             ]);
     
             if ($validator->fails()) {
@@ -112,11 +114,15 @@ class ExhibitController extends Controller
                 }
                 if (in_array("yahoo", $request->exhibit_to)) {
                     $productBatch->is_exhibit_to_yahoo = true;
-                    $productBatch->exhibit_yahoo_category = $request->exhibit_yahoo_category;
                 } else {
                     $productBatch->is_exhibit_to_yahoo = false;
                 }
                 $productBatch->save();
+
+                $yahooJpCategory = YahooJpCategory::find($request->yahoo_jp_category_id);
+                if ($yahooJpCategory === null) {
+                    throw new \Exception("Yahoo! JAPANカテゴリーが不適切です。");
+                }
 
                 $extractAmazonInfos = array();
                 foreach ($asins as $asin) {
@@ -124,6 +130,8 @@ class ExhibitController extends Controller
                     $product->user_id = auth()->id();
                     $product->asin = $asin;
                     $product->sku = UtilityService::genSKU($product);
+                    $product->yahoo_jp_product_category = $yahooJpCategory->product_category;
+                    $product->yahoo_jp_path = $yahooJpCategory->path;
                     $product->save();
 
                     $product->productBatches()->attach($productBatch);

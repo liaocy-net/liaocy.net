@@ -365,7 +365,7 @@
                                 <div class="col-sm-6 mb-3">
                                     <label class="form-label" for="yahoo_category">【管理者のみ】カテゴリー</label>
                                     <div class="input-group" id="yahoo_category_group">
-                                        <button type="button" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>ダウンロード</button>
+                                        <a type="button" href="{{route('setting.download_yahoo_jp_category_xlsx')}}" class="btn btn-primary waves-effect waves-light"><i class="fas fa-download me-1"></i>ダウンロード</a>
                                         <input type="file" id="yahoo_category" name="yahoo_category" class="form-control" />
                                     </div>
                                 </div>

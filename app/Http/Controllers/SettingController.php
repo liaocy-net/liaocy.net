@@ -17,6 +17,7 @@ use YConnect\YConnectClient;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\ForeignShipping;
 use App\Models\Setting;
+use App\Models\YahooJpCategory;
 
 class SettingController extends Controller
 {
@@ -210,6 +211,42 @@ class SettingController extends Controller
                 $my->yahoo_stock = $params["yahoo_stock"];
                 $my->yahoo_exhibit_comment_group = $params["yahoo_exhibit_comment_group"];
                 $my->save();
+
+                if ($request->hasFile('yahoo_category')) {
+                    //Adminのみがアップロードできるようにする
+                    if (!$my->role === 'admin') {
+                        throw new \Exception("不正なアクセスです。");
+                    }
+
+                    //拡張子がxlsxであるかの確認
+                    if ($request->yahoo_category->getClientOriginalExtension() !== "xlsx") {
+                        throw new \Exception("不適切な拡張子です。EXCEL(xlsx)ファイルを選択してください。");
+                    }
+                    //Excelファイルを読み込み
+                    $reader = IOFactory::createReader("Xlsx");
+                    $spreadsheet = $reader->load($request->yahoo_category);
+                    
+                    //シートの読み込み
+                    $yahooJpCategories = array();
+                    $sheet = $spreadsheet->getSheet(0);
+                    $headers = $sheet->rangeToArray('A1:B1', null, true, false);
+                    if (count($headers[0]) != 2 || strcmp($headers[0][0], "YahooショッピングカテゴリID（半角数字のみ,10文字以内）") !== 0 || strcmp($headers[0][1], "ストアカテゴリのパス（カテゴリ名のコロン区切り）") !== 0) {
+                        throw new \Exception("EXCELファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
+                    }
+                    $rows = $sheet->rangeToArray('A2:B' . $sheet->getHighestRow(), null, true, false);
+                    foreach ($rows as $row) {
+                        if (count($row) != 2 || !is_numeric($row[0]) || $row[0] > 99999 || $row[0] < 1 || strlen($row[0]) > 160) {
+                            throw new \Exception("EXCELファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
+                        }
+                        $yahooJpCategories[] = array(
+                            "product_category" => $row[0],
+                            "path" => $row[1]
+                        );
+                    }
+                    //DBのデータを削除
+                    YahooJpCategory::truncate();
+                    YahooJpCategory::insert($yahooJpCategories);
+                }
 
                 return redirect()->route('setting.index', ['#divYahooSetting'])->with('success', 'Yahoo設定を更新しました。');
 

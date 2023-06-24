@@ -87,7 +87,6 @@ class UpdateAmazonJPExhibit implements ShouldQueue
 
         } catch (Throwable $e) {
             $attempts = $this->attempts();
-            var_dump($attempts);
             if ($attempts < $this->tries) {
                 $this->release(1 * 60 + ($attempts - 1) * 1 * 60);
             } else {

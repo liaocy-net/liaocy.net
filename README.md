@@ -81,7 +81,7 @@ php artisan queue:work --queue=high,default
 ```
   - DEV
 ```bash
-php artisan queue:listen --queue=high,default
+php artisan queue:listen --queue=high,default,update_amazon_info,update_amazon_jp_exhibit,update_yahoo_jp_exhibit,exhibit_to_amazon_jp,exhibit_to_yahoo_jp,download_amazon_jp_product_images
 ```
 
 - Run scheduled tasks on host
@@ -166,6 +166,7 @@ https://github.com/ixiumu/laravel_meetup/blob/master/docs/11.Code%20Beauty%EF%BC
 - Queue
   - [任务批处理](https://learnku.com/docs/laravel/10.x/queuesmd/14873#e8f70e)
   - [Laravel 8.x キュー](https://readouble.com/laravel/8.x/ja/queues.html)
+  - [Prevent your queued jobs from duplicating](https://divinglaravel.com/prevent-your-queued-jobs-from-duplicating)
 
 - Task Scheduling
   - [Task Scheduling](https://laravel.com/docs/10.x/scheduling#scheduling-queued-jobs)

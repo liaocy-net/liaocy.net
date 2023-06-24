@@ -47,14 +47,10 @@
                                         <td><input type="checkbox" class="form-check-input" name="exhibit_to[]" value="yahoo"/></td>
                                         <td>Yahoo!</td>
                                         <td class="text-start">
-                                            <select class="form-select select2" id="exhibit_line_2" name="exhibit_yahoo_category" data-placeholder="選択してください">
-                                                <option value="1451,レディースファッション　>　レディースウェア"> 1451 ： レディースファッション　&gt;　レディースウェア</option>
-                                                <option value="1736,レディースファッション　>　レディースシューズ"> 1736 ： レディースファッション　&gt;　レディースシューズ</option>
-                                                <option value="1682,レディースファッション　>　レディースファッション小物"> 1682 ： レディースファッション　&gt;　レディースファッション小物</option>
-                                                <option value="1747,メンズファッション　>　メンズシューズ"> 1747 ： メンズファッション　&gt;　メンズシューズ</option>
-                                                <option value="4864,メンズファッション　>　メンズウェア"> 4864 ： メンズファッション　&gt;　メンズウェア</option>
-                                                <option value="1706,メンズファッション　>　メンズ財布、ファッション小物"> 1706 ： メンズファッション　&gt;　メンズ財布、ファッション小物</option>
-                                                <option value="4351,ベビー、キッズ、マタニティ"> 4351 ： ベビー、キッズ、マタニティ</option>
+                                            <select class="form-select select2" id="exhibit_line_2" name="yahoo_jp_category_id" data-placeholder="選択してください">
+                                                @foreach ($yahooJpCategories as $yahooJpCategory)
+                                                    <option value="{{$yahooJpCategory->id}}"> {{$yahooJpCategory->product_category}} | {{$yahooJpCategory->path}}</option>
+                                                @endforeach
                                             </select>
                                         </td>
                                     </tr>

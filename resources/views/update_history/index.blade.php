@@ -69,7 +69,7 @@
                     </div>
                 </div>
 
-                <div class="">
+                <div id="tab_yahoo" class="mb-4">
                     <h5 class="fw-bold">Yahoo価格改定履歴</h5>
                     <div class="table-responsive text-nowrap">
                         <table class="table table-bordered table-striped text-center">
@@ -93,38 +93,7 @@
                         </table>
                     </div>
                     
-                    <div class="pagination-body mt-3">
-                        <nav aria-label="Page navigation">
-                            <ul class="pagination justify-content-center pagination-info">
-                                <li class="page-item first">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-left ti-xs"></i></a>
-                                </li>
-                                <li class="page-item prev">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevron-left ti-xs"></i></a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">1</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">2</a>
-                                </li>
-                                <li class="page-item active">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">3</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">4</a>
-                                </li>
-                                <li class="page-item">
-                                    <a class="page-link waves-effect" href="javascript:void(0);">5</a>
-                                </li>
-                                <li class="page-item next">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevron-right ti-xs"></i></a>
-                                </li>
-                                <li class="page-item last">
-                                    <a class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-right ti-xs"></i></a>
-                                </li>
-                            </ul>
-                        </nav>
+                    <div id="nav_yahoo" class="pagination-body mt-3">
                     </div>
                 </div>
             </div>
@@ -137,7 +106,7 @@
 <script>
     $(document).ready(function(){
         'use strict';
-        refreshAmazon();
+        refresh();
     });
 
     $(function () {
@@ -191,8 +160,47 @@
         });
     };
 
+    var refreshYahoo = function(page = 1) {  
+        showLoading('tab_yahoo');
+        
+        getData("{{route('update_history.get_update_histories')}}", {
+            platform: "yahoo",
+            page: page,
+            period_from: $('#search_period_from').val(),
+            period_to: $('#search_period_to').val(),
+        }, function(data) {
+            let html = '';
+            data.data.forEach(history => {
+                html += '<tr>';
+                html += '<td>' + (history.start_at ? history.start_at : '-') + '</td>';
+                html += '<td>' + history.patch_status + '</td>';
+                html += '<td>' + history.products_count + '</td>';
+                
+                html += '<td>';
+                // if (history.has_feed_document && history.end_at) {
+                //     html += '<a href="{{route("exhibit_history.download_batch_feed_document_tsv")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">改定ファイル</a> ';
+                // }
+                if (history.has_message && history.end_at) {
+                    html += '<a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">詳細</a>';
+                }
+                html += '</td>';
+
+                html += '</tr>';
+            });
+            $('#tab_yahoo .table tbody').html(html);
+
+            var navYahoo = getNavigator(data, 'refreshYahoo');
+
+            $('#nav_yahoo').html(navYahoo);
+
+        }, function() {
+
+        });
+    };
+
     var refresh = function() {
         refreshAmazon();
+        refreshYahoo();
     };
 </script>
 @endsection

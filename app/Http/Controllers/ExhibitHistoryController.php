@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\ExhibitToAmazonJP;
+use App\Jobs\ExhibitToYahooJP;
 use App\Models\JobBatch;
 use App\Models\ProductBatch;
 use Illuminate\Http\Request;
@@ -18,6 +19,7 @@ use Illuminate\Bus\Batch;
 use Throwable;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use App\Services\YahooService;
 
 class ExhibitHistoryController extends Controller
 {
@@ -64,9 +66,11 @@ class ExhibitHistoryController extends Controller
             }
 
             if ($platform == "amazon") {
-                array_push($where, ['is_exhibit_to_amazon', true]);        
+                array_push($where, ['is_exhibit_to_amazon', true]);
+                $action = ['extract_amazon_info_for_exhibit', 'exhibit_to_amazon_jp'];
             } elseif ($platform == "yahoo") {
                 array_push($where, ['is_exhibit_to_yahoo', true]);
+                $action = ['extract_amazon_info_for_exhibit', 'exhibit_to_yahoo_jp'];
             } else {
                 throw new \Exception("platform is invalid", 442);
             }
@@ -77,7 +81,7 @@ class ExhibitHistoryController extends Controller
                     'product_batches.id AS product_batch_id', 
                     'product_batches.finished_at AS product_batch_finished_at')
                 ->where($where)
-                ->whereIn('action', ['extract_amazon_info_for_exhibit', 'exhibit_to_amazon_jp'])
+                ->whereIn('action', $action)
                 ->leftJoin('job_batches', 'product_batches.job_batch_id', '=', 'job_batches.id')
                 ->orderBy('product_batches.created_at', 'desc')
                 ->paginate(
@@ -91,6 +95,8 @@ class ExhibitHistoryController extends Controller
                 if ($productBatch->action == 'extract_amazon_info_for_exhibit') {
                     $productBatch->patch_status = UtilityService::getExtractAmazonInfoPatchStatus($productBatch);
                 } else if ($productBatch->action == 'exhibit_to_amazon_jp') {
+                    $productBatch->patch_status = UtilityService::getExhibitPatchStatus($productBatch);
+                } else if ($productBatch->action == 'exhibit_to_yahoo_jp') {
                     $productBatch->patch_status = UtilityService::getExhibitPatchStatus($productBatch);
                 }
                 
@@ -134,16 +140,16 @@ class ExhibitHistoryController extends Controller
         //
     }
 
-    public function hasExhibited($productBatch) {
+    public function hasExhibited($productBatch, $action) {
 
         $productBatchExhibitToAmazonJP = ProductBatch::where('filename', $productBatch->filename)
-            ->where('action', 'exhibit_to_amazon_jp')
+            ->where('action', $action)
             ->first();
         
         return empty($productBatchExhibitToAmazonJP) ? false : true;
     }
 
-    public function detail(Request $request)
+    public function detailAmazonJP(Request $request)
     {
         try {
             $params = $request->all();
@@ -162,9 +168,37 @@ class ExhibitHistoryController extends Controller
                 throw new \Exception('Product Batch not found', 442);
             }
             
-            return view('exhibit_history.detail', [
+            return view('exhibit_history.detail_amazon_jp', [
                 'my' => $my,
-                'has_exhibited' => $this->hasExhibited($productBatch),
+                'has_exhibited_to_amazon_jp' => $this->hasExhibited($productBatch, "exhibit_to_amazon_jp"),
+            ]);
+        } catch (\Exception $e) {
+            return back()->withErrors($e->getMessage())->withInput();
+        }
+    }
+
+    public function detailYahooJP(Request $request)
+    {
+        try {
+            $params = $request->all();
+            $validator = Validator::make($params, [
+                'product_batch_id' => ['required', 'integer', 'min:1'],
+            ]);
+
+            if ($validator->fails()) {
+                throw new \Exception($validator->errors()->first(), 442);
+            }
+
+            $my = User::find(auth()->id());
+
+            $productBatch = ProductBatch::find($params['product_batch_id']);
+            if (!$productBatch || $productBatch->user_id != $my->id) {
+                throw new \Exception('Product Batch not found', 442);
+            }
+            
+            return view('exhibit_history.detail_yahoo_jp', [
+                'my' => $my,
+                'has_exhibited_to_yahoo_jp' => $this->hasExhibited($productBatch, "exhibit_to_yahoo_jp"),
             ]);
         } catch (\Exception $e) {
             return back()->withErrors($e->getMessage())->withInput();
@@ -226,10 +260,19 @@ class ExhibitHistoryController extends Controller
                 $product->min_hope_price_jpy = UtilityService::calAmazonJPMinHopePrice($my, $product);
                 $product->min_rate_price_jpy = UtilityService::calAmazonJPMinRatePrice($my, $product);
                 $product->exhibit_price = 0;
+
+                $product->yahoo_jp_min_hope_price_jpy = UtilityService::calYahooJPMinHopePrice($my, $product);
+                $product->yahoo_jp_min_rate_price_jpy = UtilityService::calYahooJPMinRatePrice($my, $product);
+
                 $canBeExhibitToAmazonJP = UtilityService::canBeExhibitToAmazonJP($my, $product);
                 $product->can_be_exhibit_to_amazon_jp = $canBeExhibitToAmazonJP["canBeExhibit"];
                 $product->can_be_exhibit_to_amazon_jp_message = $canBeExhibitToAmazonJP["message"];
                 $product->can_be_exhibit_to_amazon_jp_price = $canBeExhibitToAmazonJP["exhibitPrice"];
+
+                $canBeExhibitToYahooJP = UtilityService::canBeExhibitToYahooJP($my, $product);
+                $product->can_be_exhibit_to_yahoo_jp = $canBeExhibitToYahooJP["canBeExhibit"];
+                $product->can_be_exhibit_to_yahoo_jp_message = $canBeExhibitToYahooJP["message"];
+                $product->can_be_exhibit_to_yahoo_jp_price = $canBeExhibitToYahooJP["exhibitPrice"];
             }
 
             return response()->json($products);
@@ -243,7 +286,7 @@ class ExhibitHistoryController extends Controller
         try {
             $params = $request->all();
             $validator = Validator::make($params, [
-                'act' => ['required', 'string', 'max:255', 'regex:/^[cancel_exhibit_to_amazon_jp|exhibit]+$/u'],
+                'act' => ['required', 'string', 'max:255', 'regex:/^[cancel_exhibit_to_amazon_jp|cancel_exhibit_to_yahoo_jp|exhibit_to_amazon_jp|exhibit_to_yahoo_jp]+$/u'],
                 'product_batch_id' => ['required', 'integer', 'min:1'],
             ]);
             if ($validator->fails()) {
@@ -252,8 +295,8 @@ class ExhibitHistoryController extends Controller
 
             $my = User::find(auth()->id());
 
-            //チェックした商品を削除
-            if ($params["act"] == "cancel_exhibit_to_amazon_jp") {
+            
+            if ($params["act"] == "cancel_exhibit_to_amazon_jp") { //AmazonJPチェックした商品を削除
                 $validator = Validator::make($params, [
                     'product_ids' => ['required', 'array', 'max:255'],
                 ]);
@@ -266,17 +309,32 @@ class ExhibitHistoryController extends Controller
                     if (!$product) {
                         throw new \Exception("product not found", 442);
                     }
-                    $product->is_deleted = true;
+                    $product->cancel_exhibit_to_amazon_jp = true;
                     $product->save();
                 }
+            } else if($params["act"] == "cancel_exhibit_to_yahoo_jp") {
+                $validator = Validator::make($params, [
+                    'product_ids' => ['required', 'array', 'max:255'],
+                ]);
+                if ($validator->fails()) {
+                    throw new \Exception($validator->errors()->first(), 442);
+                }
 
+                foreach ($params["product_ids"] as $productId) {
+                    $product = Product::find($productId);
+                    if (!$product) {
+                        throw new \Exception("product not found", 442);
+                    }
+                    $product->cancel_exhibit_to_yahoo_jp = true;
+                    $product->save();
+                }
             } else if($params["act"] == "exhibit_to_amazon_jp"){ //Amazon JPに出品
                 $productBatch = ProductBatch::find($params['product_batch_id']);
                 if (!$productBatch || $productBatch->user_id != $my->id) {
                     throw new \Exception('product batch not found', 442);
                 }
 
-                $hasExhibited = $this->hasExhibited($productBatch);
+                $hasExhibited = $this->hasExhibited($productBatch, "exhibit_to_amazon_jp");
                 if ($hasExhibited) {
                     throw new \Exception('Already exhibited', 442);
                 }
@@ -336,11 +394,87 @@ class ExhibitHistoryController extends Controller
                     $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
                     $productBatch->finished_at = now();
                     $productBatch->save();
-                })->allowFailures()->dispatch();
+                })->onQueue('exhibit_to_amazon_jp')->allowFailures()->dispatch();
 
                 
                 $exhibitToJPProductBatch->job_batch_id = $batch->id;
                 $exhibitToJPProductBatch->save();
+
+            } else if($params["act"] == "exhibit_to_yahoo_jp"){ //Yahoo JPに出品
+                $productBatch = ProductBatch::find($params['product_batch_id']);
+                if (!$productBatch || $productBatch->user_id != $my->id) {
+                    throw new \Exception('product batch not found', 442);
+                }
+
+                $hasExhibited = $this->hasExhibited($productBatch, "exhibit_to_yahoo_jp");
+                if ($hasExhibited) {
+                    throw new \Exception('Already exhibited', 442);
+                }
+
+                $exhibitToYahooJPProductBatch = new ProductBatch();
+                $exhibitToYahooJPProductBatch->user_id = $my->id;
+                $exhibitToYahooJPProductBatch->filename = $productBatch->filename;
+                $exhibitToYahooJPProductBatch->action = "exhibit_to_yahoo_jp";
+                $exhibitToYahooJPProductBatch->is_exhibit_to_yahoo = true;
+                $exhibitToYahooJPProductBatch->save();
+
+                $exhibitToYahooJPJobs = array();
+                foreach ($productBatch->products as $product) {
+                    $canBeExhibitToYahooJP = UtilityService::canBeExhibitToYahooJP($my, $product);
+
+                    if ($canBeExhibitToYahooJP["canBeExhibit"]) {
+                        $exhibitToYahooJPProductBatch->products()->attach($product);
+
+                        // 同じユーザ/SKUの商品のYahooJP出品済みフラグをFalseにする
+                        DB::table('products')
+                            ->where([
+                                ['user_id', $my->id],
+                                ['sku', $product->sku]
+                            ])
+                            ->update([
+                                'yahoo_jp_has_exhibited' => false,
+                            ]);
+
+                        // 出品済みフラグ/価格を保存
+                        $product->yahoo_jp_latest_exhibit_price = $canBeExhibitToYahooJP["exhibitPrice"]; //最新出品価格
+                        $product->yahoo_jp_latest_exhibit_quantity = $my->yahoo_stock; //最新出品数量
+                        $product->yahoo_jp_has_exhibited = true; //YahooJP出品済みフラグ
+                        $product->yahoo_is_in_checklist = false; //Yahoo CheckList に入っているかどうか
+                        $product->yahoo_latest_check_at = Carbon::now(); //最新チェック日時
+
+                        $product->save();
+
+                        array_push($exhibitToYahooJPJobs, new ExhibitToYahooJP($product));
+                    }
+
+                    $batch = Bus::batch($exhibitToYahooJPJobs)->name("exhibit_to_yahoo_jp")->then(function (Batch $batch) {
+                        // すべてのジョブが正常に完了
+                    })->catch(function (Batch $batch, Throwable $e) {
+                        // バッチジョブの失敗をはじめて検出
+                    })->finally(function (Batch $batch) {
+                        // バッチジョブの完了
+                        $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
+                        $user = User::find($productBatch->user_id);
+                        $yahooService = new YahooService($user);
+                        
+                        // setStock
+                        sleep(10);
+                        $products = $productBatch->products->all();
+                        $yahooService->setStock($products);
+
+                        // reservePublish
+                        sleep(10);
+                        $yahooService->reservePublish();
+
+                        // save product batch
+                        $productBatch->finished_at = now();
+                        $productBatch->save();
+
+                    })->onQueue('exhibit_to_yahoo_jp')->allowFailures()->dispatch();
+
+                    $exhibitToYahooJPProductBatch->job_batch_id = $batch->id;
+                    $exhibitToYahooJPProductBatch->save();
+                }
 
             } else {
                 throw new \Exception("act is invalid", 442);

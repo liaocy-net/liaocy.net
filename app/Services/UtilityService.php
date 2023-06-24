@@ -43,7 +43,7 @@ class UtilityService
         } elseif ($jobBatch->total_jobs == $jobBatch->failed_jobs) {
             return "取得完了(全て失敗)";
         } elseif ($jobBatch->pending_jobs != 0 && $jobBatch->pending_jobs == $jobBatch->failed_jobs) {
-            return "取得完了(部分失敗)";
+            return "取得完了(部分成功)";
         } else {
             return "取得中";
         }
@@ -56,7 +56,7 @@ class UtilityService
         } elseif ($jobBatch->total_jobs == $jobBatch->failed_jobs) {
             return "出品完了(全て失敗)";
         } elseif ($jobBatch->pending_jobs != 0 && $jobBatch->pending_jobs == $jobBatch->failed_jobs) {
-            return "出品完了(部分失敗)";
+            return "出品完了(部分成功)";
         } else {
             return "出品中";
         }
@@ -69,7 +69,7 @@ class UtilityService
         } elseif ($jobBatch->total_jobs == $jobBatch->failed_jobs) {
             return "改定完了(全て失敗)";
         } elseif ($jobBatch->pending_jobs != 0 && $jobBatch->pending_jobs == $jobBatch->failed_jobs) {
-            return "改定完了(部分失敗)";
+            return "改定完了(部分成功)";
         } else {
             return "改定中";
         }
@@ -184,8 +184,8 @@ class UtilityService
         return $spreadsheet;
     }
 
-    // 利益額Ver価格計算
-    public static function getHopePrice($user, $product) {
+    // AmazonJP利益額Ver価格計算
+    public static function getHopePriceAmazonJP($user, $product) {
         // AmazonJPの利益額価格
         $amazonJPHopePrice = self::calAmazonJPHopePrice($user, $product);
         if ($amazonJPHopePrice == null) {
@@ -255,8 +255,28 @@ class UtilityService
         }
     }
 
-    // 利益率Ver価格計算
-    public static function getRatePrice($user, $product) {
+    // YahooJP利益額Ver価格計算
+    public static function getHopePriceYahooJP($user, $product) {
+
+        // YahooJPの最低利益額価格
+        $yahooJPMinHopePrice = self::calYahooJPMinHopePrice($user, $product);
+        if ($yahooJPMinHopePrice == null) {
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => 'Yahoo JPの最低販売価格が算出できない'
+            );
+        }
+
+        return array(
+            'canBeExhibit' => true,
+            'exhibitPrice' => $yahooJPMinHopePrice,
+            'message' => '出品可能（最低利益額価格で出品）'
+        );
+    }
+
+    // AmazonJP利益率Ver価格計算
+    public static function getRatePriceAmazonJP($user, $product) {
         // AmazonJPの利益額価格
         $amazonJPHopePrice = self::calAmazonJPHopePrice($user, $product);
         if ($amazonJPHopePrice == null) {
@@ -354,12 +374,31 @@ class UtilityService
                 }
             }
         } else {
-            return self::getHopePrice($user, $product);
+            return self::getHopePriceAmazonJP($user, $product);
         }
-
-        
     }
 
+    // YahooJP利益率Ver価格計算
+    public static function getRatePriceYahooJP($user, $product) {
+        // YahooJPの最低利益額価格
+        $yahooJPMinRatePrice = self::calYahooJPMinRatePrice($user, $product);
+        if ($yahooJPMinRatePrice == null) {
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => 'Yahoo JPの最低販売価格が算出できない'
+            );
+        }
+
+        // YahooJPの利益率価格
+        return array(
+            'canBeExhibit' => true,
+            'exhibitPrice' => $yahooJPMinRatePrice,
+            'message' => '出品可能（最低利益率価格で出品）'
+        );
+    }
+
+    // AmazonJPで出品できるか
     public static function canBeExhibitToAmazonJP($user, $product){
 
         if($product->is_amazon_jp == false){
@@ -378,15 +417,15 @@ class UtilityService
         }
 
         // 削除されました。
-        if($product->is_deleted){
+        if($product->cancel_exhibit_to_amazon_jp){
             return array(
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
-                'message' => '削除されました'
+                'message' => 'AmazonJP出品から削除されました'
             );
         }
         
-        // ブランドがブラックリストに入っているか
+        // ブランドがホワイトリストに入っているか
         $whiteListCount = WhiteList::where('user_id', $user->id)->count();
         $whiteList = WhiteList::where('user_id', $user->id)->where('brand', $product->brand_jp)->first();
         if ($whiteListCount > 0 && !$whiteList) {
@@ -494,11 +533,142 @@ class UtilityService
 
         //価格計算
         if ($user->amazon_using_profit == 1) { // 利益額Ver
-            return self::getHopePrice($user, $product);
+            return self::getHopePriceAmazonJP($user, $product);
         } else if ($user->amazon_using_profit == 2) { // 利益率Ver
-            return self::getRatePrice($user, $product);
+            return self::getRatePriceAmazonJP($user, $product);
         } else {
             throw new \Exception('amazon_using_profit is invalid');
+        }
+
+        return array(
+            'canBeExhibit' => false,
+            'exhibitPrice' => null,
+            'message' => '未知エラーが起こるため出品不可'
+        );
+    }
+
+    // Yahoo Japan で出品できるか
+    public static function canBeExhibitToYahooJP($user, $product){
+
+        if($product->is_amazon_us == false){
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => 'Amazon USから情報を取得できない'
+            );
+        }
+
+        // 削除されました。
+        if($product->cancel_exhibit_to_yahoo_jp){
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => 'YahooJP出品から削除されました'
+            );
+        }
+
+        // ASINがブラックリストに入っているか
+        $asinBlackList = BlackList::where('user_id', $user->id)->where('platform', 'yahoo')->where('on', 'asin')->where('value', $product->asin)->first();
+        if ($asinBlackList) {
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => 'ASINがブラックリストにブロックされています'
+            );
+        }
+        // ブランドがブラックリストに入っているか
+        $brandBlackList = BlackList::where('user_id', $user->id)->where('platform', 'yahoo')->where('on', 'brand')->where('value', $product->brand_jp)->first();
+        if ($brandBlackList) {
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => 'ブランドがブラックリストにブロックされています'
+            );
+        }
+        // カテゴリがブラックリストに入っているか
+        $categoryBlackList = BlackList::where('user_id', $user->id)->where('platform', 'yahoo')->where('on', 'category')->where('value', $product->cate_us)->first();
+        if ($categoryBlackList) {
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => 'カテゴリがブラックリストにブロックされています'
+            );
+        }
+        // タイトルがブラックリストに入っているか
+        $titleBlackList = BlackList::where('user_id', $user->id)->where('platform', 'yahoo')->where('on', 'title')->where('value', $product->title_jp)->first();
+        if ($titleBlackList) {
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => 'タイトルがブラックリストにブロックされています'
+            );
+        }
+
+
+        // 仕入れ価格が取得できません
+        if ($product->cp_us == null) {
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => '仕入れ価格が取得できません'
+            );
+        }
+
+        // 仕入れ価格よりも低い
+        if ($product->cp_us < $user->common_purchase_price_from) {
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => '仕入れ価格下限よりも低い'
+            );
+        }
+
+        // 仕入れ価格よりも高い
+        if ($product->cp_us > $user->common_purchase_price_to) {
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => '仕入れ価格上限よりも高い'
+            );
+        }
+
+        // 取扱い最大重量よりも重い
+        if ($product->weight_us > $user->common_max_weight) {
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => '取扱い最大重量よりも重い'
+            );
+        }
+
+        if ($product->size_h_us && $product->size_l_us && $product->size_w_us) {
+            $sum_size_cm = $product->size_h_us + $product->size_l_us + $product->size_w_us;
+            // サイズの下限よりも小さい
+            if ($sum_size_cm < $user->common_size_from) {
+                return array(
+                    'canBeExhibit' => false,
+                    'exhibitPrice' => null,
+                    'message' => 'サイズの下限よりも小さい'
+                );
+            }
+
+            // サイズの上限よりも大きい
+            if ($sum_size_cm > $user->common_size_to) {
+                return array(
+                    'canBeExhibit' => false,
+                    'exhibitPrice' => null,
+                    'message' => 'サイズの上限よりも大きい'
+                );
+            }
+        }
+
+        //価格計算
+        if ($user->yahoo_using_profit == 1) { // 利益額Ver
+            return self::getHopePriceYahooJP($user, $product);
+        } else if ($user->yahoo_using_profit == 2) { // 利益率Ver
+            return self::getRatePriceYahooJP($user, $product);
+        } else {
+            throw new \Exception('yahoo_using_profit is invalid');
         }
 
         return array(
@@ -596,6 +766,39 @@ class UtilityService
         return ceil($numerator / $denominator);
     }
 
+    // 【最低】Amazon（利益額Ver）
+    public static function calYahooJPMinHopePrice($user, $product) {
+        // + 最低利益額
+        $numerator = $user->yahoo_min_profit;
+        // + US価格（※） * 為替 * 関税消費税率
+        // 関税消費税率 = 1 + 関税消費税率設定値（%）
+        $numerator += $product->cp_us * $user->common_currency_rate * (1 + $user->common_customs_tax);
+        // + 国際送料
+        $numerator += self::calForeignShipping($user, $product);
+        // + 国内送料
+        $numerator += $user->common_country_shipping;
+        
+        // アマゾン手数料率 = 1 - (Amazon手数料率設定値% * 1.1)
+        $denominator = 1 - $user->yahoo_using_sale_commission * 1.1;
+
+        return ceil($numerator / $denominator);
+    }
+
+    // 【最低】Amazon（利益率Ver）
+    public static function calYahooJPMinRatePrice($user, $product) {
+        // US価格（※） * 為替 * 関税消費税率
+        // 関税消費税率 = 1 + 関税消費税率設定値（%）
+        $numerator = $product->cp_us * $user->common_currency_rate * (1 + $user->common_customs_tax);
+        // + 国際送料
+        $numerator += self::calForeignShipping($user, $product);
+        // + 国内送料
+        $numerator += $user->common_country_shipping;
+        
+        // アマゾン手数料率 = 1 - (Amazon手数料率設定値% * 1.1) - Yahoo利益率
+        $denominator = (1 - $user->amazon_using_sale_commission * 1.1) - $user->yahoo_profit_rate;
+
+        return ceil($numerator / $denominator);
+    }
 
     public static function genSKU(Product $product)
     {

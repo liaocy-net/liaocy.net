@@ -18,6 +18,8 @@ env:
   APP_ENV: stg
   APP_PORT: 5000
   DOCKER_COMMON_ENVS: |- 
+    -v /home/ubuntu/stg-charing-storage/app:/var/www/html/storage/app \
+    -v /home/ubuntu/stg-charing-storage/logs:/var/www/html/storage/logs \
     -e APP_NAME=Charing \
     -e APP_KEY=${{secrets.APP_KEY_STG}} \
     -e APP_DEBUG=true \
@@ -35,6 +37,7 @@ env:
     -e CACHE_DRIVER=file \
     -e FILESYSTEM_DISK=local \
     -e QUEUE_CONNECTION=database \
+    -e QUEUE_FAILED_DRIVER=null \
     -e SESSION_DRIVER=file \
     -e SESSION_LIFETIME=120 \
     -e MEMCACHED_HOST=127.0.0.1 \
@@ -115,6 +118,7 @@ jobs:
           key: ${{ env.SERVER_SSH_KEY }}
           port: ${{ env.SERVER_PORT }}
           script: |-
+            if ! [ -d /home/ubuntu/stg-charing-storage/ ]; then mkdir /home/ubuntu/stg-charing-storage/; fi
             if [[ $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-web") ]]; then
               sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-web" | xargs sudo docker stop | xargs sudo docker rm
             fi
@@ -134,19 +138,68 @@ jobs:
           key: ${{ env.SERVER_SSH_KEY }}
           port: ${{ env.SERVER_PORT }}
           script: |
-            for i in $(seq -f "%03g" 1 100)
+            for i in $(seq -f "%03g" 0 100)
             do
               if [[ $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-queue-$i") ]]; then
                 sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-charing-queue-$i" | xargs sudo docker stop | xargs sudo docker rm
               fi
             done
             sudo docker run \
-              -d --name ${{ env.APP_ENV }}-charing-queue-001 \
+              -d --name ${{ env.APP_ENV }}-charing-queue-000 \
               --restart=always \
               -e APP_ENV=${{ env.APP_ENV }} \
               ${{ env.DOCKER_COMMON_ENVS }} \
               ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
               php artisan queue:work --queue=high,default
+            sudo docker run \
+              -d --name ${{ env.APP_ENV }}-charing-queue-010 \
+              --restart=always \
+              -e APP_ENV=${{ env.APP_ENV }} \
+              ${{ env.DOCKER_COMMON_ENVS }} \
+              ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
+              php artisan queue:work --queue=update_amazon_info
+            sudo docker run \
+              -d --name ${{ env.APP_ENV }}-charing-queue-020 \
+              --restart=always \
+              -e APP_ENV=${{ env.APP_ENV }} \
+              ${{ env.DOCKER_COMMON_ENVS }} \
+              ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
+              php artisan queue:work --queue=update_amazon_jp_exhibit
+            sudo docker run \
+              -d --name ${{ env.APP_ENV }}-charing-queue-030 \
+              --restart=always \
+              -e APP_ENV=${{ env.APP_ENV }} \
+              ${{ env.DOCKER_COMMON_ENVS }} \
+              ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
+              php artisan queue:work --queue=update_yahoo_jp_exhibit
+            sudo docker run \
+              -d --name ${{ env.APP_ENV }}-charing-queue-040 \
+              --restart=always \
+              -e APP_ENV=${{ env.APP_ENV }} \
+              ${{ env.DOCKER_COMMON_ENVS }} \
+              ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
+              php artisan queue:work --queue=exhibit_to_amazon_jp
+            sudo docker run \
+              -d --name ${{ env.APP_ENV }}-charing-queue-050 \
+              --restart=always \
+              -e APP_ENV=${{ env.APP_ENV }} \
+              ${{ env.DOCKER_COMMON_ENVS }} \
+              ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
+              php artisan queue:work --queue=exhibit_to_yahoo_jp
+            sudo docker run \
+              -d --name ${{ env.APP_ENV }}-charing-queue-060 \
+              --restart=always \
+              -e APP_ENV=${{ env.APP_ENV }} \
+              ${{ env.DOCKER_COMMON_ENVS }} \
+              ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
+              php artisan queue:work --queue=download_amazon_jp_product_images
+            sudo docker run \
+              -d --name ${{ env.APP_ENV }}-charing-queue-061 \
+              --restart=always \
+              -e APP_ENV=${{ env.APP_ENV }} \
+              ${{ env.DOCKER_COMMON_ENVS }} \
+              ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
+              php artisan queue:work --queue=download_amazon_jp_product_images
       - name: Database Migration
         uses: appleboy/ssh-action@v0.1.10
         with:

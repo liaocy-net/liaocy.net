@@ -75,4 +75,16 @@ class Product extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function getAmazonUSImageURLs()
+    {
+        $urls = [];
+        for ($i = 1; $i <= 10; $i++) {
+            $url = $this["img_url_" . str_pad($i, 2, "0", STR_PAD_LEFT)];
+            if ($url) {
+                array_push($urls, $url);
+            }
+        }
+        return $urls;
+    }
 }
