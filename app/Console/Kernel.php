@@ -175,6 +175,12 @@ class Kernel extends ConsoleKernel
             })->finally(function (Batch $batch) {
                 // バッチジョブの完了
                 $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
+                
+                // debug: Attempt to read property "user_id" on null
+                if (is_null($productBatch)) {
+                    return;
+                }
+                
                 $user = User::find($productBatch->user_id);
                 $yahooService = new YahooService($user);
 
