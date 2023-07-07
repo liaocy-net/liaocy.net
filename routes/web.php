@@ -301,6 +301,9 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
 
         // $yahooService->updateItemsPrice([$product_01, $product_02, $product_03]);
 
+        $user = User::find(auth()->id());
+        return $user->getJobSuffix();
+
         return "test";
     });
 });

@@ -10,6 +10,7 @@ use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use App\Models\WhiteList;
 use App\Models\BlackList;
 use AmazonPHP\SellingPartner\Exception\ApiException;
+use Illuminate\Support\Facades\Log;
 
 class UtilityService
 {
@@ -822,13 +823,40 @@ class UtilityService
         );
 
         try {
+            // https://developer-docs.amazon.com/sp-api/lang-ja_JP/docs/catalog-items-api-v2022-04-01-reference
             $catalogItem = $amazonService->getCatalogItem($product);
+        } catch (ApiException $e) {
+            $product->is_amazon_us = false;
+            $product->save();
+            if ($e->getCode() == 404){
+                Log::info("No such product " . $product->asin . " on Amazon US : getCatalogItem " . $e->getCode() . " " . $e->getMessage());
+                return;
+            } else if ($e->getCode() == 429){
+                throw new \Exception("Too many requests " . $product->asin . " on Amazon US : getCatalogItem " . $e->getCode() . " " . $e->getMessage());
+            } else {
+                throw new \Exception("Exception when getCatalogItem on Amazon US : getCatalogItem " . $e->getCode() . " " . $e->getMessage());
+            }
+        }
+
+        try {
+            sleep(env("AMAZON_API_SLEEP_BEFORE_GET_PRODUCT_PRICING", 0.8));
+            // https://developer-docs.amazon.com/sp-api/docs/product-pricing-api-v0-reference
             $productPricing = $amazonService->getProductPricing($product);
         } catch (ApiException $e) {
             $product->is_amazon_us = false;
             $product->save();
-            throw new \Exception("No such product on Amazon US");
+            if ($e->getCode() == 404){
+                Log::info("No such product " . $product->asin . " on Amazon US : getCatalogItem " . $e->getCode() . " " . $e->getMessage());
+                return;
+            } else if ($e->getCode() == 429){
+                throw new \Exception("Too many requests " . $product->asin . " on Amazon US : getCatalogItem " . $e->getCode() . " " . $e->getMessage());
+            } else {
+                throw new \Exception("Exception when getCatalogItem on Amazon US " . $e->getCode() . " " . $e->getMessage());
+            }
         }
+
+        
+
         $product->title_us = $catalogItem['title'];
         $product->brand_us = $catalogItem['brand'];
         // $product->cate_us = $catalogItem['cate'];
@@ -881,13 +909,38 @@ class UtilityService
         );
 
         try {
+            // https://developer-docs.amazon.com/sp-api/lang-ja_JP/docs/catalog-items-api-v2022-04-01-reference
             $catalogItem = $amazonService->getCatalogItem($product);
+        } catch (ApiException $e) {
+            $product->is_amazon_jp = false;
+            $product->save();
+            if ($e->getCode() == 404){
+                Log::info("No such product " . $product->asin . " on Amazon JP : getCatalogItem " . $e->getCode() . " " . $e->getMessage());
+                return;
+            } else if ($e->getCode() == 429){
+                throw new \Exception("Too many requests " . $product->asin . " on Amazon JP : getCatalogItem " . $e->getCode() . " " . $e->getMessage());
+            } else {
+                throw new \Exception("Exception when getCatalogItem on Amazon JP : getCatalogItem " . $e->getCode() . " " . $e->getMessage());
+            }
+        }
+
+        try {
+            sleep(env("AMAZON_API_SLEEP_BEFORE_GET_PRODUCT_PRICING", 0.8));
+            // https://developer-docs.amazon.com/sp-api/docs/product-pricing-api-v0-reference
             $productPricing = $amazonService->getProductPricing($product);
         } catch (ApiException $e) {
             $product->is_amazon_jp = false;
             $product->save();
-            throw new \Exception("No such product on Amazon JP");
+            if ($e->getCode() == 404){
+                Log::info("No such product " . $product->asin . " on Amazon JP : getCatalogItem " . $e->getCode() . " " . $e->getMessage());
+                return;
+            } else if ($e->getCode() == 429){
+                throw new \Exception("Too many requests " . $product->asin . " on Amazon JP : getCatalogItem " . $e->getCode() . " " . $e->getMessage());
+            } else {
+                throw new \Exception("Exception when getCatalogItem on Amazon JP " . $e->getCode() . " " . $e->getMessage());
+            }
         }
+
         $product->title_jp = $catalogItem['title'];
         $product->brand_jp = $catalogItem['brand'];
         $product->rank_id_jp = $catalogItem['rank_id'];

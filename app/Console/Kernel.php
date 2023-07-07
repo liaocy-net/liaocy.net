@@ -40,6 +40,9 @@ class Kernel extends ConsoleKernel
         $schedule->call(function () {
             $this->UpdateYahooJPExhibit();
         })->hourlyAt(30);
+
+        // 删除 72 小时前完成的所有批次
+        // $schedule->command('queue:prune-batches --hours=72')->daily();
     }
 
     /**

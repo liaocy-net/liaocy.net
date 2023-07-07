@@ -211,6 +211,7 @@ class ExhibitHistoryController extends Controller
             $validator = Validator::make($params, [
                 'product_batch_id' => ['required', 'integer', 'min:1'],
                 'page' => ['required', 'integer', 'min:1'],
+                'exhibit_to' => ['required', 'string', 'max:255', 'regex:/^[amazon_jp|yahoo_jp]+$/u'],
                 'asin' => ['nullable', 'string', 'max:255'],
                 'brand' => ['nullable', 'string', 'max:255'],
                 'title' => ['nullable', 'string', 'max:255'],
@@ -225,8 +226,12 @@ class ExhibitHistoryController extends Controller
             $my = User::find(auth()->id());
 
             $where = [
-                
+                ["is_amazon_us", "=", true]
             ];
+
+            if ($request->input('exhibit_to') == 'amazon_jp') {
+                array_push($where, ["is_amazon_jp", "=", true]);
+            }
 
             if ($request->input('asin')) {
                 array_push($where, ['asin', 'like', '%' . $request->input('asin') . '%']);

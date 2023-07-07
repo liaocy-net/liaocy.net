@@ -25,7 +25,7 @@ class ExtractAmazonInfo implements ShouldQueue
      *
      * @var int
      */
-    public $tries = 3;
+    public $tries = 2;
 
     /**
      * Create a new job instance.
@@ -36,6 +36,13 @@ class ExtractAmazonInfo implements ShouldQueue
     {
         $this->product = $product;
     }
+
+    /**
+     * The number of seconds to wait before retrying the job.
+     *
+     * @var int
+     */
+    public $backoff = 10;
 
     /**
      * Execute the job.
@@ -59,16 +66,6 @@ class ExtractAmazonInfo implements ShouldQueue
         UtilityService::updateJPAmazonInfo($this->product);
 
         $this->product->save();
-    }
-
-    /**
-     * ジョブを再試行する前に待機する秒数を計算
-     *
-     * @return array
-     */
-    public function backoff()
-    {
-        return [1, 5, 10];
     }
 
     /**

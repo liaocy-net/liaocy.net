@@ -74,6 +74,12 @@ class AmazonInfoController extends Controller
 
                 //シートの読み込み
                 $sheet = $spreadsheet->getSheet(0);
+
+                //最大行数確認
+                if ($sheet->getHighestRow() > 1 + 3000) {
+                    throw new \Exception("ASIN数が3000を超えてはいけません。");
+                }
+
                 $headers = $sheet->rangeToArray('A1:A1', null, true, false);
                 if (strcmp($headers[0][0], "ASIN") !== 0) {
                     throw new \Exception("EXCELファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
@@ -132,7 +138,7 @@ class AmazonInfoController extends Controller
                     $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
                     $productBatch->finished_at = now();
                     $productBatch->save();
-                })->allowFailures()->dispatch();
+                })->onQueue("extract_amazon_info")->allowFailures()->dispatch();
 
                 $productBatch->job_batch_id = $batch->id;
                 $productBatch->save();

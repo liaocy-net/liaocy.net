@@ -106,4 +106,12 @@ class User extends Authenticatable
     {
         return $this->hasMany(Product::class);
     }
+
+    /**
+     * Get my job suffix
+     */
+    public function getJobSuffix(): string
+    {
+        return str_pad($this->id % 10, 3, "0", STR_PAD_LEFT);
+    }
 }

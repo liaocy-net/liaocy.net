@@ -53,7 +53,6 @@ class AmazonService
     
     protected function getSDK() : SellingPartnerSDK
     {
-        sleep(0.3);
         $factory = new Psr17Factory();
         $client = new Curl($factory);
         $configuration = Configuration::forIAMUser(

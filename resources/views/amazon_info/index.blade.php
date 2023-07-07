@@ -42,6 +42,7 @@
 
                 <div class="">
                     <h5 class="fw-bold">Amazon情報取得履歴</h5>
+                    <p class="text-muted">１回最大 3000 ASINを登録してください。</p>
                     <div class="table-responsive text-nowrap">
                         <table class="table table-bordered table-striped text-center">
                             <thead class="table-light">

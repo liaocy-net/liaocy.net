@@ -28,6 +28,7 @@
                     {{ method_field('POST') }}
                     <div class="mb-4">
                         <h5 class="fw-bold">出品先</h5>
+                        <p class="text-muted">１回最大 3000 ASINを登録してください。</p>
                         <div class="table-responsive text-nowrap">
                             <table class="table table-bordered table-striped text-center">
                                 <thead class="table-light">
@@ -39,12 +40,12 @@
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td><input type="checkbox" class="form-check-input" name="exhibit_to[]" value="amazon"/></td>
+                                        <td><input type="checkbox" class="form-check-input" name="exhibit_to[]" value="amazon" checked/></td>
                                         <td>Amazon</td>
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><input type="checkbox" class="form-check-input" name="exhibit_to[]" value="yahoo"/></td>
+                                        <td><input type="checkbox" class="form-check-input" name="exhibit_to[]" value="yahoo" checked/></td>
                                         <td>Yahoo!</td>
                                         <td class="text-start">
                                             <select class="form-select select2" id="exhibit_line_2" name="yahoo_jp_category_id" data-placeholder="選択してください">

@@ -81,7 +81,7 @@ php artisan queue:work --queue=high,default
 ```
   - DEV
 ```bash
-php artisan queue:listen --queue=high,default,update_amazon_info,update_amazon_jp_exhibit,update_yahoo_jp_exhibit,exhibit_to_amazon_jp,exhibit_to_yahoo_jp,download_amazon_jp_product_images
+php artisan queue:listen --queue=update_amazon_jp_exhibit,update_yahoo_jp_exhibit,exhibit_to_amazon_jp,exhibit_to_yahoo_jp,extract_amazon_info_for_exhibit,update_amazon_info,extract_amazon_info,download_amazon_jp_product_images
 ```
 
 - Run scheduled tasks on host
