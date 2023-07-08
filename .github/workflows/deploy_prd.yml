@@ -11,22 +11,22 @@ env:
   SERVER_USER: ubuntu
   SERVER_SSH_KEY: ${{secrets.SERVER_SSH_KEY}}
   QUEUE_COUNT: 1
-  APP_ENV: stg
+  APP_ENV: prd
   APP_PORT: 5000
   DOCKER_COMMON_ENVS: |- 
-    -v /data/stg-charing-storage/app:/var/www/html/storage/app \
-    -v /data/stg-charing-storage/logs:/var/www/html/storage/logs \
+    -v /data/prd-charing-storage/app:/var/www/html/storage/app \
+    -v /data/prd-charing-storage/logs:/var/www/html/storage/logs \
     -e APP_NAME=Charing \
-    -e APP_KEY=${{secrets.APP_KEY_STG}} \
+    -e APP_KEY=${{secrets.APP_KEY_PRD}} \
     -e APP_DEBUG=true \
-    -e APP_URL=https://test.charing.biz/ \
+    -e APP_URL=https://charing.biz/ \
     -e LOG_CHANNEL=stack \
     -e LOG_DEPRECATIONS_CHANNEL=null \
     -e LOG_LEVEL=debug \
     -e DB_CONNECTION=mysql \
     -e DB_HOST=${{secrets.DB_HOST}} \
     -e DB_PORT=${{secrets.DB_PORT}} \
-    -e DB_DATABASE=charing_stg \
+    -e DB_DATABASE=charing_prd \
     -e DB_USERNAME=${{secrets.DB_USERNAME}} \
     -e DB_PASSWORD=${{secrets.DB_PASSWORD}} \
     -e BROADCAST_DRIVER=log \
@@ -41,13 +41,13 @@ env:
     -e REDIS_PASSWORD=null \
     -e REDIS_PORT=6479 \
     -e MAIL_MAILER=smtp \
-    -e MAIL_HOST=mailpit \
-    -e MAIL_PORT=1025 \
-    -e MAIL_USERNAME=null \
-    -e MAIL_PASSWORD=null \
-    -e MAIL_ENCRYPTION=null \
-    -e MAIL_FROM_ADDRESS=hello@example.com \
-    -e MAIL_FROM_NAME=HelloWorld \
+    -e MAIL_HOST=mail2.conoha.ne.jp \
+    -e MAIL_PORT=587 \
+    -e MAIL_USERNAME=noreply@charing.biz \
+    -e MAIL_PASSWORD=${{secrets.MAIL_PASSWORD}} \
+    -e MAIL_ENCRYPTION=tls \
+    -e MAIL_FROM_ADDRESS=noreply@charing.biz \
+    -e MAIL_FROM_NAME=Charing \
     -e AWS_DEFAULT_REGION=ap-northeast-1 \
     -e AWS_BUCKET="" \
     -e AWS_USE_PATH_STYLE_ENDPOINT=false \
@@ -64,15 +64,15 @@ env:
     -e VITE_PUSHER_SCHEME="" \
     -e VITE_PUSHER_APP_CLUSTER="" \
     -e PAGE_MAX_LIMIT=50 \
-    -e IAM_ARN=${{secrets.IAM_ARN_STG}} \
-    -e IAM_ACCESS_KEY=${{secrets.IAM_ACCESS_KEY_STG}} \
-    -e IAM_SECRECT_KEY=${{secrets.IAM_SECRECT_KEY_STG}} \
-    -e AMAZON_JP_APPLICATION_ID=${{secrets.AMAZON_JP_APPLICATION_ID_STG}} \
-    -e AMAZON_JP_CLIENT_ID=${{secrets.AMAZON_JP_CLIENT_ID_STG}} \
-    -e AMAZON_JP_CLIENT_SECRET=${{secrets.AMAZON_JP_CLIENT_SECRET_STG}} \
-    -e AMAZON_US_APPLICATION_ID=${{secrets.AMAZON_US_APPLICATION_ID_STG}} \
-    -e AMAZON_US_CLIENT_ID=${{secrets.AMAZON_US_CLIENT_ID_STG}} \
-    -e AMAZON_US_CLIENT_SECRET=${{ secrets.AMAZON_US_CLIENT_SECRET_STG}} \
+    -e IAM_ARN=${{secrets.IAM_ARN_PRD}} \
+    -e IAM_ACCESS_KEY=${{secrets.IAM_ACCESS_KEY_PRD}} \
+    -e IAM_SECRECT_KEY=${{secrets.IAM_SECRECT_KEY_PRD}} \
+    -e AMAZON_JP_APPLICATION_ID=${{secrets.AMAZON_JP_APPLICATION_ID_PRD}} \
+    -e AMAZON_JP_CLIENT_ID=${{secrets.AMAZON_JP_CLIENT_ID_PRD}} \
+    -e AMAZON_JP_CLIENT_SECRET=${{secrets.AMAZON_JP_CLIENT_SECRET_PRD}} \
+    -e AMAZON_US_APPLICATION_ID=${{secrets.AMAZON_US_APPLICATION_ID_PRD}} \
+    -e AMAZON_US_CLIENT_ID=${{secrets.AMAZON_US_CLIENT_ID_PRD}} \
+    -e AMAZON_US_CLIENT_SECRET=${{ secrets.AMAZON_US_CLIENT_SECRET_PRD}} \
     -e AMAZON_API_SLEEP_BEFORE_GET_PRODUCT_PRICING=1.0
 jobs:
   build-docker-image:
@@ -95,13 +95,13 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest
-  deploy-web-app:
+  deploy-web:
     runs-on: ubuntu-latest
     needs:
       - build-docker-image
     concurrency: deploy-app
     env:
-      SERVER_HOST: 18.180.237.148
+      SERVER_HOST: 35.73.227.145
     steps:
       - name: Pull Docker Image
         uses: appleboy/ssh-action@v0.1.10
@@ -156,67 +156,67 @@ jobs:
             if [[ $(sudo docker images -f "dangling=true" -q) ]]; then
               sudo docker rmi $(sudo docker images -f "dangling=true" -q)
             fi
-  deploy-worker-app-000-002:
-    runs-on: ubuntu-latest
-    needs:
-      - deploy-web-app
-    concurrency: deploy-app
-    env:
-      SERVER_HOST: 35.74.68.130
-    steps:
-    - name: Pull Docker Image
-      uses: appleboy/ssh-action@v0.1.10
-      with:
-        host: ${{ env.SERVER_HOST }}
-        username: ${{ env.SERVER_USER }}
-        key: ${{ env.SERVER_SSH_KEY }}
-        port: ${{ env.SERVER_PORT }}
-        script: |-
-          export CR_PAT=${{ secrets.GITHUB_TOKEN }}
-          echo $CR_PAT | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
-          sudo docker pull ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest
-          sudo docker logout ghcr.io
-    - name: Run Queue Dockers
-      uses: appleboy/ssh-action@v0.1.10
-      with:
-        host: ${{ env.SERVER_HOST }}
-        username: ${{ env.SERVER_USER }}
-        key: ${{ env.SERVER_SSH_KEY }}
-        port: ${{ env.SERVER_PORT }}
-        script: |
-          sudo docker stop $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-")
-          sudo docker rm $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-")
+  # deploy-worker-000-002:
+  #   runs-on: ubuntu-latest
+  #   needs:
+  #     - deploy-web
+  #   concurrency: deploy-app
+  #   env:
+  #     SERVER_HOST: 35.75.15.63
+  #   steps:
+  #   - name: Pull Docker Image
+  #     uses: appleboy/ssh-action@v0.1.10
+  #     with:
+  #       host: ${{ env.SERVER_HOST }}
+  #       username: ${{ env.SERVER_USER }}
+  #       key: ${{ env.SERVER_SSH_KEY }}
+  #       port: ${{ env.SERVER_PORT }}
+  #       script: |-
+  #         export CR_PAT=${{ secrets.GITHUB_TOKEN }}
+  #         echo $CR_PAT | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
+  #         sudo docker pull ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest
+  #         sudo docker logout ghcr.io
+  #   - name: Run Queue Dockers
+  #     uses: appleboy/ssh-action@v0.1.10
+  #     with:
+  #       host: ${{ env.SERVER_HOST }}
+  #       username: ${{ env.SERVER_USER }}
+  #       key: ${{ env.SERVER_SSH_KEY }}
+  #       port: ${{ env.SERVER_PORT }}
+  #       script: |
+  #         sudo docker stop $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-")
+  #         sudo docker rm $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-")
 
-          if ! [ -d /data/stg-charing-storage/ ]; then mkdir /data/stg-charing-storage/; fi
+  #         if ! [ -d /data/stg-charing-storage/ ]; then mkdir /data/stg-charing-storage/; fi
 
-          for i in $(seq -f "%03g" 0 0)
-          do
-            sudo docker run \
-              -d --name ${{ env.APP_ENV }}-charing-worker-$i \
-              --restart=always \
-              -e APP_ENV=${{ env.APP_ENV }} \
-              ${{ env.DOCKER_COMMON_ENVS }} \
-              ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
-              php artisan queue:work --queue=update_amazon_jp_exhibit,update_yahoo_jp_exhibit,exhibit_to_amazon_jp,exhibit_to_yahoo_jp,extract_amazon_info_for_exhibit,update_amazon_info,extract_amazon_info
-          done
-          for i in $(seq -f "%03g" 100 102)
-          do
-            sudo docker run \
-              -d --name ${{ env.APP_ENV }}-charing-worker-$i \
-              --restart=always \
-              -e APP_ENV=${{ env.APP_ENV }} \
-              ${{ env.DOCKER_COMMON_ENVS }} \
-              ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
-              php artisan queue:work --queue=download_amazon_jp_product_images
-          done
-    - name: Remove Untagged Images
-      uses: appleboy/ssh-action@v0.1.10
-      with:
-        host: ${{ env.SERVER_HOST }}
-        username: ${{ env.SERVER_USER }}
-        key: ${{ env.SERVER_SSH_KEY }}
-        port: ${{ env.SERVER_PORT }}
-        script: |
-          if [[ $(sudo docker images -f "dangling=true" -q) ]]; then
-            sudo docker rmi $(sudo docker images -f "dangling=true" -q)
-          fi
+  #         for i in $(seq -f "%03g" 1 3)
+  #         do
+  #           sudo docker run \
+  #             -d --name ${{ env.APP_ENV }}-charing-worker-$i \
+  #             --restart=always \
+  #             -e APP_ENV=${{ env.APP_ENV }} \
+  #             ${{ env.DOCKER_COMMON_ENVS }} \
+  #             ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
+  #             php artisan queue:work --queue=update_amazon_jp_exhibit,update_yahoo_jp_exhibit,exhibit_to_amazon_jp,exhibit_to_yahoo_jp,extract_amazon_info_for_exhibit,update_amazon_info,extract_amazon_info
+  #         done
+  #         for i in $(seq -f "%03g" 101 103)
+  #         do
+  #           sudo docker run \
+  #             -d --name ${{ env.APP_ENV }}-charing-worker-$i \
+  #             --restart=always \
+  #             -e APP_ENV=${{ env.APP_ENV }} \
+  #             ${{ env.DOCKER_COMMON_ENVS }} \
+  #             ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
+  #             php artisan queue:work --queue=download_amazon_jp_product_images
+  #         done
+  #   - name: Remove Untagged Images
+  #     uses: appleboy/ssh-action@v0.1.10
+  #     with:
+  #       host: ${{ env.SERVER_HOST }}
+  #       username: ${{ env.SERVER_USER }}
+  #       key: ${{ env.SERVER_SSH_KEY }}
+  #       port: ${{ env.SERVER_PORT }}
+  #       script: |
+  #         if [[ $(sudo docker images -f "dangling=true" -q) ]]; then
+  #           sudo docker rmi $(sudo docker images -f "dangling=true" -q)
+  #         fi
