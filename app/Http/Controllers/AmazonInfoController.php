@@ -64,6 +64,8 @@ class AmazonInfoController extends Controller
     {
         try {
             if ($request->hasFile('asin_file')) {
+                $my = User::find(auth()->id());
+
                 //拡張子がxlsxであるかの確認
                 if ($request->asin_file->getClientOriginalExtension() !== "xlsx") {
                     throw new \Exception("不適切な拡張子です。EXCEL(xlsx)ファイルを選択してください。");
@@ -138,7 +140,7 @@ class AmazonInfoController extends Controller
                     $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
                     $productBatch->finished_at = now();
                     $productBatch->save();
-                })->onQueue("extract_amazon_info")->allowFailures()->dispatch();
+                })->onQueue("extract_amazon_info_" . $my->getJobSuffix())->allowFailures()->dispatch();
 
                 $productBatch->job_batch_id = $batch->id;
                 $productBatch->save();

@@ -390,7 +390,7 @@ class ExhibitHistoryController extends Controller
                 $exhibitToAmazonJPJobs = array();
                 array_push($exhibitToAmazonJPJobs, new ExhibitToAmazonJP($exhibitToJPProductBatch));
 
-                $batch = Bus::batch($exhibitToAmazonJPJobs)->name("exhibit_to_amazon_jp")->then(function (Batch $batch) {
+                $batch = Bus::batch($exhibitToAmazonJPJobs)->name("exhibit_to_amazon_jp_" . $my->getJobSuffix())->then(function (Batch $batch) {
                     // すべてのジョブが正常に完了
                 })->catch(function (Batch $batch, Throwable $e) {
                     // バッチジョブの失敗をはじめて検出
@@ -399,7 +399,7 @@ class ExhibitHistoryController extends Controller
                     $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
                     $productBatch->finished_at = now();
                     $productBatch->save();
-                })->onQueue('exhibit_to_amazon_jp')->allowFailures()->dispatch();
+                })->onQueue('exhibit_to_amazon_jp_' . $my->getJobSuffix())->allowFailures()->dispatch();
 
                 
                 $exhibitToJPProductBatch->job_batch_id = $batch->id;
@@ -481,7 +481,7 @@ class ExhibitHistoryController extends Controller
                         $productBatch->finished_at = now();
                         $productBatch->save();
 
-                    })->onQueue('exhibit_to_yahoo_jp')->allowFailures()->dispatch();
+                    })->onQueue('exhibit_to_yahoo_jp_' . $my->getJobSuffix())->allowFailures()->dispatch();
 
                     $exhibitToYahooJPProductBatch->job_batch_id = $batch->id;
                     $exhibitToYahooJPProductBatch->save();

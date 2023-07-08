@@ -100,6 +100,29 @@ crontab -e
 * * * * * sudo docker exec $(sudo docker ps -a -q --filter="name=prd-charing-web") php artisan schedule:run >> /dev/null 2>&1
 ```
 
+## EC2
+
+### Share Volume
+ref.: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html
+
+```bash
+# First Only
+sudo mkfs -t xfs /dev/nvme1n1
+# Everytime
+sudo lsblk -f
+sudo mkdir /data
+sudo mount /dev/nvme1n1 /data
+
+sudo blkid
+sudo nano /etc/fstab
+# /dev/nvme1n1: UUID="06754bd0-0f44-46ad-a1f6-0fb99167f0df" BLOCK_SIZE="512" TYPE="xfs"
+# UUID=06754bd0-0f44-46ad-a1f6-0fb99167f0df  /data  xfs  defaults,nofail  0  2
+
+# Test
+sudo umount /data
+sudo mount -a
+```
+
 ## Docker
 
 ### Build and Replace

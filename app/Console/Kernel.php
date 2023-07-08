@@ -99,6 +99,8 @@ class Kernel extends ConsoleKernel
 
         foreach($product_users as $product_user) {
 
+            $user = User::find($product_user->user_id);
+
             $products = Product::where([
                 ["user_id", $product_user->user_id],
                 ["amazon_jp_need_update_exhibit_info", true],
@@ -127,12 +129,9 @@ class Kernel extends ConsoleKernel
             })->finally(function (Batch $batch) {
                 // バッチジョブの完了
                 $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
-                $user = User::find($productBatch->user_id);
-                $yahooService = new YahooService($user);
-
                 $productBatch->finished_at = now();
                 $productBatch->save();
-            })->onQueue('update_amazon_jp_exhibit')->allowFailures()->dispatch();
+            })->onQueue('update_amazon_jp_exhibit_' . $user->getJobSuffix())->allowFailures()->dispatch();
 
             $productBatch->job_batch_id = $batch->id;
             $productBatch->save();
@@ -151,6 +150,8 @@ class Kernel extends ConsoleKernel
             ])->groupBy("user_id")->cursor();
 
         foreach($product_users as $product_user) {
+
+            $user = User::find($product_user->user_id);
 
             $products = Product::where([
                 ["user_id", $product_user->user_id],
@@ -193,7 +194,7 @@ class Kernel extends ConsoleKernel
 
                 $productBatch->finished_at = now();
                 $productBatch->save();
-            })->onQueue('update_yahoo_jp_exhibit')->allowFailures()->dispatch();
+            })->onQueue('update_yahoo_jp_exhibit_' . $user->getJobSuffix())->allowFailures()->dispatch();
 
             $productBatch->job_batch_id = $batch->id;
             $productBatch->save();

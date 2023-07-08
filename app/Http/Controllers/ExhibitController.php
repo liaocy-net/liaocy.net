@@ -62,6 +62,8 @@ class ExhibitController extends Controller
                 throw new \Exception($validator->errors()->first(), 442);
             }
 
+            $my = User::find(auth()->id());
+
             if ($request->hasFile('asin_file')) {
                 //拡張子がxlsxであるかの確認
                 if ($request->asin_file->getClientOriginalExtension() !== "xlsx") {
@@ -154,7 +156,7 @@ class ExhibitController extends Controller
                     $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
                     $productBatch->finished_at = now();
                     $productBatch->save();
-                })->onQueue('extract_amazon_info_for_exhibit')->allowFailures()->dispatch();
+                })->onQueue('extract_amazon_info_for_exhibit_' . $my->getJobSuffix())->allowFailures()->dispatch();
 
                 $productBatch->job_batch_id = $batch->id;
                 $productBatch->save();

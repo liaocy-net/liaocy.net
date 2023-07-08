@@ -1,11 +1,11 @@
-name: CI-STG
+name: CI-TEST
 on: 
   workflow_dispatch: null
   push:
     branches:
       - 'main'
 concurrency:
-  group: ci-stg
+  group: ci-test
   cancel-in-progress: true
 env:
   REGISTRY: ghcr.io
@@ -98,7 +98,7 @@ jobs:
           context: .
           push: true
           tags: ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest
-  deploy-app:
+  deploy-web-app:
     runs-on: ubuntu-latest
     needs:
       - build-docker-image
@@ -129,7 +129,7 @@ jobs:
             sudo docker stop $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-")
             sudo docker rm $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-")
 
-            if ! [ -d /data/${{ env.APP_ENV }}-charing-storage/ ]; then mkdir /data/${{ env.APP_ENV }}-charing-storage/; fi
+            if ! [ -d /data/stg-charing-storage/ ]; then mkdir /data/stg-charing-storage/; fi
 
             sudo docker run \
               -p ${{ env.APP_PORT }}:8000 \
@@ -139,46 +139,6 @@ jobs:
               ${{ env.DOCKER_COMMON_ENVS }} \
               ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
               php artisan serve --host=0.0.0.0 --port=8000
-      - name: Pull Docker Image
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ env.SERVER_HOST }}
-          username: ${{ env.SERVER_USER }}
-          key: ${{ env.SERVER_SSH_KEY }}
-          port: ${{ env.SERVER_PORT }}
-          script: |-
-            export CR_PAT=${{ secrets.GITHUB_TOKEN }}
-            echo $CR_PAT | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
-            sudo docker pull ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest
-            sudo docker logout ghcr.io
-      - name: Run Worker Dockers
-        uses: appleboy/ssh-action@v0.1.10
-        with:
-          host: ${{ env.SERVER_HOST }}
-          username: ${{ env.SERVER_USER }}
-          key: ${{ env.SERVER_SSH_KEY }}
-          port: ${{ env.SERVER_PORT }}
-          script: |
-            for i in $(seq -f "%03g" 1 19)
-            do
-              sudo docker run \
-                -d --name ${{ env.APP_ENV }}-charing-worker-$i \
-                --restart=always \
-                -e APP_ENV=${{ env.APP_ENV }} \
-                ${{ env.DOCKER_COMMON_ENVS }} \
-                ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
-                php artisan queue:work --queue=update_amazon_jp_exhibit_$i,update_yahoo_jp_exhibit_$i,exhibit_to_amazon_jp_$i,exhibit_to_yahoo_jp_$i,extract_amazon_info_for_exhibit_$i,update_amazon_info_$i,extract_amazon_info_$i
-            done
-            for i in $(seq -f "%03g" 100 102)
-            do
-              sudo docker run \
-                -d --name ${{ env.APP_ENV }}-charing-worker-$i \
-                --restart=always \
-                -e APP_ENV=${{ env.APP_ENV }} \
-                ${{ env.DOCKER_COMMON_ENVS }} \
-                ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
-                php artisan queue:work --queue=download_amazon_jp_product_images
-            done
       - name: Database Migration
         uses: appleboy/ssh-action@v0.1.10
         with:
@@ -199,3 +159,67 @@ jobs:
             if [[ $(sudo docker images -f "dangling=true" -q) ]]; then
               sudo docker rmi $(sudo docker images -f "dangling=true" -q)
             fi
+  deploy-worker-app-000-002:
+    runs-on: ubuntu-latest
+    needs:
+      - deploy-web-app
+    concurrency: deploy-app
+    env:
+      SERVER_HOST: 35.74.68.130
+    steps:
+    - name: Pull Docker Image
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ env.SERVER_HOST }}
+        username: ${{ env.SERVER_USER }}
+        key: ${{ env.SERVER_SSH_KEY }}
+        port: ${{ env.SERVER_PORT }}
+        script: |-
+          export CR_PAT=${{ secrets.GITHUB_TOKEN }}
+          echo $CR_PAT | sudo docker login ghcr.io -u ${{ github.actor }} --password-stdin
+          sudo docker pull ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest
+          sudo docker logout ghcr.io
+    - name: Run Queue Dockers
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ env.SERVER_HOST }}
+        username: ${{ env.SERVER_USER }}
+        key: ${{ env.SERVER_SSH_KEY }}
+        port: ${{ env.SERVER_PORT }}
+        script: |
+          sudo docker stop $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-")
+          sudo docker rm $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-")
+
+          if ! [ -d /data/stg-charing-storage/ ]; then mkdir /data/stg-charing-storage/; fi
+
+          for i in $(seq -f "%03g" 0 0)
+          do
+            sudo docker run \
+              -d --name ${{ env.APP_ENV }}-charing-worker-$i \
+              --restart=always \
+              -e APP_ENV=${{ env.APP_ENV }} \
+              ${{ env.DOCKER_COMMON_ENVS }} \
+              ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
+              php artisan queue:work --queue=update_amazon_jp_exhibit,update_yahoo_jp_exhibit,exhibit_to_amazon_jp,exhibit_to_yahoo_jp,extract_amazon_info_for_exhibit,update_amazon_info,extract_amazon_info
+          done
+          for i in $(seq -f "%03g" 100 102)
+          do
+            sudo docker run \
+              -d --name ${{ env.APP_ENV }}-charing-worker-$i \
+              --restart=always \
+              -e APP_ENV=${{ env.APP_ENV }} \
+              ${{ env.DOCKER_COMMON_ENVS }} \
+              ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
+              php artisan queue:work --queue=download_amazon_jp_product_images
+          done
+    - name: Remove Untagged Images
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ env.SERVER_HOST }}
+        username: ${{ env.SERVER_USER }}
+        key: ${{ env.SERVER_SSH_KEY }}
+        port: ${{ env.SERVER_PORT }}
+        script: |
+          if [[ $(sudo docker images -f "dangling=true" -q) ]]; then
+            sudo docker rmi $(sudo docker images -f "dangling=true" -q)
+          fi
