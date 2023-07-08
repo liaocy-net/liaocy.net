@@ -301,10 +301,15 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
 
         // $yahooService->updateItemsPrice([$product_01, $product_02, $product_03]);
 
-        $user = User::find(auth()->id());
-        return $user->getJobSuffix();
+        // $user = User::find(auth()->id());
+        // return $user->getJobSuffix();
 
-        return "test";
+        $jobs = DB::table('jobs')->where("reserved_at", "<", time() - 0 * 1 * 60 * 60)->get();
+        foreach($jobs as $job) {
+            DB::table('jobs')->where('id', $job->id)->update(['reserved_at' => null]);
+        }
+
+        return $jobs;
     });
 });
 

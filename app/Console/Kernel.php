@@ -16,6 +16,7 @@ use App\Models\ProductBatch;
 use App\Jobs\UpdateAmazonJPExhibit;
 use App\Jobs\UpdateYahooJPExhibit;
 use App\Services\YahooService;
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 
@@ -43,6 +44,12 @@ class Kernel extends ConsoleKernel
 
         // 删除 72 小时前完成的所有批次
         // $schedule->command('queue:prune-batches --hours=72')->daily();
+
+        // Release all jobs that have been reserved for too long.
+        // Probably due to a worker crash.
+        $schedule->call(function () {
+            $this->releaseAllReservedJobs();
+        })->hourlyAt(0);
     }
 
     /**
@@ -198,6 +205,20 @@ class Kernel extends ConsoleKernel
 
             $productBatch->job_batch_id = $batch->id;
             $productBatch->save();
+        }
+    }
+
+    /**
+     * Release all jobs that have been reserved for too long.
+     * Probably due to a worker crash.
+     *
+     * @return void
+     */
+    protected function releaseAllReservedJobs() {
+        $jobs = DB::table('jobs')->where("reserved_at", "<", time() - 3 * 60 * 60)->get();
+        foreach($jobs as $job) {
+            Log::info("releaseAllReservedJobs: " . $job->id);
+            DB::table('jobs')->where('id', $job->id)->update(['reserved_at' => null]);
         }
     }
 }
