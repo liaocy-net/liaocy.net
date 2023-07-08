@@ -1,11 +1,8 @@
-name: CI-TEST
+name: CI-PRD
 on: 
   workflow_dispatch: null
-  push:
-    branches:
-      - 'main'
 concurrency:
-  group: ci-test
+  group: ci-prd
   cancel-in-progress: true
 env:
   REGISTRY: ghcr.io
