@@ -4,28 +4,22 @@ USER root
 
 WORKDIR /var/www/html
 
-COPY . /var/www/html
+# パッケージのインストール
+RUN apt-get update \
+    && apt-get -y install git zip unzip vim zlib1g-dev libzip-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev
 
-RUN apt-get update && apt-get install -y \
-        libpng-dev \
-        zlib1g-dev \
-        libxml2-dev \
-        libzip-dev \
-        libonig-dev \
-        libpq-dev \
-        zip \
-        curl \
-        unzip \
-    && docker-php-ext-configure gd \
-    && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
-    && docker-php-ext-install -j$(nproc) gd \
+RUN docker-php-ext-install gd \
     && docker-php-ext-install pdo_mysql \
     && docker-php-ext-install mysqli \
     && docker-php-ext-install zip \
     && docker-php-ext-install exif \
-    && docker-php-ext-install pdo \
-    && docker-php-source delete
+    && docker-php-ext-install pdo
 
 # Install composer
-RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer \
-    && composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
+RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+COPY . /var/www/html
+
+# Install composer packages
+RUN composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
+
