@@ -18,6 +18,7 @@ use PhpOffice\PhpSpreadsheet\IOFactory;
 use App\Models\ForeignShipping;
 use App\Models\Setting;
 use App\Models\YahooJpCategory;
+use App\Services\UtilityService;
 
 class SettingController extends Controller
 {
@@ -103,7 +104,7 @@ class SettingController extends Controller
                     $foreignShippings = array();
                     $sheet = $spreadsheet->getSheet(0);
                     $headers = $sheet->rangeToArray('A1:B1', null, true, false);
-                    if (count($headers[0]) != 2 || strcmp($headers[0][0], "重量(KG)") !== 0 || strcmp($headers[0][1], "費用(USD)") !== 0) {
+                    if (count($headers[0]) != 2 || strcmp($headers[0][0], "重量(lbs)") !== 0 || strcmp($headers[0][1], "費用(USD)") !== 0) {
                         throw new \Exception("EXCELファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
                     }
                     $rows = $sheet->rangeToArray('A2:B' . $sheet->getHighestRow(), null, true, false);
@@ -112,7 +113,7 @@ class SettingController extends Controller
                             throw new \Exception("EXCELファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
                         }
                         $foreignShippings[] = array(
-                            "weight_kg" => $row[0],
+                            "weight_kg" => UtilityService::convertLbsToKg($row[0]),
                             "usd_fee" => $row[1]
                         );
                     }

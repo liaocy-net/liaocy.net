@@ -960,4 +960,14 @@ class UtilityService
         $product->is_amazon_jp = true;
         $product->save();
     }
+
+    public static function convertLbsToKg($lbs, $precision = 3)
+    {
+        return round($lbs * 0.45359237, $precision);
+    }
+
+    public static function convertKgToLbs($kg, $precision = 3)
+    {
+        return round($kg / 0.45359237, $precision);
+    }
 }
