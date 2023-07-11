@@ -304,12 +304,23 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
         // $user = User::find(auth()->id());
         // return $user->getJobSuffix();
 
-        $jobs = DB::table('jobs')->where("reserved_at", "<", time() - 0 * 1 * 60 * 60)->get();
-        foreach($jobs as $job) {
-            DB::table('jobs')->where('id', $job->id)->update(['reserved_at' => null]);
-        }
+        // $jobs = DB::table('jobs')->where("reserved_at", "<", time() - 0 * 1 * 60 * 60)->get();
+        // foreach($jobs as $job) {
+        //     DB::table('jobs')->where('id', $job->id)->update(['reserved_at' => null]);
+        // }
 
-        return $jobs;
+        // return $jobs;
+
+        $name1 = "Geeks";
+        $name2 = "Geeks";
+        
+        // Use strcmp() function
+        if (strcmp($name1, $name2) !== 0) {
+            echo 'Both strings are not equal';
+        }
+        else {
+            echo 'Both strings are equal';
+        }
     });
 });
 

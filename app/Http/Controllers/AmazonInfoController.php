@@ -15,6 +15,8 @@ use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use SplFileObject;
+use Illuminate\Support\Facades\Log;
 
 class AmazonInfoController extends Controller
 {
@@ -66,43 +68,73 @@ class AmazonInfoController extends Controller
             if ($request->hasFile('asin_file')) {
                 $my = User::find(auth()->id());
 
-                //拡張子がxlsxであるかの確認
-                if ($request->asin_file->getClientOriginalExtension() !== "xlsx") {
-                    throw new \Exception("不適切な拡張子です。EXCEL(xlsx)ファイルを選択してください。");
-                }
-                //Excelファイルを読み込み
-                $reader = IOFactory::createReader("Xlsx");
-                $spreadsheet = $reader->load($request->asin_file);
-
-                //シートの読み込み
-                $sheet = $spreadsheet->getSheet(0);
-
-                //最大行数確認
-                if ($sheet->getHighestRow() > 1 + 3000) {
-                    throw new \Exception("ASIN数が3000を超えてはいけません。");
-                }
-
-                $headers = $sheet->rangeToArray('A1:A1', null, true, false);
-                if (strcmp($headers[0][0], "ASIN") !== 0) {
-                    throw new \Exception("EXCELファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
-                }
-
-                $rows = $sheet->rangeToArray('A2:A' . $sheet->getHighestRow(), null, true, false);
                 $asins = array();
-                foreach ($rows as $index => $row) {
-                    $matches = array();
-                    preg_match('/^(B[\dA-Z]{9}|\d{9}(X|\d))$/', $row[0], $matches);
-                    if (count($matches) != 2) {
-                        throw new \Exception("ASINのフォーマットが不適切です。" . ($index + 2) . " 行目にある " . $row[0] . " を確認してください。");
+                //拡張子がxlsxであるかの確認
+                if ($request->asin_file->getClientOriginalExtension() === "xlsx") {
+                    //Excelファイルを読み込み
+                    $reader = IOFactory::createReader("Xlsx");
+                    $spreadsheet = $reader->load($request->asin_file);
+
+                    //シートの読み込み
+                    $sheet = $spreadsheet->getSheet(0);
+
+                    //最大行数確認
+                    if ($sheet->getHighestRow() > 1 + 3000) {
+                        throw new \Exception("ASIN数が3000を超えてはいけません。");
                     }
 
-                    if (!in_array($row[0], $asins)) {
-                        array_push($asins, $row[0]);
+                    $headers = $sheet->rangeToArray('A1:A1', null, true, false);
+                    if (strcmp($headers[0][0], "ASIN") !== 0) {
+                        throw new \Exception("EXCELファイルのフォーマットが不適切です。");
                     }
+
+                    $rows = $sheet->rangeToArray('A2:A' . $sheet->getHighestRow(), null, true, false);
+                    
+                    foreach ($rows as $index => $row) {
+                        $matches = array();
+                        preg_match('/^(B[\dA-Z]{9}|\d{9}(X|\d))$/', $row[0], $matches);
+                        if (count($matches) != 2) {
+                            throw new \Exception("ASINのフォーマットが不適切です。" . ($index + 2) . " 行目にある " . $row[0] . " を確認してください。");
+                        }
+
+                        if (!in_array($row[0], $asins)) {
+                            array_push($asins, $row[0]);
+                        }
+                    }
+                } else if ($request->asin_file->getClientOriginalExtension() === "csv") {
+                    $file = new SplFileObject($request->asin_file);
+                    $file->setFlags(SplFileObject::READ_CSV);
+                    foreach ($file as $rowIndex => $row) {
+                        if ($rowIndex === 0) {
+                            
+                        } else {
+                            if (empty($row[0])) {
+                                continue;
+                            }
+                            $matches = array();
+                            preg_match('/^(B[\dA-Z]{9}|\d{9}(X|\d))$/', $row[0], $matches);
+                            if (count($matches) != 2) {
+                                throw new \Exception("ASINのフォーマットが不適切です。" . ($rowIndex + 1) . " 行目にある " . $row[0] . " を確認してください。");
+                            }
+
+                            Log::debug($row[0] . " " . $rowIndex);
+
+                            if (!in_array($row[0], $asins)) {
+                                array_push($asins, $row[0]);
+                            }
+                        }
+                        if ($rowIndex > 3000) {
+                            throw new \Exception("ASIN数が3000を超えてはいけません。");
+                        }
+                    }
+                } else {
+                    throw new \Exception("不適切な拡張子です。CSVを選択してください。");
                 }
 
+                
+                
                 if (count($asins) === 0) {
-                    throw new \Exception("EXCELファイルにASINが含まれていません。");
+                    throw new \Exception("ファイルにASINが含まれていません。");
                 }
 
                 $productBatch = new ProductBatch();
@@ -115,7 +147,9 @@ class AmazonInfoController extends Controller
                     $filename = $filename . "_" . ($existing_file_count + 1);
                 }
 
-                $productBatch->filename = $filename . ".xlsx";
+                
+
+                $productBatch->filename = $filename . "." . $request->asin_file->getClientOriginalExtension();
                 $productBatch->save();
 
                 $extractAmazonInfos = array();
@@ -145,10 +179,10 @@ class AmazonInfoController extends Controller
                 $productBatch->job_batch_id = $batch->id;
                 $productBatch->save();
 
-                return redirect()->route('amazon_info.index')->with('success', 'Amazon情報取得ジョブを登録しました。');
+                return redirect()->route('amazon_info.index')->with('success', 'Amazon情報取得ジョブが登録されました。');
                 
             } else {
-                throw new \Exception("Excel(.xlsx)ファイルが選択されていません。");
+                throw new \Exception("ASINファイルが選択されていません。");
             }
         } catch (\Exception $e) {
             return back()->withErrors($e->getMessage());
