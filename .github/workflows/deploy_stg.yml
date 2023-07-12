@@ -167,7 +167,7 @@ jobs:
                 -e APP_ENV=${{ env.APP_ENV }} \
                 ${{ env.DOCKER_COMMON_ENVS }} \
                 ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
-                php artisan queue:work --queue=update_amazon_jp_exhibit_$i,update_yahoo_jp_exhibit_$i,exhibit_to_amazon_jp_$i,exhibit_to_yahoo_jp_$i,extract_amazon_info_for_exhibit_$i,update_amazon_info_$i,extract_amazon_info_$i
+                php artisan queue:work --queue=update_amazon_jp_exhibit_$i,update_yahoo_jp_exhibit_$i,exhibit_to_amazon_jp_$i,exhibit_to_yahoo_jp_$i,extract_amazon_info_for_exhibit_$i,extract_amazon_info_$i,update_amazon_info_$i
             done
             for i in $(seq -f "%03g" 100 102)
             do

@@ -89,7 +89,9 @@ class Kernel extends ConsoleKernel
             $product->yahoo_is_in_checklist = true; //チェックキューに入った
             $product->save();
 
-            UpdateAmazonInfo::dispatch($product)->onQueue('update_amazon_info'); //キューに追加
+            $user = User::find($product->user_id);
+
+            UpdateAmazonInfo::dispatch($product)->onQueue('update_amazon_info_' . $user->getJobSuffix()); //キューに追加
         }
     }
 

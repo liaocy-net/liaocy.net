@@ -112,6 +112,6 @@ class User extends Authenticatable
      */
     public function getJobSuffix(): string
     {
-        return str_pad($this->id % 10, 3, "0", STR_PAD_LEFT);
+        return str_pad($this->id % 1000, 3, "0", STR_PAD_LEFT);
     }
 }
