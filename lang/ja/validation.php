@@ -156,6 +156,7 @@ return [
         'current_password' => '古いパスワード',
         'newpassword_confirmation' => '新しいパスワード（確認用）',
         'exhibit_to' => '出品先',
+        'yahoo_jp_category_id' => 'YahooJPの出品カテゴリー',
     ],
 
 ];

@@ -15,22 +15,22 @@ $(function () {
 
   // select2
   // select2
-  if (select2.length) {
-    select2.each(function () {
-      var $this = $(this);
-      $this.wrap('<div class="position-relative"></div>');
-      if($this.closest(".modal").length){
-        $this.select2({
-          placeholder: '選択してください',
-          dropdownParent: $this.parent()
-        });
-      } else {
-        $this.select2({
-          placeholder: '選択してください',
-        });
-      }
-    });
-  }
+  // if (select2.length) {
+  //   select2.each(function () {
+  //     var $this = $(this);
+  //     $this.wrap('<div class="position-relative"></div>');
+  //     if($this.closest(".modal").length){
+  //       $this.select2({
+  //         placeholder: '選択してください',
+  //         dropdownParent: $this.parent()
+  //       });
+  //     } else {
+  //       $this.select2({
+  //         placeholder: '選択してください',
+  //       });
+  //     }
+  //   });
+  // }
 
   $(".checkbox_all").each(function(){
     $(this).on("click", function() {

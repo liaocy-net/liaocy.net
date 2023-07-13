@@ -95,6 +95,7 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
     Route::resource('/amazon_info', AmazonInfoController::class)->except(['create', 'edit', 'update']);
 
     /* 出品 */
+    Route::get('/exhibit/search_yahoo_jp_categories', [ExhibitController::class, 'searchYahooJpCategories'])->name('exhibit.search_yahoo_jp_categories');
     Route::resource('/exhibit', ExhibitController::class)->except(['create', 'edit', 'update']);
 
     /* 出品履歴 */

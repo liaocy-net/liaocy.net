@@ -30,9 +30,18 @@ class ExhibitController extends Controller
     {
         $my = User::find(auth()->id());
         return view('exhibit.index', [
-            'my' => $my,
-            'yahooJpCategories' => YahooJpCategory::all(),
+            'my' => $my
         ]);
+    }
+
+    public function searchYahooJpCategories(Request $request)
+    {
+        $query = YahooJpCategory::query();
+        if($request->filled('q')){
+            $search = $request->q;
+            $query->where('path','LIKE',"%$search%")->orWhere('product_category', '=', $search);
+        }
+        return $query->paginate(20);
     }
 
     /**

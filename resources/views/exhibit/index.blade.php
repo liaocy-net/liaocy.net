@@ -48,10 +48,8 @@
                                         <td><input type="checkbox" class="form-check-input" name="exhibit_to[]" value="yahoo" checked/></td>
                                         <td>Yahoo!</td>
                                         <td class="text-start">
-                                            <select class="form-select select2" id="exhibit_line_2" name="yahoo_jp_category_id" data-placeholder="選択してください">
-                                                @foreach ($yahooJpCategories as $yahooJpCategory)
-                                                    <option value="{{$yahooJpCategory->id}}"> {{$yahooJpCategory->product_category}} | {{$yahooJpCategory->path}}</option>
-                                                @endforeach
+                                            <select class="form-select select2" id="yahoo_jp_category" name="yahoo_jp_category_id">
+                                                
                                             </select>
                                         </td>
                                     </tr>
@@ -83,12 +81,41 @@
 <script>
     $(document).ready(function(){
         'use strict';
-
     });
 
     $(function () {
-        
+        $('#yahoo_jp_category').select2({
+            placeholder: '選択してください',
+            language: {
+                searching: function() {
+                    return "検索中...";
+                }
+            },
+            ajax: {
+                url: "{{route('exhibit.search_yahoo_jp_categories')}}",
+                dataType: 'json',
+                delay: 250,
+                processResults: (response, params) => {// データをselect2向けに加工
+                    let options = [];
+                    response.data.forEach((category) => {
+                        options.push({
+                            id: category.id,
+                            text: category.product_category + ' | ' + category.path
+                        });
+                    });
+                    return {
+                        results: options,
+                        pagination: {
+                            more: (response.next_page_url !== null)  // 次ページがあるかどうか
+                        }
+                    };
+                }
+            }
+        });
     });
+
+
+
 </script>
 @endsection
 
