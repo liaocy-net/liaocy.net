@@ -145,24 +145,24 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
 
     /* test */
     Route::get('/test', function () {
-        // $user = User::find(auth()->id());
-        // $client_id = env("AMAZON_US_CLIENT_ID");
-        // $client_secret = env("AMAZON_US_CLIENT_SECRET");
-        // $refresh_token = $user->amazon_us_refresh_token;
-        // $product = new Product();
-        // $product->asin = "B09G9FPHY6";
+        $user = User::find(auth()->id());
+        $client_id = env("AMAZON_US_CLIENT_ID");
+        $client_secret = env("AMAZON_US_CLIENT_SECRET");
+        $refresh_token = $user->amazon_us_refresh_token;
+        $product = new Product();
+        $product->asin = "B01MZ8WB9S";
         
-        // $client_id = env("AMAZON_US_CLIENT_ID");
-        // $client_secret = env("AMAZON_US_CLIENT_SECRET");
-        // $refresh_token = $user->amazon_us_refresh_token;
-        // $amazonService = new AmazonService(
-        //     $client_id,
-        //     $client_secret,
-        //     $refresh_token,
-        //     $user,
-        //     "us",
-        // );
-        // return $amazonService->getCatalogItem($product);
+        $client_id = env("AMAZON_US_CLIENT_ID");
+        $client_secret = env("AMAZON_US_CLIENT_SECRET");
+        $refresh_token = $user->amazon_us_refresh_token;
+        $amazonService = new AmazonService(
+            $client_id,
+            $client_secret,
+            $refresh_token,
+            $user,
+            "us",
+        );
+        return $amazonService->getCatalogItem($product);
         // return $amazonService->getProductPricing($product);
         // $feedType = FeedTypes::POST_PRODUCT_PRICING_DATA;
         // return $amazonService->createFeed($feedType);
@@ -312,16 +312,16 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
 
         // return $jobs;
 
-        $name1 = "Geeks";
-        $name2 = "Geeks";
+        // $name1 = "Geeks";
+        // $name2 = "Geeks";
         
         // Use strcmp() function
-        if (strcmp($name1, $name2) !== 0) {
-            echo 'Both strings are not equal';
-        }
-        else {
-            echo 'Both strings are equal';
-        }
+        // if (strcmp($name1, $name2) !== 0) {
+        //     echo 'Both strings are not equal';
+        // }
+        // else {
+        //     echo 'Both strings are equal';
+        // }
     });
 });
 

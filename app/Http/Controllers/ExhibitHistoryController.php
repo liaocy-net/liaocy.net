@@ -260,6 +260,7 @@ class ExhibitHistoryController extends Controller
                 );
 
             foreach ($products as $product) {
+                $product->purchase_price_us = UtilityService::getPurchasePriceUS($product);
                 $product->hope_price_jpy = UtilityService::calAmazonJPHopePrice($my, $product);
                 $product->rate_price_jpy = UtilityService::calAmazonJPRatePrice($my, $product);
                 $product->min_hope_price_jpy = UtilityService::calAmazonJPMinHopePrice($my, $product);

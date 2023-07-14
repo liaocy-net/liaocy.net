@@ -213,7 +213,7 @@
                 html += '<td>' + (product.title_jp ? product.title_jp : '-') + '</div></td>';
                 html += '<td>' + (product.brand_jp ? product.brand_jp : '-') + '</div></td>';
 
-                html += '<td>' + (product.cp_us ? product.cp_us : '-') + '</td>';
+                html += '<td>' + (product.purchase_price_us ? product.purchase_price_us : '-') + '</td>';
 
                 html += '<td>' + product.yahoo_jp_min_hope_price_jpy + '</td>';
                 html += '<td>' + product.yahoo_jp_min_rate_price_jpy + '</td>';

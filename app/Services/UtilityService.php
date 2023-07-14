@@ -476,7 +476,7 @@ class UtilityService
 
 
         // 仕入れ価格が取得できません
-        if ($product->cp_us == null) {
+        if ($product->cp_us == null && $product->np_us == null) {
             return array(
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
@@ -697,7 +697,7 @@ class UtilityService
         $numerator = $user->amazon_hope_profit;
         // + US価格（※） * 為替 * 関税消費税率
         // 関税消費税率 = 1 + 関税消費税率設定値（%）
-        $numerator += $product->cp_us * $user->common_currency_rate * (1 + $user->common_customs_tax);
+        $numerator += self::getPurchasePriceUS($product) * $user->common_currency_rate * (1 + $user->common_customs_tax);
         // + 国際送料
         $numerator += self::calForeignShipping($user, $product);
         // + 国内送料
@@ -717,7 +717,7 @@ class UtilityService
         $numerator = $user->amazon_min_profit;
         // + US価格（※） * 為替 * 関税消費税率
         // 関税消費税率 = 1 + 関税消費税率設定値（%）
-        $numerator += $product->cp_us * $user->common_currency_rate * (1 + $user->common_customs_tax);
+        $numerator += self::getPurchasePriceUS($product) * $user->common_currency_rate * (1 + $user->common_customs_tax);
         // + 国際送料
         $numerator += self::calForeignShipping($user, $product);
         // + 国内送料
@@ -735,7 +735,7 @@ class UtilityService
     public static function calAmazonJPRatePrice($user, $product) {
         // US価格（※） * 為替 * 関税消費税率
         // 関税消費税率 = 1 + 関税消費税率設定値（%）
-        $numerator = $product->cp_us * $user->common_currency_rate * (1 + $user->common_customs_tax);
+        $numerator = self::getPurchasePriceUS($product) * $user->common_currency_rate * (1 + $user->common_customs_tax);
         // + 国際送料
         $numerator += self::calForeignShipping($user, $product);
         // + 国内送料
@@ -753,7 +753,7 @@ class UtilityService
     public static function calAmazonJPMinRatePrice($user, $product) {
         // US価格（※） * 為替 * 関税消費税率
         // 関税消費税率 = 1 + 関税消費税率設定値（%）
-        $numerator = $product->cp_us * $user->common_currency_rate * (1 + $user->common_customs_tax);
+        $numerator = self::getPurchasePriceUS($product) * $user->common_currency_rate * (1 + $user->common_customs_tax);
         // + 国際送料
         $numerator += self::calForeignShipping($user, $product);
         // + 国内送料
@@ -773,7 +773,7 @@ class UtilityService
         $numerator = $user->yahoo_min_profit;
         // + US価格（※） * 為替 * 関税消費税率
         // 関税消費税率 = 1 + 関税消費税率設定値（%）
-        $numerator += $product->cp_us * $user->common_currency_rate * (1 + $user->common_customs_tax);
+        $numerator += self::getPurchasePriceUS($product) * $user->common_currency_rate * (1 + $user->common_customs_tax);
         // + 国際送料
         $numerator += self::calForeignShipping($user, $product);
         // + 国内送料
@@ -787,9 +787,10 @@ class UtilityService
 
     // 【最低】Amazon（利益率Ver）
     public static function calYahooJPMinRatePrice($user, $product) {
+
         // US価格（※） * 為替 * 関税消費税率
         // 関税消費税率 = 1 + 関税消費税率設定値（%）
-        $numerator = $product->cp_us * $user->common_currency_rate * (1 + $user->common_customs_tax);
+        $numerator = self::getPurchasePriceUS($product) * $user->common_currency_rate * (1 + $user->common_customs_tax);
         // + 国際送料
         $numerator += self::calForeignShipping($user, $product);
         // + 国内送料
@@ -799,6 +800,17 @@ class UtilityService
         $denominator = (1 - $user->amazon_using_sale_commission * 1.1) - $user->yahoo_profit_rate;
 
         return ceil($numerator / $denominator);
+    }
+
+    public static function getPurchasePriceUS($product)
+    {
+        $purchase_price = null;
+        if (!is_null($product->cp_us)) {
+            $purchase_price = $product->cp_us;
+        } else if (!is_null($product->np_us)) {
+            $purchase_price = $product->np_us;
+        }
+        return $purchase_price;
     }
 
     public static function genSKU(Product $product)
@@ -887,6 +899,7 @@ class UtilityService
         $product->cp_us = $productPricing['cp'];
         $product->nc_us = $productPricing['nc'];
         $product->pp_us = $productPricing['pp'];
+        $product->np_us = $productPricing['np'];
 
         $product->is_amazon_us = true;
         $product->save();

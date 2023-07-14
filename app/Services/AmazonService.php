@@ -253,7 +253,6 @@ class AmazonService
         // ap: ポイント数
         // sellerId: 出品者ID
         $result['nc'] = count($offices);
-        $result['np'] = null;
         $result['seller_id'] = null;
         $result['is_amazon'] = null;
         $result['maximum_hours'] = null;
@@ -261,9 +260,27 @@ class AmazonService
         $result['is_prime'] = null;
         $result['shipping_cost'] = null;
         $result['ap'] = null;
-        $result['cp'] = null;
         $result['cp_point'] = null;
         $result['pp'] = null;
+
+        $result['cp'] = null;
+        if (
+            !is_null($item->getPayload()->getSummary()->getBuyBoxPrices())
+            && count($item->getPayload()->getSummary()->getBuyBoxPrices()) > 0
+            && strtolower($item->getPayload()->getSummary()->getBuyBoxPrices()[0]->getCondition()) === 'new'
+        ) {
+            $result['cp'] = $item->getPayload()->getSummary()->getBuyBoxPrices()[0]->getLandedPrice()->getAmount();
+        }
+
+        $result['np'] = null;
+        if (
+            !is_null($item->getPayload()->getSummary()->getLowestPrices())
+            && count($item->getPayload()->getSummary()->getLowestPrices()) > 0
+            && strtolower($item->getPayload()->getSummary()->getLowestPrices()[0]->getCondition()) === 'new'
+        ) {
+            $result['np'] = $item->getPayload()->getSummary()->getLowestPrices()[0]->getLandedPrice()->getAmount();
+        }
+
         $offices = $item->getPayload()->getOffers();
         foreach ($offices as $office) {
             if ($office->getSubCondition() != 'new' && $office->getSubCondition() != 'New') {
@@ -272,7 +289,7 @@ class AmazonService
             if ($skipSellerId != null && $office->getSellerId() == $skipSellerId) {
                 continue;
             }
-            $result['np'] = $office->getListingPrice()->getAmount();
+
             $result['seller_id'] = $office->getSellerId();
             $result['is_amazon'] = $office->getIsFulfilledByAmazon();
             $result['maximum_hours'] = $office->getShippingTime() ? $office->getShippingTime()->getMaximumHours() : null;
@@ -283,16 +300,13 @@ class AmazonService
                 if($office->getPoints() != null) {
                     $result['ap'] = $office->getPoints()->getPointsNumber();
                     $result['cp_point'] = $office->getPoints()->getPointsNumber();
-                    $result['cp'] = $result['np'] - $result['cp_point'] + $result['shipping_cost'];
                 } else {
                     $result['ap'] = 0;
                     $result['cp_point'] = 0;
-                    $result['cp'] = $result['np'] + $result['shipping_cost'];
                 }
             } else if ($this->nation == 'us') {
                 $result['ap'] = 0;
                 $result['cp_point'] = 0;
-                $result['cp'] = $result['np'] + $result['shipping_cost'];
             }
             
             if ($result['is_prime']) {
