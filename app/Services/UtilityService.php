@@ -165,8 +165,8 @@ class UtilityService
             $sheet->setCellValue('AA' . ($index + 2), $product->minimum_hours_jp);
             $sheet->setCellValue('AB' . ($index + 2), $product->minimum_hours_us);
             $sheet->setCellValue('AC' . ($index + 2), $product->model_us);
-            $sheet->setCellValue('AD' . ($index + 2), $product->nc_jp);
-            $sheet->setCellValue('AE' . ($index + 2), $product->nc_us);
+            $sheet->setCellValue('AD' . ($index + 2), is_null($product->nc_jp) ? -1 : $product->nc_jp);
+            $sheet->setCellValue('AE' . ($index + 2), is_null($product->nc_us) ? -1 : $product->nc_us);
             $sheet->setCellValue('AF' . ($index + 2), $product->np_jp);
             $sheet->setCellValue('AG' . ($index + 2), $product->np_us);
             $sheet->setCellValue('AH' . ($index + 2), $product->pp_jp);
