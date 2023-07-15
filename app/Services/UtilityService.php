@@ -178,11 +178,11 @@ class UtilityService
             $sheet->setCellValue('AN' . ($index + 2), $product->seller_feedback_rating);
             $sheet->setCellValue('AO' . ($index + 2), $product->seller_id);
             $sheet->setCellValue('AP' . ($index + 2), $product->shipping_cost);
-            $sheet->setCellValue('AQ' . ($index + 2), $product->size_h_us);
-            $sheet->setCellValue('AR' . ($index + 2), $product->size_l_us);
-            $sheet->setCellValue('AS' . ($index + 2), $product->size_w_us);
+            $sheet->setCellValue('AQ' . ($index + 2), is_null($product->size_h_us) ? null : self::convertCmToInch($product->size_h_us));
+            $sheet->setCellValue('AR' . ($index + 2), is_null($product->size_l_us) ? null : self::convertCmToInch($product->size_l_us));
+            $sheet->setCellValue('AS' . ($index + 2), is_null($product->size_w_us) ? null : self::convertCmToInch($product->size_w_us));
             $sheet->setCellValue('AT' . ($index + 2), $product->size_us);
-            $sheet->setCellValue('AU' . ($index + 2), $product->weight_us);
+            $sheet->setCellValue('AU' . ($index + 2), is_null($product->weight_us) ? null : self::convertKgToLbs($product->weight_us));
         }
         return $spreadsheet;
     }
@@ -984,5 +984,15 @@ class UtilityService
     public static function convertKgToLbs($kg, $precision = 3)
     {
         return round($kg / 0.45359237, $precision);
+    }
+
+    public static function convertInchToCm($inch, $precision = 3)
+    {
+        return round($inch * 2.54, $precision);
+    }
+
+    public static function convertCmToInch($cm, $precision = 3)
+    {
+        return round($cm / 2.54, $precision);
     }
 }
