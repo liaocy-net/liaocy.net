@@ -139,6 +139,70 @@
         $('#' + tableId + ' .table tbody').html(loading);
     };
 
+    var getHistoryTableHTML = function(data, platform){
+        let html = '';
+        data.data.forEach(history => {
+            html += '<tr>';
+            html += '<td><a href="/amazon_info/' + history.product_batch_id + '">' + history.filename + '</a></td>';
+            if (history.action == 'extract_amazon_info_for_exhibit') {
+                html += '<td>商品情報取得</td>';
+            } else if (history.action == 'exhibit_to_amazon_jp') {
+                html += '<td>AmazonJP出品</td>';
+            }
+            if (history.patch_status == '取得中') {
+                html += '<td>取得中 <button onclick="cancelBatch(\'' + history.id + '\')">取得停止</button></td>';
+            } else {
+                html += '<td>' + history.patch_status + '</td>';
+            }
+            html += '<td>' + (history.start_at ? history.start_at : '-') + '</td>';
+            html += '<td>' + (history.end_at ? history.end_at : '-') + '</td>';
+            
+            if (history.action == 'extract_amazon_info_for_exhibit') {
+                html += '<td>' + history.total_jobs + '</td>';
+                if (history.patch_status == '取得停止') {
+                    html += '<td>取得停止済み</td>';
+                } else {
+                    html += '<td>' + (history.total_jobs - history.pending_jobs) + '</td>';
+                }
+                html += '<td>' + history.failed_jobs + '</td>';
+            } else {
+                html += '<td>-</td>';
+                html += '<td>-</td>';
+                html += '<td>-</td>';
+            }
+            html += '<td>';
+            if (history.has_feed_document) {
+                html += '<a href="{{route("exhibit_history.download_batch_feed_document_tsv")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">出品ファイル</a> ';
+            }
+            if (history.has_message && history.end_at) {
+                html += '<br /><a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">出品結果</a>';
+            }
+            html += '</td>';
+            
+            if (platform == "amazon"){
+                if (history.action == 'extract_amazon_info_for_exhibit' && history.end_at) {
+                    html += '<td><a href="{{route("exhibit_history.detail_amazon_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
+                } else if (history.action == 'exhibit_to_amazon_jp' && history.end_at){
+                    html += '<td><a href="{{route("exhibit_history.detail_amazon_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
+                } else {
+                    html += '<td></td>';
+                }
+            }
+            if (platform == "yahoo"){
+                if (history.action == 'extract_amazon_info_for_exhibit' && history.end_at) {
+                    html += '<td><a href="{{route("exhibit_history.detail_yahoo_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
+                } else if (history.action == 'exhibit_to_yahoo_jp' && history.end_at){
+                    html += '<td><a href="{{route("exhibit_history.detail_yahoo_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
+                } else {
+                    html += '<td></td>';
+                }
+            }
+            
+            html += '</tr>';
+        });
+        return html;
+    };
+
     var refreshAmazon = function(page = 1) {  
         showLoading('tab_amazon');
         
@@ -149,45 +213,9 @@
             period_from: $('#search_period_from').val(),
             period_to: $('#search_period_to').val(),
         }, function(data) {
-            let html = '';
-            data.data.forEach(history => {
-                html += '<tr>';
-                html += '<td><a href="/amazon_info/' + history.product_batch_id + '">' + history.filename + '</a></td>';
-                if (history.action == 'extract_amazon_info_for_exhibit') {
-                    html += '<td>商品情報取得</td>';
-                } else if (history.action == 'exhibit_to_amazon_jp') {
-                    html += '<td>AmazonJP出品</td>';
-                }
-                html += '<td>' + history.patch_status + '</td>';
-                html += '<td>' + (history.start_at ? history.start_at : '-') + '</td>';
-                html += '<td>' + (history.end_at ? history.end_at : '-') + '</td>';
-                if (history.action == 'extract_amazon_info_for_exhibit') {
-                    html += '<td>' + history.total_jobs + '</td>';
-                    html += '<td>' + (history.total_jobs - history.pending_jobs) + '</td>';
-                    html += '<td>' + history.failed_jobs + '</td>';
-                } else {
-                    html += '<td>-</td>';
-                    html += '<td>-</td>';
-                    html += '<td>-</td>';
-                }
-                html += '<td>';
-                if (history.has_feed_document) {
-                    html += '<a href="{{route("exhibit_history.download_batch_feed_document_tsv")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">出品ファイル</a> ';
-                }
-                if (history.has_message && history.end_at) {
-                    html += '<br /><a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">出品結果</a>';
-                }
-                html += '</td>';
-                if (history.action == 'extract_amazon_info_for_exhibit' && history.end_at) {
-                    html += '<td><a href="{{route("exhibit_history.detail_amazon_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
-                } else if (history.action == 'exhibit_to_amazon_jp' && history.end_at){
-                    html += '<td><a href="{{route("exhibit_history.detail_amazon_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
-                } else {
-                    html += '<td></td>';
-                }
-                
-                html += '</tr>';
-            });
+
+            var html = getHistoryTableHTML(data, 'amazon');
+            
             $('#tab_amazon .table tbody').html(html);
 
             var navAmazon = getNavigator(data, 'refreshAmazon');
@@ -209,45 +237,8 @@
             period_from: $('#search_period_from').val(),
             period_to: $('#search_period_to').val(),
         }, function(data) {
-            let html = '';
-            data.data.forEach(history => {
-                html += '<tr>';
-                html += '<td><a href="/amazon_info/' + history.product_batch_id + '">' + history.filename + '</a></td>';
-                if (history.action == 'extract_amazon_info_for_exhibit') {
-                    html += '<td>商品情報取得</td>';
-                } else if (history.action == 'exhibit_to_yahoo_jp') {
-                    html += '<td>YahooJP出品</td>';
-                }
-                html += '<td>' + history.patch_status + '</td>';
-                html += '<td>' + (history.start_at ? history.start_at : '-') + '</td>';
-                html += '<td>' + (history.end_at ? history.end_at : '-') + '</td>';
-                if (history.action == 'extract_amazon_info_for_exhibit') {
-                    html += '<td>' + history.total_jobs + '</td>';
-                    html += '<td>' + (history.total_jobs - history.pending_jobs) + '</td>';
-                    html += '<td>' + history.failed_jobs + '</td>';
-                } else {
-                    html += '<td>-</td>';
-                    html += '<td>-</td>';
-                    html += '<td>-</td>';
-                }
-                html += '<td>';
-                if (history.has_feed_document) {
-                    html += '<a href="{{route("exhibit_history.download_batch_feed_document_tsv")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">出品ファイル</a> ';
-                }
-                if (history.has_message && history.end_at) {
-                    html += '<br /><a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">出品結果</a>';
-                }
-                html += '</td>';
-                if (history.action == 'extract_amazon_info_for_exhibit' && history.end_at) {
-                    html += '<td><a href="{{route("exhibit_history.detail_yahoo_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
-                } else if (history.action == 'exhibit_to_yahoo_jp' && history.end_at){
-                    html += '<td><a href="{{route("exhibit_history.detail_yahoo_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
-                } else {
-                    html += '<td></td>';
-                }
-                
-                html += '</tr>';
-            });
+            var html = getHistoryTableHTML(data, 'yahoo');
+
             $('#tab_yahoo .table tbody').html(html);
 
             var navYahoo = getNavigator(data, 'refreshYahoo');
@@ -256,6 +247,17 @@
 
         }, function() {
 
+        });
+    };
+
+    var cancelBatch = function(productBatchId){
+        getData("{{route('exhibit.cancel_exhibit_batch')}}", {
+            product_batch_id: productBatchId,
+        } , function(data) {
+            refresh();
+        }, function() {
+            showLoading('tab_yahoo');
+            showLoading('tab_amazon');
         });
     };
 

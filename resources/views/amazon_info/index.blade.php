@@ -59,15 +59,26 @@
                             <tbody>
                                 @foreach ($batches as $batch)
                                     <tr>
-                                        <td>{{ $batch->status }}</td>
+                                        <td>
+                                            {{ $batch->status }}
+                                            @if ($batch->status == '取得中')
+                                                <button onclick="location.href='{{route('amazon_info.cancel_amazon_info_batch')}}?product_batch_id={{$batch->product_batch_id}}'">取得停止</button>
+                                            @endif
+                                        </td>
                                         <td>{{ date('Y-m-d H:i:s', $batch->created_at) }}</td>
                                         <td>
                                             @if ($batch->product_batch_finished_at)
-                                                {{ date('Y-m-d H:i:s', strtotime($batch->product_batch_finished_at)) }}
+                                            {{ date('Y-m-d H:i:s', strtotime($batch->product_batch_finished_at)) }}
                                             @endif
                                         </td>
                                         <td>{{ $batch->total_jobs }}</td>
-                                        <td>{{ $batch->total_jobs - $batch->pending_jobs }}</td>
+                                        <td>
+                                            @if ($batch->status == '取得停止')
+                                                <span>取得停止済み</span>
+                                            @else
+                                                {{ $batch->total_jobs - $batch->pending_jobs }}
+                                            @endif
+                                        </td>
                                         <td>{{ $batch->failed_jobs }}</td>
                                         <td><a href="{{route('amazon_info.show', $batch->product_batch_id)}}" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-download"></i></a></td>
                                     </tr>

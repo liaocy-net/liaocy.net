@@ -9,6 +9,7 @@ use App\Models\Product;
 use App\Services\UtilityService;
 use Illuminate\Bus\Batch;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Validator;
 use Throwable;
 use App\Jobs\ExtractAmazonInfo;
 use Illuminate\Support\Facades\DB;
@@ -243,6 +244,35 @@ class AmazonInfoController extends Controller
         } catch (\Exception $e) {
             return back()->withErrors($e->getMessage());
         }
+    }
+
+    public function cancelAmazonInfoBatch(Request $request){
+        try {
+            $validator = Validator::make($request->all(), [
+                'product_batch_id' => ['required', 'integer', 'min:1'],
+            ]);
+
+            if ($validator->fails()) {
+                throw new \Exception($validator->errors()->first(), 442);
+            }
+
+            $productBatchId = $request->product_batch_id;
+            $productBatch = ProductBatch::find($productBatchId);
+            if (empty($productBatch) || $productBatch->user_id !== auth()->id()) {
+                throw new \Exception("指定されたバッチが見つかりません。");
+            }
+
+            $batch = Bus::findBatch($productBatch->job_batch_id);
+            if ($batch === null) {
+                throw new \Exception("バッチジョブが見つかりません。");
+            }
+
+            $batch->cancel();
+
+            return redirect()->route('amazon_info.index')->with('success', 'Amazon情報取得ジョブが停止されました。');
+        } catch (\Exception $e) {
+            return back()->withErrors($e->getMessage());
+        }   
     }
 
     /**

@@ -102,7 +102,8 @@ class ExhibitHistoryController extends Controller
                 
                 $productBatch->start_at = $productBatch->created_at ? date('Y-m-d H:i:s', strtotime($productBatch->created_at)) : false;
                 $productBatch->end_at = $productBatch->product_batch_finished_at ? date('Y-m-d H:i:s', strtotime($productBatch->product_batch_finished_at)) : false;
-            
+                $productBatch->cancelled_at = $productBatch->cancelled_at ? date('Y-m-d H:i:s', $productBatch->cancelled_at) : false;
+
                 $productBatch->products_count = $productBatch->products()->count();
 
                 $productBatch->has_message = !empty($productBatch->message);

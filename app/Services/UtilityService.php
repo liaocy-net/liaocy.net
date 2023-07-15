@@ -39,7 +39,9 @@ class UtilityService
 
     public static function getExtractAmazonInfoPatchStatus($jobBatch)
     {
-        if (!empty($jobBatch->finished_at)) {
+        if (!empty($jobBatch->cancelled_at)){
+            return "取得停止";
+        } elseif (!empty($jobBatch->finished_at)) {
             return "取得完了";
         } elseif ($jobBatch->total_jobs == $jobBatch->failed_jobs) {
             return "取得完了(全て失敗)";

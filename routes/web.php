@@ -92,10 +92,12 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
 
     /* Amazon情報取得 */
     Route::get('/amazon_info/download_asin_template_xlsx', [AmazonInfoController::class, 'downloadASINTemplateXLSX'])->name('amazon_info.download_asin_template_xlsx');
+    Route::get('/amazon_info/cancel_amazon_info_batch', [AmazonInfoController::class, 'cancelAmazonInfoBatch'])->name('amazon_info.cancel_amazon_info_batch');
     Route::resource('/amazon_info', AmazonInfoController::class)->except(['create', 'edit', 'update']);
 
     /* 出品 */
     Route::get('/exhibit/search_yahoo_jp_categories', [ExhibitController::class, 'searchYahooJpCategories'])->name('exhibit.search_yahoo_jp_categories');
+    Route::get('/exhibit/cancel_exhibit_batch', [ExhibitController::class, 'cancelExhibitBatch'])->name('exhibit.cancel_exhibit_batch');
     Route::resource('/exhibit', ExhibitController::class)->except(['create', 'edit', 'update']);
 
     /* 出品履歴 */

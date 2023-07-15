@@ -215,6 +215,43 @@ class ExhibitController extends Controller
         }
     }
 
+    public function cancelExhibitBatch(Request $request)
+    {
+        try {
+            $validator = Validator::make($request->all(), [
+                'product_batch_id' => ['required', 'integer', 'min:1'],
+            ]);
+
+            if ($validator->fails()) {
+                throw new \Exception($validator->errors()->first(), 442);
+            }
+
+            $productBatchId = $request->product_batch_id;
+            $productBatch = ProductBatch::find($productBatchId);
+
+            if ($productBatch === null) {
+                throw new \Exception("不正なリクエストです。");
+            }
+
+            if ($productBatch->user_id !== auth()->id()) {
+                throw new \Exception("不正なリクエストです。");
+            }
+
+            $batch = Bus::findBatch($productBatch->job_batch_id);
+            if ($batch === null) {
+                throw new \Exception("バッチジョブが見つかりません。");
+            }
+
+            $batch->cancel();
+
+
+        } catch (\Exception $e) {
+            return response($e->getMessage(), 442);
+        }
+
+        return response("OK", 200);
+    }
+
     /**
      * Display the specified resource.
      *
