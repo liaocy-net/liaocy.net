@@ -47,6 +47,7 @@
                         <table class="table table-bordered table-striped text-center">
                             <thead class="table-light">
                                 <tr>
+                                    <th>ファイル名</th>
                                     <th>ステータス</th>
                                     <th>開始時間</th>
                                     <th>終了時間</th>
@@ -59,6 +60,7 @@
                             <tbody>
                                 @foreach ($batches as $batch)
                                     <tr>
+                                        <td>{{ $batch->filename }}</td>
                                         <td>
                                             {{ $batch->status }}
                                             @if ($batch->status == '取得中')
