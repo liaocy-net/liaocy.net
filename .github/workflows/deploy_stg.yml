@@ -93,6 +93,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Build Docker Image
+        id: build_docker_image
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest
+      - name: Build Docker Image Retry 1
+        if: failure() && steps.build_docker_image.outcome == 'failure'
+        id: build_docker_image_retry_1
+        uses: docker/build-push-action@v4
+        with:
+          context: .
+          push: true
+          tags: ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest
+      - name: Build Docker Image Retry 2
+        if: failure() && steps.build_docker_image_retry_1.outcome == 'failure'
+        id: build_docker_image_retry_2
         uses: docker/build-push-action@v4
         with:
           context: .
