@@ -448,31 +448,49 @@ class UtilityService
                 'message' => 'ASINがブラックリストにブロックされています'
             );
         }
-        // ブランドがブラックリストに入っているか
+        // Amazon US ブランドがブラックリストに入っているか
+        $brandBlackList = BlackList::where('user_id', $user->id)->where('platform', 'amazon')->where('on', 'brand')->where('value', $product->brand_us)->first();
+        if ($brandBlackList) {
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => 'Amazon US ブランドがブラックリストにブロックされています'
+            );
+        }
+        // Amazon JP ブランドがブラックリストに入っているか
         $brandBlackList = BlackList::where('user_id', $user->id)->where('platform', 'amazon')->where('on', 'brand')->where('value', $product->brand_jp)->first();
         if ($brandBlackList) {
             return array(
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
-                'message' => 'ブランドがブラックリストにブロックされています'
+                'message' => 'Amazon JP ブランドがブラックリストにブロックされています'
             );
         }
-        // カテゴリがブラックリストに入っているか
+        // Amazon US カテゴリがブラックリストにブロックされているか
         $categoryBlackList = BlackList::where('user_id', $user->id)->where('platform', 'amazon')->where('on', 'category')->where('value', $product->cate_us)->first();
         if ($categoryBlackList) {
             return array(
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
-                'message' => 'カテゴリがブラックリストにブロックされています'
+                'message' => 'Amazon US カテゴリがブラックリストにブロックされています'
             );
         }
-        // タイトルがブラックリストに入っているか
+        // Amazon US タイトルがブラックリストに入っているか
+        $titleBlackList = BlackList::where('user_id', $user->id)->where('platform', 'amazon')->where('on', 'title')->where('value', $product->title_us)->first();
+        if ($titleBlackList) {
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => 'Amazon US タイトルがブラックリストにブロックされています'
+            );
+        }
+        // Amazon JP タイトルがブラックリストに入っているか
         $titleBlackList = BlackList::where('user_id', $user->id)->where('platform', 'amazon')->where('on', 'title')->where('value', $product->title_jp)->first();
         if ($titleBlackList) {
             return array(
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
-                'message' => 'タイトルがブラックリストにブロックされています'
+                'message' => 'Amazon JP タイトルがブラックリストにブロックされています'
             );
         }
 
