@@ -292,6 +292,7 @@ class AmazonService
 
             $result['seller_id'] = $office->getSellerId();
             $result['is_amazon'] = $office->getIsFulfilledByAmazon();
+            $result['availability_type'] = $office->getShippingTime() ? $office->getShippingTime()->getAvailabilityType() : null;
             $result['maximum_hours'] = $office->getShippingTime() ? $office->getShippingTime()->getMaximumHours() : null;
             $result['minimum_hours'] = $office->getShippingTime() ? $office->getShippingTime()->getMinimumHours() : null;
             $result['is_prime'] = $office->getPrimeInformation() ? $office->getPrimeInformation()->getIsPrime() : null;

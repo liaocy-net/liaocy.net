@@ -127,6 +127,8 @@ class UtilityService
             "size_w_us",
             "size_us",
             "weight_us",
+            "availability_type_us",
+            "availability_type_jp",
         ];
 
         $spreadsheet = new Spreadsheet();
@@ -160,10 +162,10 @@ class UtilityService
             $sheet->setCellValue('V' . ($index + 2), $product->is_amazon_jp);
             $sheet->setCellValue('W' . ($index + 2), $product->is_amazon_us);
             $sheet->setCellValue('X' . ($index + 2), $product->material_type_us);
-            $sheet->setCellValue('Y' . ($index + 2), $product->maximum_hours_jp);
-            $sheet->setCellValue('Z' . ($index + 2), $product->maximum_hours_us);
-            $sheet->setCellValue('AA' . ($index + 2), $product->minimum_hours_jp);
-            $sheet->setCellValue('AB' . ($index + 2), $product->minimum_hours_us);
+            $sheet->setCellValue('Y' . ($index + 2), (is_null($product->availability_type_jp) || $product->availability_type_jp == "NOW") ? $product->maximum_hours_jp : null);
+            $sheet->setCellValue('Z' . ($index + 2), (is_null($product->availability_type_us) || $product->availability_type_us == "NOW") ? $product->maximum_hours_us : null);
+            $sheet->setCellValue('AA' . ($index + 2), (is_null($product->availability_type_jp) || $product->availability_type_jp == "NOW") ? $product->minimum_hours_jp : null);
+            $sheet->setCellValue('AB' . ($index + 2), (is_null($product->availability_type_us) || $product->availability_type_us == "NOW") ? $product->minimum_hours_us : null);
             $sheet->setCellValue('AC' . ($index + 2), $product->model_us);
             $sheet->setCellValue('AD' . ($index + 2), is_null($product->nc_jp) ? -1 : $product->nc_jp);
             $sheet->setCellValue('AE' . ($index + 2), is_null($product->nc_us) ? -1 : $product->nc_us);
@@ -183,6 +185,8 @@ class UtilityService
             $sheet->setCellValue('AS' . ($index + 2), is_null($product->size_w_us) ? null : self::convertCmToInch($product->size_w_us));
             $sheet->setCellValue('AT' . ($index + 2), $product->size_us);
             $sheet->setCellValue('AU' . ($index + 2), is_null($product->weight_us) ? null : self::convertKgToLbs($product->weight_us));
+            $sheet->setCellValue('AV' . ($index + 2), $product->availability_type_us);
+            $sheet->setCellValue('AW' . ($index + 2), $product->availability_type_jp);
         }
         return $spreadsheet;
     }
@@ -416,6 +420,15 @@ class UtilityService
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
                 'message' => 'Amazon USから情報を取得できない'
+            );
+        }
+
+        // Amazon USでは現在出荷不可
+        if($product->availability_type_us && $product->availability_type_us !== "NOW"){
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => 'Amazon USでは現在出荷不可 (' . $product->availability_type_us . ')'
             );
         }
 
@@ -912,10 +925,11 @@ class UtilityService
         $product->size_w_us = $catalogItem['size_w'];
         $product->size_us = $catalogItem['size'];
         $product->weight_us = $catalogItem['weight'];
-
-
-        $product->maximum_hours_us = $productPricing['maximum_hours'];
-        $product->minimum_hours_us = $productPricing['minimum_hours'];
+        $product->availability_type_us = $productPricing['availability_type'];
+        if ($product->availability_type_us == "NOW") {
+            $product->maximum_hours_us = $productPricing['maximum_hours'];
+            $product->minimum_hours_us = $productPricing['minimum_hours'];
+        }
         $product->cp_us = $productPricing['cp'];
         $product->nc_us = $productPricing['nc'];
         $product->pp_us = $productPricing['pp'];
@@ -981,8 +995,11 @@ class UtilityService
 
         $product->cp_jp = $productPricing['cp'];
         $product->cp_point = $productPricing['cp_point'];
-        $product->maximum_hours_jp = $productPricing['maximum_hours'];
-        $product->minimum_hours_jp = $productPricing['minimum_hours'];
+        $product->availability_type_jp = $productPricing['availability_type'];
+        if ($product->availability_type_jp == "NOW") {
+            $product->maximum_hours_jp = $productPricing['maximum_hours'];
+            $product->minimum_hours_jp = $productPricing['minimum_hours'];
+        }
         $product->nc_jp = $productPricing['nc'];
         $product->np_jp = $productPricing['np'];
         $product->pp_jp = $productPricing['pp'];

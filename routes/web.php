@@ -152,7 +152,7 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
         $client_secret = env("AMAZON_US_CLIENT_SECRET");
         $refresh_token = $user->amazon_us_refresh_token;
         $product = new Product();
-        $product->asin = "B01MZ8WB9S";
+        $product->asin = "B0006L0120";
         
         $client_id = env("AMAZON_US_CLIENT_ID");
         $client_secret = env("AMAZON_US_CLIENT_SECRET");
@@ -164,8 +164,8 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
             $user,
             "us",
         );
-        return $amazonService->getCatalogItem($product);
-        // return $amazonService->getProductPricing($product);
+        // return $amazonService->getCatalogItem($product);
+        return $amazonService->getProductPricing($product);
         // $feedType = FeedTypes::POST_PRODUCT_PRICING_DATA;
         // return $amazonService->createFeed($feedType);
         // return $amazonService->CreateFeedWithFile();
