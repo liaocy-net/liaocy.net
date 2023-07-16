@@ -255,6 +255,7 @@ class AmazonService
         $result['nc'] = count($offices);
         $result['seller_id'] = null;
         $result['is_amazon'] = null;
+        $result['availability_type'] = null;
         $result['maximum_hours'] = null;
         $result['minimum_hours'] = null;
         $result['is_prime'] = null;
