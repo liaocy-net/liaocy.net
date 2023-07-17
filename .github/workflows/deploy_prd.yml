@@ -73,7 +73,8 @@ env:
     -e AMAZON_US_APPLICATION_ID=${{secrets.AMAZON_US_APPLICATION_ID_PRD}} \
     -e AMAZON_US_CLIENT_ID=${{secrets.AMAZON_US_CLIENT_ID_PRD}} \
     -e AMAZON_US_CLIENT_SECRET=${{ secrets.AMAZON_US_CLIENT_SECRET_PRD}} \
-    -e AMAZON_API_SLEEP_BEFORE_GET_PRODUCT_PRICING=1.0
+    -e AMAZON_API_SLEEP_BEFORE_GET_PRODUCT_PRICING=1.0 \
+    -e MAX_ASIN_COUNT_PER_FILE=200000
 jobs:
   build-docker-image:
     runs-on: ubuntu-latest
@@ -84,18 +85,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Set up Docker Buildx
+        id: buildx
         uses: docker/setup-buildx-action@v2
         with:
           platforms: linux/arm64
-      - name: Cache Docker layers
-        uses: actions/cache@v3
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx-
       - name: Log in to the Container registry
-        uses: docker/login-action@v2
+        uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
           registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
@@ -105,34 +100,36 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
+          builder: ${{ steps.buildx.outputs.name }}
+          platforms: ${{ steps.buildx.outputs.platforms }}
           push: true
           tags: ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: Build Docker Image Retry 1
         if: failure() && steps.build_docker_image.outcome == 'failure'
         id: build_docker_image_retry_1
         uses: docker/build-push-action@v4
         with:
           context: .
+          builder: ${{ steps.buildx.outputs.name }}
+          platforms: ${{ steps.buildx.outputs.platforms }}
           push: true
           tags: ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
       - name: Build Docker Image Retry 2
         if: failure() && steps.build_docker_image_retry_1.outcome == 'failure'
         id: build_docker_image_retry_2
         uses: docker/build-push-action@v4
         with:
           context: .
+          builder: ${{ steps.buildx.outputs.name }}
+          platforms: ${{ steps.buildx.outputs.platforms }}
           push: true
           tags: ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new,mode=max
-      - name: Move cache
-        run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
   deploy-web:
     runs-on: ubuntu-latest
     needs:
@@ -233,7 +230,7 @@ jobs:
               -e APP_ENV=${{ env.APP_ENV }} \
               ${{ env.DOCKER_COMMON_ENVS }} \
               ghcr.io/aispel/charing/${{ env.APP_ENV }}-charing:latest \
-              php artisan queue:work --queue=update_amazon_jp_exhibit_$i,update_yahoo_jp_exhibit_$i,exhibit_to_amazon_jp_$i,exhibit_to_yahoo_jp_$i,extract_amazon_info_for_exhibit_$i,extract_amazon_info_$i,update_amazon_info_$i
+              php artisan queue:work --queue=update_amazon_jp_exhibit_$i,update_yahoo_jp_exhibit_$i,exhibit_to_amazon_jp_$i,exhibit_to_yahoo_jp_$i,process_asin_file_$i,extract_amazon_info_for_exhibit_$i,extract_amazon_info_$i,update_amazon_info_$i
           done
           for i in $(seq -f "%03g" 101 103)
           do

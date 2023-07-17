@@ -107,6 +107,7 @@ sudo crontab -e
 server {
     listen        80;
     server_name   charing.biz;
+    client_max_body_size 100m;
     location / {
         proxy_pass         http://localhost:5000;
         proxy_http_version 1.1;

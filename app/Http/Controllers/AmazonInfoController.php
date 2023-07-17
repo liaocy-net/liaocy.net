@@ -11,13 +11,14 @@ use Illuminate\Bus\Batch;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\Validator;
 use Throwable;
-use App\Jobs\ExtractAmazonInfo;
+use App\Jobs\ProcessAsinFile;
 use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use SplFileObject;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class AmazonInfoController extends Controller
 {
@@ -30,7 +31,7 @@ class AmazonInfoController extends Controller
     {
         $my = User::find(auth()->id());
         $batches = DB::table('product_batches')
-            ->select('*', 'product_batches.id AS product_batch_id', 'product_batches.finished_at AS product_batch_finished_at')
+            ->select('*', 'product_batches.id AS product_batch_id', 'product_batches.finished_at AS product_batch_finished_at', 'product_batches.created_at AS product_batch_created_at')
             ->where([
                 ['user_id', auth()->id()],
                 ['action', 'extract_amazon_info'],
@@ -69,128 +70,47 @@ class AmazonInfoController extends Controller
             if ($request->hasFile('asin_file')) {
                 $my = User::find(auth()->id());
 
-                $asins = array();
-                //拡張子がxlsxであるかの確認
-                if ($request->asin_file->getClientOriginalExtension() === "xlsx") {
-                    //Excelファイルを読み込み
-                    $reader = IOFactory::createReader("Xlsx");
-                    $spreadsheet = $reader->load($request->asin_file);
+                $fileExtension = $request->asin_file->getClientOriginalExtension();
 
-                    //シートの読み込み
-                    $sheet = $spreadsheet->getSheet(0);
-
-                    //最大行数確認
-                    if ($sheet->getHighestRow() > 1 + 3000) {
-                        throw new \Exception("ASIN数が3000を超えてはいけません。");
-                    }
-
-                    $headers = $sheet->rangeToArray('A1:A1', null, true, false);
-                    if (strcmp($headers[0][0], "ASIN") !== 0) {
-                        throw new \Exception("EXCELファイルのフォーマットが不適切です。");
-                    }
-
-                    $rows = $sheet->rangeToArray('A2:A' . $sheet->getHighestRow(), null, true, false);
-                    
-                    foreach ($rows as $index => $row) {
-                        $matches = array();
-                        preg_match('/^(B[\dA-Z]{9}|\d{9}(X|\d))$/', $row[0], $matches);
-                        if (count($matches) != 2) {
-                            throw new \Exception("ASINのフォーマットが不適切です。" . ($index + 2) . " 行目にある " . $row[0] . " を確認してください。");
-                        }
-
-                        if (!in_array($row[0], $asins)) {
-                            array_push($asins, $row[0]);
-                        }
-                    }
-                } else if ($request->asin_file->getClientOriginalExtension() === "csv") {
-                    $file = new SplFileObject($request->asin_file);
-                    $file->setFlags(SplFileObject::READ_CSV);
-                    foreach ($file as $rowIndex => $row) {
-                        if ($rowIndex === 0) {
-                            
-                        } else {
-                            if (empty($row[0])) {
-                                continue;
-                            }
-                            $matches = array();
-                            preg_match('/^(B[\dA-Z]{9}|\d{9}(X|\d))$/', $row[0], $matches);
-                            if (count($matches) != 2) {
-                                throw new \Exception("ASINのフォーマットが不適切です。" . ($rowIndex + 1) . " 行目にある " . $row[0] . " を確認してください。");
-                            }
-
-                            Log::debug($row[0] . " " . $rowIndex);
-
-                            if (!in_array($row[0], $asins)) {
-                                array_push($asins, $row[0]);
-                            }
-                        }
-                        if ($rowIndex > 3000) {
-                            throw new \Exception("ASIN数が3000を超えてはいけません。");
-                        }
-                    }
-                } else {
-                    throw new \Exception("不適切な拡張子です。CSVを選択してください。");
+                if ($fileExtension !== "csv") {
+                    throw new \Exception("ファイルの拡張子がcsvではありません。");
                 }
 
-                
-                
-                if (count($asins) === 0) {
-                    throw new \Exception("ファイルにASINが含まれていません。");
+                $fileRelativePath = $request->file('asin_file')->store('asin_files');
+
+                if (!Storage::exists($fileRelativePath)) {
+                    throw new \Exception("ファイルのアップロードに失敗しました。" . $fileRelativePath);
                 }
+
+                $asinFileOriginalName = $request->asin_file->getClientOriginalName();
+                $asinFileAbsolutePath = storage_path() . '/app/' . $fileRelativePath;
 
                 $productBatch = new ProductBatch();
                 $productBatch->user_id = auth()->id();
                 $productBatch->action = "extract_amazon_info";
-
-                $filename = pathinfo($request->asin_file->getClientOriginalName(), PATHINFO_FILENAME);
+                $filename = pathinfo($asinFileOriginalName, PATHINFO_FILENAME);
+                $ext = pathinfo($asinFileOriginalName, PATHINFO_EXTENSION);
                 $existing_file_count = ProductBatch::where('user_id', auth()->id())->where('filename', 'like', $filename . '%')->count();
                 if ($existing_file_count > 0) {
                     $filename = $filename . "_" . ($existing_file_count + 1);
                 }
-
-                
-
-                $productBatch->filename = $filename . "." . $request->asin_file->getClientOriginalExtension();
+                $productBatch->filename = $filename. "." . $ext;
                 $productBatch->save();
 
-                $extractAmazonInfos = array();
-                foreach ($asins as $asin) {
-                    $product = new Product();
-                    $product->user_id = auth()->id();
-                    $product->asin = $asin;
-                    $product->sku = UtilityService::genSKU($product);
-                    $product->save();
-
-                    $product->productBatches()->attach($productBatch);
-
-                    array_push($extractAmazonInfos, new ExtractAmazonInfo($product));
-                }
-
-                $batch = Bus::batch($extractAmazonInfos)->name("extract_amazon_info")->then(function (Batch $batch) {
-                    // すべてのジョブが正常に完了
-                })->catch(function (Batch $batch, Throwable $e) {
-                    // バッチジョブの失敗をはじめて検出
-                })->finally(function (Batch $batch) {
-                    // バッチジョブの完了
-                    $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
-                    $productBatch->finished_at = now();
-                    $productBatch->save();
-                })->onQueue("extract_amazon_info_" . $my->getJobSuffix())->allowFailures()->dispatch();
-
-                $productBatch->job_batch_id = $batch->id;
-                $productBatch->save();
+                # ファイルの処理Queue
+                ProcessAsinFile::dispatch($asinFileAbsolutePath, $productBatch, $my, "extract_amazon_info", null)->onQueue("process_asin_file_" . $my->getJobSuffix());
 
                 return redirect()->route('amazon_info.index')->with('success', 'Amazon情報取得ジョブが登録されました。');
-                
             } else {
                 throw new \Exception("ASINファイルが選択されていません。");
             }
         } catch (\Exception $e) {
             return back()->withErrors($e->getMessage());
-        }   
+        }
     }
 
-    public function downloadASINTemplateXLSX(Request $request){
+    public function downloadASINTemplateXLSX(Request $request)
+    {
         $spreadsheet = new Spreadsheet();
         $sheet = $spreadsheet->getActiveSheet();
         $sheet->setTitle('ASIN');
@@ -246,7 +166,8 @@ class AmazonInfoController extends Controller
         }
     }
 
-    public function cancelAmazonInfoBatch(Request $request){
+    public function cancelAmazonInfoBatch(Request $request)
+    {
         try {
             $validator = Validator::make($request->all(), [
                 'product_batch_id' => ['required', 'integer', 'min:1'],
@@ -272,7 +193,7 @@ class AmazonInfoController extends Controller
             return redirect()->route('amazon_info.index')->with('success', 'Amazon情報取得ジョブが停止されました。');
         } catch (\Exception $e) {
             return back()->withErrors($e->getMessage());
-        }   
+        }
     }
 
     /**

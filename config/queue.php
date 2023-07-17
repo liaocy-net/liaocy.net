@@ -38,7 +38,7 @@ return [
             'driver' => 'database',
             'table' => 'jobs',
             'queue' => 'default',
-            'retry_after' => 60 * 60,
+            'retry_after' => 2 * 60 * 60,
             'after_commit' => false,
         ],
 

@@ -42,7 +42,7 @@
 
                 <div class="">
                     <h5 class="fw-bold">Amazon情報取得履歴</h5>
-                    <p class="text-muted">１回最大 3000 ASINを登録してください。</p>
+                    <p class="text-muted">１回最大 {{ env("MAX_ASIN_COUNT_PER_FILE") }} ASINを登録してください。</p>
                     <div class="table-responsive text-nowrap">
                         <table class="table table-bordered table-striped text-center">
                             <thead class="table-light">
@@ -66,8 +66,11 @@
                                             @if ($batch->status == '取得中')
                                                 <button onclick="location.href='{{route('amazon_info.cancel_amazon_info_batch')}}?product_batch_id={{$batch->product_batch_id}}'">取得停止</button>
                                             @endif
+                                            @if ($batch->message)
+                                                <i class="fa-solid fa-circle-info" data-bs-container="body" data-bs-toggle="popover" data-trigger="hover" data-bs-placement="right" data-bs-content="{{ $batch->message }}"></i>
+                                            @endif
                                         </td>
-                                        <td>{{ date('Y-m-d H:i:s', $batch->created_at) }}</td>
+                                        <td>{{ date('Y-m-d H:i:s', strtotime($batch->product_batch_created_at)) }}</td>
                                         <td>
                                             @if ($batch->product_batch_finished_at)
                                             {{ date('Y-m-d H:i:s', strtotime($batch->product_batch_finished_at)) }}

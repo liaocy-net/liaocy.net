@@ -2,22 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Models\User;
-use App\Models\Product;
+use App\Jobs\ProcessAsinFile;
 use App\Models\ProductBatch;
+use App\Models\User;
 use App\Models\YahooJpCategory;
-use App\Services\UtilityService;
-use App\Jobs\ExtractAmazonInfo;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use Illuminate\Bus\Batch;
-use Throwable;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
-use SplFileObject;
-use Illuminate\Support\Facades\Log;
 
 class ExhibitController extends Controller
 {
@@ -37,9 +29,9 @@ class ExhibitController extends Controller
     public function searchYahooJpCategories(Request $request)
     {
         $query = YahooJpCategory::query();
-        if($request->filled('q')){
+        if ($request->filled('q')) {
             $search = $request->q;
-            $query->where('path','LIKE',"%$search%")->orWhere('product_category', '=', $search);
+            $query->where('path', 'LIKE', "%$search%")->orWhere('product_category', '=', $search);
         }
         return $query->paginate(20);
     }
@@ -63,153 +55,69 @@ class ExhibitController extends Controller
     public function store(Request $request)
     {
         try {
+            $my = User::find(auth()->id());
+
             $validator = Validator::make($request->all(), [
                 'exhibit_to' => ['required'],
                 'exhibit_to.*' => ['in:amazon,yahoo'],
                 'yahoo_jp_category_id' => ['required', 'integer']
             ]);
-    
+
             if ($validator->fails()) {
                 throw new \Exception($validator->errors()->first(), 442);
             }
 
-            $my = User::find(auth()->id());
-
-            if ($request->hasFile('asin_file')) {
-                $asins = array();
-                //拡張子がxlsxであるかの確認
-                if ($request->asin_file->getClientOriginalExtension() === "xlsx") {
-                    //Excelファイルを読み込み
-                    $reader = IOFactory::createReader("Xlsx");
-                    $spreadsheet = $reader->load($request->asin_file);
-
-                    //シートの読み込み
-                    $sheet = $spreadsheet->getSheet(0);
-
-                    
-
-                    //最大行数確認
-                    if ($sheet->getHighestRow() > 1 + 3000) {
-                        throw new \Exception("ASIN数が3000を超えてはいけません。");
-                    }
-
-                    $headers = $sheet->rangeToArray('A1:A1', null, true, false);
-                    if (strcmp($headers[0][0], "ASIN") !== 0) {
-                        throw new \Exception("ASINファイルのフォーマットが不適切です。");
-                    }
-
-                    $rows = $sheet->rangeToArray('A2:A' . $sheet->getHighestRow(), null, true, false);
-
-                    foreach ($rows as $index => $row) {
-                        $matches = array();
-                        preg_match('/^(B[\dA-Z]{9}|\d{9}(X|\d))$/', $row[0], $matches);
-                        if (count($matches) != 2) {
-                            throw new \Exception("ASINのフォーマットが不適切です。" . ($index + 2) . " 行目にある " . $row[0] . " を確認してください。");
-                        }
-
-                        if (!in_array($row[0], $asins)) {
-                            array_push($asins, $row[0]);
-                        }
-                    }
-                    
-                //拡張子がcsvであるかの確認
-                } else if ($request->asin_file->getClientOriginalExtension() === "csv") {
-                    $file = new SplFileObject($request->asin_file);
-                    $file->setFlags(SplFileObject::READ_CSV);
-                    foreach ($file as $rowIndex => $row) {
-                        if ($rowIndex === 0) {
-                            
-                        } else {
-                            if (empty($row[0])) {
-                                continue;
-                            }
-                            $matches = array();
-                            preg_match('/^(B[\dA-Z]{9}|\d{9}(X|\d))$/', $row[0], $matches);
-                            if (count($matches) != 2) {
-                                throw new \Exception("ASINのフォーマットが不適切です。" . ($rowIndex + 1) . " 行目にある " . $row[0] . " を確認してください。");
-                            }
-
-                            Log::debug($row[0] . " " . $rowIndex);
-
-                            if (!in_array($row[0], $asins)) {
-                                array_push($asins, $row[0]);
-                            }
-                        }
-                        if ($rowIndex > 3000) {
-                            throw new \Exception("ASIN数が3000を超えてはいけません。");
-                        }
-                    }
-                } else {
-                    throw new \Exception("不適切な拡張子です。CSVファイルを選択してください。");
-                }
-                
-
-                if (count($asins) === 0) {
-                    throw new \Exception("EXCELファイルにASINが含まれていません。");
-                }
-
-                $productBatch = new ProductBatch();
-                $productBatch->user_id = auth()->id();
-                $productBatch->action = "extract_amazon_info_for_exhibit";
-
-                $filename = pathinfo($request->asin_file->getClientOriginalName(), PATHINFO_FILENAME);
-                $existing_file_count = ProductBatch::where('user_id', auth()->id())->where('filename', 'like', $filename . '%')->count();
-                if ($existing_file_count > 0) {
-                    $filename = $filename . "_" . ($existing_file_count + 1);
-                }
-
-                $productBatch->filename = $filename . ".xlsx";
-                if (in_array("amazon", $request->exhibit_to)) {
-                    $productBatch->is_exhibit_to_amazon = true;
-                } else {
-                    $productBatch->is_exhibit_to_amazon = false;
-                }
-                if (in_array("yahoo", $request->exhibit_to)) {
-                    $productBatch->is_exhibit_to_yahoo = true;
-                } else {
-                    $productBatch->is_exhibit_to_yahoo = false;
-                }
-                $productBatch->save();
-
-                $yahooJpCategory = YahooJpCategory::find($request->yahoo_jp_category_id);
-                if ($yahooJpCategory === null) {
-                    throw new \Exception("Yahoo! JAPANカテゴリーが不適切です。");
-                }
-
-                $extractAmazonInfos = array();
-                foreach ($asins as $asin) {
-                    $product = new Product();
-                    $product->user_id = auth()->id();
-                    $product->asin = $asin;
-                    $product->sku = UtilityService::genSKU($product);
-                    $product->yahoo_jp_product_category = $yahooJpCategory->product_category;
-                    $product->yahoo_jp_path = $yahooJpCategory->path;
-                    $product->save();
-
-                    $product->productBatches()->attach($productBatch);
-
-                    array_push($extractAmazonInfos, new ExtractAmazonInfo($product));
-                }
-
-                $batch = Bus::batch($extractAmazonInfos)->name("extract_amazon_info_for_exhibit")->then(function (Batch $batch) {
-                    // すべてのジョブが正常に完了
-                })->catch(function (Batch $batch, Throwable $e) {
-                    // バッチジョブの失敗をはじめて検出
-                })->finally(function (Batch $batch) {
-                    // バッチジョブの完了
-                    $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
-                    $productBatch->finished_at = now();
-                    $productBatch->save();
-                })->onQueue('extract_amazon_info_for_exhibit_' . $my->getJobSuffix())->allowFailures()->dispatch();
-
-                $productBatch->job_batch_id = $batch->id;
-                $productBatch->save();
-
-                return redirect()->route('exhibit.index')->with('success', 'Amazon情報取得ジョブを登録しました。');
-                
-            } else {
-                throw new \Exception("Excel(.xlsx)ファイルが選択されていません。");
+            if (!$request->hasFile('asin_file')) {
+                throw new \Exception("ASINファイルが選択されていません。");
             }
+
+            # ファイルの拡張子がcsvであるかの確認
+            $fileExtension = $request->asin_file->getClientOriginalExtension();
+            if ($fileExtension !== "csv") {
+                throw new \Exception("ファイルの拡張子がcsvではありません。");
+            }
+
+            $fileRelativePath = $request->file('asin_file')->store('asin_files');
+            if (!Storage::exists($fileRelativePath)) {
+                throw new \Exception("ファイルのアップロードに失敗しました。" . $fileRelativePath);
+            }
+
+            $asinFileOriginalName = $request->asin_file->getClientOriginalName();
+            $asinFileAbsolutePath = storage_path() . '/app/' . $fileRelativePath;
+
+            # Product Batchの作成
+            $productBatch = new ProductBatch();
+            $productBatch->user_id = auth()->id();
+            $productBatch->action = "extract_amazon_info_for_exhibit";
+            $filename = pathinfo($asinFileOriginalName, PATHINFO_FILENAME);
+            $ext = pathinfo($asinFileOriginalName, PATHINFO_EXTENSION);
+            $existing_file_count = ProductBatch::where('user_id', auth()->id())->where('filename', 'like', $filename . '%')->count();
+            if ($existing_file_count > 0) {
+                $filename = $filename . "_" . ($existing_file_count + 1);
+            }
+            $productBatch->filename = $filename . "." . $ext;
+            if (in_array("amazon", $request->exhibit_to)) {
+                $productBatch->is_exhibit_to_amazon = true;
+            } else {
+                $productBatch->is_exhibit_to_amazon = false;
+            }
+            if (in_array("yahoo", $request->exhibit_to)) {
+                $productBatch->is_exhibit_to_yahoo = true;
+            } else {
+                $productBatch->is_exhibit_to_yahoo = false;
+            }
+            $productBatch->save();
+
+            # Yahoo! JAPANカテゴリーの確認
+            $yahooJpCategory = YahooJpCategory::find($request->yahoo_jp_category_id);
+            if ($yahooJpCategory === null) {
+                throw new \Exception("Yahoo! JAPANカテゴリーが不適切です。");
+            }
+
+            # ファイルの処理Queue
+            ProcessAsinFile::dispatch($asinFileAbsolutePath, $productBatch, $my, "extract_amazon_info_for_exhibit", $yahooJpCategory)->onQueue("process_asin_file_" . $my->getJobSuffix());
+
+            return redirect()->route('exhibit.index')->with('success', 'Amazon情報取得ジョブを登録しました。');
         } catch (\Exception $e) {
             return back()->withErrors($e->getMessage());
         }
@@ -243,8 +151,6 @@ class ExhibitController extends Controller
             }
 
             $batch->cancel();
-
-
         } catch (\Exception $e) {
             return response($e->getMessage(), 442);
         }

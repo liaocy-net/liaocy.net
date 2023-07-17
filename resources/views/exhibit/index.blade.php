@@ -28,7 +28,7 @@
                     {{ method_field('POST') }}
                     <div class="mb-4">
                         <h5 class="fw-bold">出品先</h5>
-                        <p class="text-muted">１回最大 3000 ASINを登録してください。</p>
+                        <p class="text-muted">１回最大 {{ env("MAX_ASIN_COUNT_PER_FILE") }} ASINを登録してください。</p>
                         <div class="table-responsive text-nowrap">
                             <table class="table table-bordered table-striped text-center">
                                 <thead class="table-light">

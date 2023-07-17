@@ -37,15 +37,22 @@ class UtilityService
         
     }
 
-    public static function getExtractAmazonInfoPatchStatus($jobBatch)
+    public static function getExtractAmazonInfoPatchStatus($productBatch)
     {
-        if (!empty($jobBatch->cancelled_at)){
+        if (empty($productBatch->job_batch_id)) {
+            if (empty($productBatch->message)) {
+                return "ASINファイル処理中";
+            } else {
+                return "ASINファイル処理失敗";
+            }
+            
+        } elseif (!empty($productBatch->cancelled_at)){
             return "取得停止";
-        } elseif (!empty($jobBatch->finished_at)) {
+        } elseif (!empty($productBatch->finished_at)) {
             return "取得完了";
-        } elseif ($jobBatch->total_jobs == $jobBatch->failed_jobs) {
+        } elseif ($productBatch->total_jobs == $productBatch->failed_jobs) {
             return "取得完了(全て失敗)";
-        } elseif ($jobBatch->pending_jobs != 0 && $jobBatch->pending_jobs == $jobBatch->failed_jobs) {
+        } elseif ($productBatch->pending_jobs != 0 && $productBatch->pending_jobs == $productBatch->failed_jobs) {
             return "取得完了(部分成功)";
         } else {
             return "取得中";

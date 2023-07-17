@@ -79,7 +79,8 @@ class ExhibitHistoryController extends Controller
                 ->select('*', 
                     'product_batches.id AS id', 
                     'product_batches.id AS product_batch_id', 
-                    'product_batches.finished_at AS product_batch_finished_at')
+                    'product_batches.finished_at AS product_batch_finished_at',
+                    'product_batches.message AS product_batch_message')
                 ->where($where)
                 ->whereIn('action', $action)
                 ->leftJoin('job_batches', 'product_batches.job_batch_id', '=', 'job_batches.id')
