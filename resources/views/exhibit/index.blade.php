@@ -45,7 +45,7 @@
                                         <td></td>
                                     </tr>
                                     <tr>
-                                        <td><input type="checkbox" class="form-check-input" name="exhibit_to[]" value="yahoo" checked/></td>
+                                        <td><input type="checkbox" class="form-check-input" name="exhibit_to[]" value="yahoo"/></td>
                                         <td>Yahoo!</td>
                                         <td class="text-start">
                                             <select class="form-select select2" id="yahoo_jp_category" name="yahoo_jp_category_id">
@@ -100,7 +100,7 @@
                     response.data.forEach((category) => {
                         options.push({
                             id: category.id,
-                            text: category.product_category + ' | ' + category.path
+                            text: category.product_category + ' | ' + category.path.replace(':', ' > ')
                         });
                     });
                     return {

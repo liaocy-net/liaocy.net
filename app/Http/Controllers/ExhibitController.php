@@ -59,8 +59,7 @@ class ExhibitController extends Controller
 
             $validator = Validator::make($request->all(), [
                 'exhibit_to' => ['required'],
-                'exhibit_to.*' => ['in:amazon,yahoo'],
-                'yahoo_jp_category_id' => ['required', 'integer']
+                'exhibit_to.*' => ['in:amazon,yahoo']
             ]);
 
             if ($validator->fails()) {
@@ -68,18 +67,18 @@ class ExhibitController extends Controller
             }
 
             if (!$request->hasFile('asin_file')) {
-                throw new \Exception("ASINファイルが選択されていません。");
+                throw new \Exception("出品用ファイルが選択されていません。");
             }
 
             # ファイルの拡張子がcsvであるかの確認
             $fileExtension = $request->asin_file->getClientOriginalExtension();
             if ($fileExtension !== "csv") {
-                throw new \Exception("ファイルの拡張子がcsvではありません。");
+                throw new \Exception("出品用ファイルの拡張子がcsvではありません。");
             }
 
             $fileRelativePath = $request->file('asin_file')->store('asin_files');
             if (!Storage::exists($fileRelativePath)) {
-                throw new \Exception("ファイルのアップロードに失敗しました。" . $fileRelativePath);
+                throw new \Exception("出品用ファイルのアップロードに失敗しました。" . $fileRelativePath);
             }
 
             $asinFileOriginalName = $request->asin_file->getClientOriginalName();
@@ -101,18 +100,18 @@ class ExhibitController extends Controller
             } else {
                 $productBatch->is_exhibit_to_amazon = false;
             }
+            $yahooJpCategory = null;
             if (in_array("yahoo", $request->exhibit_to)) {
                 $productBatch->is_exhibit_to_yahoo = true;
+                # Yahoo! JAPANカテゴリーの確認
+                $yahooJpCategory = YahooJpCategory::find($request->yahoo_jp_category_id);
+                if ($yahooJpCategory === null) {
+                    throw new \Exception("Yahoo! JAPANカテゴリーを選択してください。");
+                }
             } else {
                 $productBatch->is_exhibit_to_yahoo = false;
             }
             $productBatch->save();
-
-            # Yahoo! JAPANカテゴリーの確認
-            $yahooJpCategory = YahooJpCategory::find($request->yahoo_jp_category_id);
-            if ($yahooJpCategory === null) {
-                throw new \Exception("Yahoo! JAPANカテゴリーが不適切です。");
-            }
 
             # ファイルの処理Queue
             ProcessAsinFile::dispatch($asinFileAbsolutePath, $productBatch, $my, "extract_amazon_info_for_exhibit", $yahooJpCategory)->onQueue("process_asin_file_" . $my->getJobSuffix());

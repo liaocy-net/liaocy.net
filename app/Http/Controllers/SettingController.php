@@ -4,21 +4,23 @@ namespace App\Http\Controllers;
 
 require_once(__DIR__ . "/../../../vendor/autoload.php");
 
+use App\Models\ForeignShipping;
+use App\Models\Setting;
 use App\Models\User;
+use App\Models\YahooJpCategory;
+use App\Services\UtilityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use PhpOffice\PhpSpreadsheet\IOFactory;
+use SplFileObject;
 use YConnect\Constant\OIDConnectDisplay;
 use YConnect\Constant\OIDConnectPrompt;
 use YConnect\Constant\OIDConnectScope;
 use YConnect\Constant\ResponseType;
 use YConnect\Credential\ClientCredential;
 use YConnect\YConnectClient;
-use PhpOffice\PhpSpreadsheet\IOFactory;
-use App\Models\ForeignShipping;
-use App\Models\Setting;
-use App\Models\YahooJpCategory;
-use App\Services\UtilityService;
 
 class SettingController extends Controller
 {
@@ -220,30 +222,49 @@ class SettingController extends Controller
                     }
 
                     //拡張子がxlsxであるかの確認
-                    if ($request->yahoo_category->getClientOriginalExtension() !== "xlsx") {
+                    if ($request->yahoo_category->getClientOriginalExtension() !== "csv") {
                         throw new \Exception("不適切な拡張子です。EXCEL(xlsx)ファイルを選択してください。");
                     }
-                    //Excelファイルを読み込み
-                    $reader = IOFactory::createReader("Xlsx");
-                    $spreadsheet = $reader->load($request->yahoo_category);
+
+                    $fileData = file_get_contents($request->yahoo_category); 
+                    $fileData = preg_replace("/\r\n|\r/","\n",$fileData); // 読込み行ごとの改行パターンを置換
+                    $encode = mb_detect_encoding($fileData, ['SJIS-win','UTF-8']); // 文字コード判定
+                    if($encode == 'SJIS-win'){
+                        $fileData = mb_convert_encoding($fileData,'UTF-8','SJIS-win'); // 区別してエンコード
+                    }
+
+                    $tmpName = tempnam(sys_get_temp_dir(), "csv"); 
+                    file_put_contents($tmpName,$fileData); // $tmpNameにファイルデータを詰めてからSplFileObjectで読込む
                     
-                    //シートの読み込み
+                    $file = new SplFileObject($tmpName);
+                    $file->setFlags(
+                        SplFileObject::READ_CSV |         // CSV 列として行を読み込む
+                        SplFileObject::READ_AHEAD |       // 先読み/巻き戻しで読み出す。
+                        SplFileObject::SKIP_EMPTY |       // 空行は読み飛ばす
+                        SplFileObject::DROP_NEW_LINE      // 行末の改行を読み飛ばす
+                    );
                     $yahooJpCategories = array();
-                    $sheet = $spreadsheet->getSheet(0);
-                    $headers = $sheet->rangeToArray('A1:B1', null, true, false);
-                    if (count($headers[0]) != 2 || strcmp($headers[0][0], "YahooショッピングカテゴリID（半角数字のみ,10文字以内）") !== 0 || strcmp($headers[0][1], "ストアカテゴリのパス（カテゴリ名のコロン区切り）") !== 0) {
-                        throw new \Exception("EXCELファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
-                    }
-                    $rows = $sheet->rangeToArray('A2:B' . $sheet->getHighestRow(), null, true, false);
-                    foreach ($rows as $row) {
-                        if (count($row) != 2 || !is_numeric($row[0]) || $row[0] > 99999 || $row[0] < 1 || strlen($row[0]) > 160) {
-                            throw new \Exception("EXCELファイルのフォーマットが不適切です。もう一度ダウンロードしてください。");
+                    foreach ($file as $rowIndex => $row) {
+                        if ($rowIndex === 0) {
+                            if($row[0] !== "id" || $row[2] !== "path_name") {
+                                throw new \Exception("不適切なYahoo JP カテゴリファイルフォマットです。");
+                            }
+                        } else {
+                            if (count($row) != 5 || !is_numeric($row[0]) || $row[0] > 99999 || $row[0] < 1 || strlen($row[0]) > 160) {
+                                throw new \Exception("不適切なYahoo JP カテゴリファイルフォマットです。" . ($rowIndex + 1) . "行目のidが不正です。" . $row[0]);
+                            }
+                            $yahooJpCategories[] = array(
+                                "product_category" => $row[0],
+                                "path" => str_replace(" > ", ":", $row[2]),
+                            );
                         }
-                        $yahooJpCategories[] = array(
-                            "product_category" => $row[0],
-                            "path" => $row[1]
-                        );
                     }
+
+                    // Storage::putFile('/yahoo_cagetory_file', $request->yahoo_category);
+                    $request->yahoo_category->storeAs(
+                        'yahoo_category_file/', 'yahoo_category_file.csv'
+                    );
+                    
                     //DBのデータを削除
                     YahooJpCategory::truncate();
                     YahooJpCategory::insert($yahooJpCategories);
