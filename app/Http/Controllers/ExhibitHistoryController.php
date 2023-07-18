@@ -217,6 +217,8 @@ class ExhibitHistoryController extends Controller
                 'asin' => ['nullable', 'string', 'max:255'],
                 'brand' => ['nullable', 'string', 'max:255'],
                 'title' => ['nullable', 'string', 'max:255'],
+                'search_sort_column' => ['required', 'string', 'max:255', 'regex:/^[created|asin|title|price|weight]+$/u'],
+                'search_sort_order' => ['required', 'string', 'max:255', 'regex:/^[asc|desc]+$/u'],
             ]);
 
             if ($validator->fails()) {
@@ -250,10 +252,27 @@ class ExhibitHistoryController extends Controller
                 throw new \Exception('product batch not found', 442);
             }
 
+            $searchSortColumn = $request->input('search_sort_column');
+            $searchSortOrder = $request->input('search_sort_order');
+            $orderByRaw = "";
+            if ($searchSortColumn == "created") {
+                $orderByRaw = "products.created_at " . $searchSortOrder;
+            } elseif ($searchSortColumn == "asin") {
+                $orderByRaw = "asin " . $searchSortOrder;
+            } elseif ($searchSortColumn == "title") {
+                $orderByRaw = "ifnull(title_jp, title_en) " . $searchSortOrder;
+            } elseif ($searchSortColumn == "price") {
+                $orderByRaw = "ifnull(cp_us, np_us) " . $searchSortOrder;
+            } elseif ($searchSortColumn == "weight") {
+                $orderByRaw = "ifnull(weight_us, 0) " . $searchSortOrder;
+            } else {
+                throw new \Exception("search_sort_column is invalid", 442);
+            }
+
             $products = $productBatch->products()
                 ->select('*')
                 ->where($where)
-                ->orderBy('products.created_at', 'desc')
+                ->orderByRaw($orderByRaw)
                 ->paginate(
                     $perPage = env("PAGE_MAX_LIMIT", 50), 
                     $columns = ['*'], 

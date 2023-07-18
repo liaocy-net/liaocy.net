@@ -46,6 +46,28 @@
                                 <button type="button" class="btn btn-primary waves-effect waves-light" onclick="refresh()"><i class="fas fa-search me-1"></i>検索</button>
                             </div>
                         </div>
+                        <div class="row mb-3">
+                            <div class="col-6 col-sm-3 mb-2">
+                                <label class="form-label" for="search_sort_column">ソートカラム</label>
+                                <select id="search_sort_column" name="search_sort_column" class="form-select">
+                                    <option value="created">作成順</option>
+                                    <option value="price">仕入価格</option>
+                                    <option value="asin">ASIN</option>
+                                    <option value="title">タイトル</option>
+                                    <option value="weight">重量</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-sm-3 mb-2">
+                                <label class="form-label" for="search_sort_order">高い順/低い順</label>
+                                <select id="search_sort_order" name="search_sort_order" class="form-select">
+                                    <option value="asc">低い順</option>
+                                    <option value="desc">高い順</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-sm-3 mb-2 d-inline-flex align-items-end">
+                                <button type="button" class="btn btn-primary waves-effect waves-light" onclick="refresh()"><i class="fas fa-refresh me-1"></i>更新</button>
+                            </div>
+                        </div>
                     </form>
                 </div>
 
@@ -152,11 +174,6 @@
             }
             refresh();
         }, function(){
-            // if (data["act"] == "exhibit_to_yahoo_jp") {
-            //     $('#btn_delete_product').prop('disabled', true);
-            //     $('#btn_exhibit_to_yahoo_jp').prop('disabled', true);
-            //     alert("出品中です。しばらくお待ちください。")
-            // }
             showLoading('tab_products');
         });
     });
@@ -193,6 +210,8 @@
             asin: $('#search_asin').val(),
             brand: $('#search_file_brand').val(),
             title: $('#search_file_title').val(),
+            search_sort_column: $('#search_sort_column').val(),
+            search_sort_order: $('#search_sort_order').val(),
         }, function(data) {
             let html = '';
             data.data.forEach(product => {
