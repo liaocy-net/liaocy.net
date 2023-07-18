@@ -64,7 +64,7 @@
                                         <td>
                                             {{ $batch->status }}
                                             @if ($batch->status == '取得中')
-                                                <button onclick="location.href='{{route('amazon_info.cancel_amazon_info_batch')}}?product_batch_id={{$batch->product_batch_id}}'">取得停止</button>
+                                                <a href="{{route('amazon_info.cancel_amazon_info_batch')}}?product_batch_id={{$batch->product_batch_id}}" class="btn btn-icon btn-sm btn-danger"><i class="fa-regular fa-circle-xmark" style="color: #ffffff;"></i></button>
                                             @endif
                                             @if ($batch->message)
                                                 <i class="fa-solid fa-circle-info" data-bs-container="body" data-bs-toggle="popover" data-trigger="hover" data-bs-placement="right" data-bs-content="{{ $batch->message }}"></i>
@@ -81,7 +81,7 @@
                                             @if ($batch->status == '取得停止')
                                                 <span>取得停止済み</span>
                                             @else
-                                                {{ $batch->total_jobs - $batch->pending_jobs }}
+                                                {{ $batch->total_jobs ? $batch->total_jobs - $batch->pending_jobs : ""}}
                                             @endif
                                         </td>
                                         <td>{{ $batch->failed_jobs }}</td>

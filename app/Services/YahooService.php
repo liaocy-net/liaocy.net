@@ -178,13 +178,15 @@ class YahooService
         $header = [
             'Authorization: Bearer ' . $yahooAccessToken,
         ];
+        $name = $product->title_jp ? $product->title_jp : $product->title_us;
+        $name = mb_strlen($name) > 75 ? mb_substr($name, 0, 75) : $name;
         $params = array(
             'access_token' => $yahooAccessToken,
             'seller_id' => $this->user->yahoo_store_account,
             'item_code' => $this->getItemCode($product),
             'path' => $product->yahoo_jp_path,
             'product_category' => $product->yahoo_jp_product_category,
-            'name' => $product->title_jp ? $product->title_jp : $product->title_us,
+            'name' => $name,
             'price' => $product->yahoo_jp_latest_exhibit_price,
         );
 
@@ -204,7 +206,6 @@ class YahooService
         $err = curl_error($ch);
         curl_close($ch);
 
-        var_dump($result);
         if ($httpcode == 200) {
             $xml = simplexml_load_string($result, 'SimpleXMLElement', LIBXML_NOCDATA);
             $returnStr = "OK";
@@ -215,7 +216,7 @@ class YahooService
                 }
             }
         } else {
-            throw new \Exception("Yahoo itemRegist API Error Code: " . $httpcode);
+            throw new \Exception("Yahoo itemRegist API Error Code: " . $httpcode . "RESULT: " . $result . "; ERROR: " . $err);
         }
         return $returnStr;
     }
@@ -245,12 +246,10 @@ class YahooService
         $err = curl_error($ch);
         curl_close($ch);
 
-        var_dump($result);
-
         if ($httpcode == 200) {
             $returnStr = "OK";
         } else {
-            throw new \Exception("Yahoo reservePublish API Error Code: " . $httpcode);
+            throw new \Exception("Yahoo reservePublish API Error Code: " . $httpcode . "; ERROR: " . $err);
         }
 
         return $returnStr;
@@ -277,16 +276,13 @@ class YahooService
             CURLOPT_POSTFIELDS     => http_build_query($params),
         ));
         $result = curl_exec($ch);
-        //    var_dump($result);
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $err = curl_error($ch);
         curl_close($ch);
         if ($httpcode == 200) {
             $returnStr = "OK";
-        } else if ($httpcode == 401) {
-            $returnStr = "INVALID";
         } else {
-            $returnStr = "ERROR";
+            throw new \Exception("Yahoo deleteItem API Error Code: " . $httpcode . "; ERROR: " . $err);
         }
         return $returnStr;
     }
@@ -324,7 +320,6 @@ class YahooService
             $result = curl_exec($ch);
             $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $err = curl_error($ch);
-            var_dump($result);
             curl_close($ch);
             if ($httpcode == 200 || $httpcode == 400) {
                 $xml = simplexml_load_string($result, 'SimpleXMLElement', LIBXML_NOCDATA);
@@ -342,7 +337,7 @@ class YahooService
                     }
                 }
             } else {
-                throw new \Exception("Yahoo changePrice API Error Code: " . $httpcode);
+                throw new \Exception("Yahoo deleteItem API Error Code: " . $httpcode . "; ERROR: " . $err);
             }
         }
     }
@@ -391,7 +386,6 @@ class YahooService
             $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             $err = curl_error($ch);
             curl_close($ch);
-            var_dump($result);
             if ($httpcode == 200) {
                 $xml = simplexml_load_string($result, 'SimpleXMLElement', LIBXML_NOCDATA);
                 if (isset($xml['ok']) && intval($xml['ok']) > 0) {
@@ -400,7 +394,7 @@ class YahooService
                     throw new \Exception("Yahoo setStock API Error Result: " . $xml);
                 }
             } else {
-                throw new \Exception("Yahoo setStock API Error Code: " . $httpcode);
+                throw new \Exception("Yahoo setStock API Error Code: " . $httpcode . "; ERROR: " . $err);
             }
         }
     }

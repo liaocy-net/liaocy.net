@@ -144,37 +144,55 @@
         data.data.forEach(history => {
             html += '<tr>';
             html += '<td><a href="/amazon_info/' + history.product_batch_id + '">' + history.filename + '</a></td>';
+            
+            // アクション
+            html += '<td>';
             if (history.action == 'extract_amazon_info_for_exhibit') {
-                html += '<td>商品情報取得</td>';
+                html += '商品情報取得';
             } else if (history.action == 'exhibit_to_amazon_jp') {
-                html += '<td>AmazonJP出品</td>';
-            }
-            if (history.patch_status == '取得中') {
-                html += '<td>取得中 <button onclick="cancelBatch(\'' + history.id + '\')">取得停止</button></td>';
+                html += 'AmazonJP出品';
+            } else if (history.action == 'exhibit_to_yahoo_jp') {
+                html += 'YahooJP出品';
             } else {
-                html += '<td>';
-                html += history.patch_status;
-                // if (history.product_batch_message) {
-                //     html += '<i class="fa-solid fa-circle-info" data-bs-container="body" data-bs-toggle="popover" data-trigger="hover" data-bs-placement="right" data-bs-content="' + history.product_batch_message + '"></i>';
-                // }
-                html += '</td>';
+                html += history.action;
             }
+            html += '</td>';
+
+            // ステータス
+            html += '<td>';
+            if (history.patch_status == '取得中') {
+                html += '取得中 <a onclick="cancelBatch(\'' + history.id + '\')" class="btn btn-icon btn-sm btn-danger"><i class="fa-regular fa-circle-xmark" style="color: #ffffff;"></i></a>';
+            } else {
+                html += history.patch_status;
+            }
+            html += '</td>';
+
+            // 開始時間  
             html += '<td>' + (history.start_at ? history.start_at : '-') + '</td>';
+
+            // 終了時間
             html += '<td>' + (history.end_at ? history.end_at : '-') + '</td>';
             
-            if (history.action == 'extract_amazon_info_for_exhibit') {
-                html += '<td>' + (history.total_jobs ? history.total_jobs : "-") + '</td>';
-                if (history.patch_status == '取得停止') {
-                    html += '<td>取得停止済み</td>';
-                } else {
-                    html += '<td>' + (history.total_jobs ? (history.total_jobs - history.pending_jobs) : "-") + '</td>';
-                }
-                html += '<td>' + (history.failed_jobs ? history.failed_jobs : "-") + '</td>';
+            // ASIN数
+            html += '<td>';
+            html += history.total_jobs ? history.total_jobs : "-"; 
+            html += '</td>';
+
+            // 成功件数
+            html += '<td>';
+            if (history.patch_status == '取得停止') {
+                html += '取得停止済み';
             } else {
-                html += '<td>-</td>';
-                html += '<td>-</td>';
-                html += '<td>-</td>';
+                html += history.total_jobs ? (history.total_jobs - history.pending_jobs) : "-";
             }
+            html += '</td>';
+
+            // 失敗件数
+            html += '<td>';
+            html += history.failed_jobs ? history.failed_jobs : "-";
+            html += '</td>';
+
+            // メッセージ
             html += '<td>';
             if (history.has_feed_document) {
                 html += '<a href="{{route("exhibit_history.download_batch_feed_document_tsv")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">出品ファイル</a> ';
@@ -188,24 +206,23 @@
             }
             html += '</td>';
             
+            // 詳細
+            html += '<td>';
             if (platform == "amazon"){
                 if (history.action == 'extract_amazon_info_for_exhibit' && history.end_at && history.patch_status != "ASINファイル処理失敗") {
-                    html += '<td><a href="{{route("exhibit_history.detail_amazon_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
+                    html += '<a href="{{route("exhibit_history.detail_amazon_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a>';
                 } else if (history.action == 'exhibit_to_amazon_jp' && history.end_at && history.patch_status != "ASINファイル処理失敗"){
-                    html += '<td><a href="{{route("exhibit_history.detail_amazon_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
-                } else {
-                    html += '<td></td>';
-                }
+                    html += '<a href="{{route("exhibit_history.detail_amazon_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a>';
+                } 
             }
             if (platform == "yahoo"){
                 if (history.action == 'extract_amazon_info_for_exhibit' && history.end_at && history.patch_status != "ASINファイル処理失敗") {
-                    html += '<td><a href="{{route("exhibit_history.detail_yahoo_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
+                    html += '<a href="{{route("exhibit_history.detail_yahoo_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a>';
                 } else if (history.action == 'exhibit_to_yahoo_jp' && history.end_at && history.patch_status != "ASINファイル処理失敗"){
-                    html += '<td><a href="{{route("exhibit_history.detail_yahoo_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a></td>';
-                } else {
-                    html += '<td></td>';
+                    html += '<a href="{{route("exhibit_history.detail_yahoo_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a>';
                 }
             }
+            html += '</td>';
             
             html += '</tr>';
         });
@@ -260,6 +277,10 @@
     };
 
     var cancelBatch = function(productBatchId){
+        //confirm
+        if (!confirm('Amazon情報取得を停止しますか？')) {
+            return;
+        }
         getData("{{route('exhibit.cancel_exhibit_batch')}}", {
             product_batch_id: productBatchId,
         } , function(data) {
