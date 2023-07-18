@@ -146,6 +146,17 @@ class AmazonService
             $result['model'] = null;
         }
 
+        // product_type	プロダクトタイプ cateとして利用する
+        if (
+            !empty($item->getProductTypes()) && 
+            count($item->getProductTypes()) > 0 &&
+            !empty($item->getProductTypes()[0]->getProductType())
+        ) {
+            $result['product_type'] = $item->getProductTypes()[0]->getProductType();
+        } else {
+            $result['product_type'] = null;
+        }
+
         // rank_jp	日本ランキング
         // rank_id_jp	ランキング順位がある場合のカテゴリ名
         if (

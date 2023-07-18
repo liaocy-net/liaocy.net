@@ -164,8 +164,8 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
             $user,
             "us",
         );
-        // return $amazonService->getCatalogItem($product);
-        return $amazonService->getProductPricing($product);
+        return $amazonService->getCatalogItem($product);
+        // return $amazonService->getProductPricing($product);
         // $feedType = FeedTypes::POST_PRODUCT_PRICING_DATA;
         // return $amazonService->createFeed($feedType);
         // return $amazonService->CreateFeedWithFile();

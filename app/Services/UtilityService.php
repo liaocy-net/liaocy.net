@@ -911,7 +911,7 @@ class UtilityService
 
         $product->title_us = $catalogItem['title'];
         $product->brand_us = $catalogItem['brand'];
-        // $product->cate_us = $catalogItem['cate'];
+        $product->cate_us = $catalogItem['product_type'];
         $product->color_us = $catalogItem['color'];
 
         $product->img_url_01 = $catalogItem['img_url_01'];
