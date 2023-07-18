@@ -28,6 +28,7 @@ class ProcessAsinFile implements ShouldQueue
     protected User $my;
     protected string $extractAmazonInfoQueueName;
     protected ?YahooJpCategory $yahooJpCategory;
+    protected $shouldDownloadImages;
 
     public $maxAsinCount = 20 * 10000;
 
@@ -39,7 +40,7 @@ class ProcessAsinFile implements ShouldQueue
      *
      * @return void
      */
-    public function __construct($asinFileAbsolutePath, $productBatch, $my, $extractAmazonInfoQueueName, $yahooJpCategory)
+    public function __construct($asinFileAbsolutePath, $productBatch, $my, $extractAmazonInfoQueueName, $yahooJpCategory, $shouldDownloadImages)
     {
         $this->asinFileAbsolutePath = $asinFileAbsolutePath;
         $this->productBatch = $productBatch;
@@ -47,6 +48,7 @@ class ProcessAsinFile implements ShouldQueue
         $this->extractAmazonInfoQueueName = $extractAmazonInfoQueueName;
         $this->maxAsinCount = env('MAX_ASIN_COUNT_PER_FILE', 20 * 10000);
         $this->yahooJpCategory = $yahooJpCategory;
+        $this->shouldDownloadImages = $shouldDownloadImages;
     }
 
     /**
@@ -121,7 +123,7 @@ class ProcessAsinFile implements ShouldQueue
             }
             $product->save();
             $product->productBatches()->attach($this->productBatch);
-            array_push($extractAmazonInfos, new ExtractAmazonInfo($product));
+            array_push($extractAmazonInfos, new ExtractAmazonInfo($product, $this->shouldDownloadImages));
         }
         $batch = Bus::batch($extractAmazonInfos)->name($this->extractAmazonInfoQueueName)->then(function (Batch $batch) {
             // すべてのジョブが正常に完了

@@ -19,6 +19,7 @@ class ExtractAmazonInfo implements ShouldQueue
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected $product;
+    protected $shouldDownloadImages;
 
     /**
      * The number of times the job may be attempted.
@@ -32,9 +33,10 @@ class ExtractAmazonInfo implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(Product $product)
+    public function __construct(Product $product, $shouldDownloadImages = true)
     {
         $this->product = $product;
+        $this->shouldDownloadImages = $shouldDownloadImages;
     }
 
     /**
@@ -59,8 +61,10 @@ class ExtractAmazonInfo implements ShouldQueue
 
         $imageURLs = $this->product->getAmazonUSImageURLs();
 
-        foreach ($imageURLs as $url) {
-            DownloadAmazonJPProductImages::dispatch($url)->onQueue('download_amazon_jp_product_images'); //キューに追加
+        if ($this->shouldDownloadImages){
+            foreach ($imageURLs as $url) {
+                DownloadAmazonJPProductImages::dispatch($url)->onQueue('download_amazon_jp_product_images'); //キューに追加
+            }
         }
 
         UtilityService::updateJPAmazonInfo($this->product);

@@ -114,7 +114,7 @@ class ExhibitController extends Controller
             $productBatch->save();
 
             # ファイルの処理Queue
-            ProcessAsinFile::dispatch($asinFileAbsolutePath, $productBatch, $my, "extract_amazon_info_for_exhibit", $yahooJpCategory)->onQueue("process_asin_file_" . $my->getJobSuffix());
+            ProcessAsinFile::dispatch($asinFileAbsolutePath, $productBatch, $my, "extract_amazon_info_for_exhibit", $yahooJpCategory, true)->onQueue("process_asin_file_" . $my->getJobSuffix());
 
             return redirect()->route('exhibit.index')->with('success', 'Amazon情報取得ジョブを登録しました。');
         } catch (\Exception $e) {

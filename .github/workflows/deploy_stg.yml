@@ -17,9 +17,9 @@ env:
   APP_ENV: stg
   APP_PORT: 5000
   DOCKER_COMMON_ENVS: |- 
-    -v /data/stg-charing-storage/app:/var/www/html/storage/app \
-    -v /data/stg-charing-storage/logs:/var/www/html/storage/logs \
-    -e APP_NAME=Charing \
+    -v /mnt/efs/stg-charing-storage/app:/var/www/html/storage/app \
+    -v /mnt/efs/stg-charing-storage/logs:/var/www/html/storage/logs \
+    -e APP_NAME=Charing-STG \
     -e APP_KEY=${{secrets.APP_KEY_STG}} \
     -e APP_DEBUG=true \
     -e APP_URL=https://test.charing.biz/ \
@@ -171,7 +171,7 @@ jobs:
               sudo docker rm $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-")
             fi
 
-            if ! [ -d /data/${{ env.APP_ENV }}-charing-storage/ ]; then mkdir /data/${{ env.APP_ENV }}-charing-storage/; fi
+            if ! [ -d /mnt/efs/${{ env.APP_ENV }}-charing-storage/ ]; then mkdir /mnt/efs/${{ env.APP_ENV }}-charing-storage/; fi
 
             sudo docker run \
               -p ${{ env.APP_PORT }}:8000 \

@@ -98,7 +98,7 @@ class AmazonInfoController extends Controller
                 $productBatch->save();
 
                 # ファイルの処理Queue
-                ProcessAsinFile::dispatch($asinFileAbsolutePath, $productBatch, $my, "extract_amazon_info", null)->onQueue("process_asin_file_" . $my->getJobSuffix());
+                ProcessAsinFile::dispatch($asinFileAbsolutePath, $productBatch, $my, "extract_amazon_info", null, false)->onQueue("process_asin_file_" . $my->getJobSuffix());
 
                 return redirect()->route('amazon_info.index')->with('success', 'Amazon情報取得ジョブが登録されました。');
             } else {

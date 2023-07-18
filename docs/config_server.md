@@ -5,21 +5,23 @@
 # ssh to server
 ssh ubuntu@35.73.227.145
 
-############## mount share volume ############## 
-# ref.: https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ebs-using-volumes.html
-sudo lsblk -f
-sudo mkdir /data
-sudo mount /dev/nvme1n1 /data
-sudo blkid
+############## mount efs #############
+# ref: https://qiita.com/OPySPGcLYpJE0Tc/items/adb807df4c4fb305006b
+# ref: https://docs.aws.amazon.com/zh_cn/efs/latest/ug/installing-amazon-efs-utils.html
+# ref: https://qiita.com/SSMU3/items/fe2f6b74ab363b39e2f6
+sudo apt-get update
+sudo apt-get -y install git binutils
+git clone https://github.com/aws/efs-utils
+cd efs-utils/
+./build-deb.sh
+sudo apt-get -y install ./build/amazon-efs-utils*deb
+sudo mkdir /mnt/efs
+sudo mount -t efs fs-0c70fb54449a22558:/ /mnt/efs
+cat /mnt/efs/touch.txt
 sudo nano /etc/fstab
-# UUID=06754bd0-0f44-46ad-a1f6-0fb99167f0df  /data  xfs  defaults,nofail  0  2
-## Test Auto Mount
-sudo umount /data
-sudo mount -a
-## reboot
+#-># fs-0c70fb54449a22558:/ /mnt/efs efs defaults,_netdev 0 0
 sudo reboot
-## Test Auto Mount
-tail /data/test.txt
+cat /mnt/efs/touch.txt
 
 ############## Swap Memory ##############
 # ref.: https://www.digitalocean.com/community/tutorials/how-to-add-swap-space-on-ubuntu-20-04-ja

@@ -14,8 +14,8 @@ env:
   APP_ENV: prd
   APP_PORT: 5000
   DOCKER_COMMON_ENVS: |- 
-    -v /data/prd-charing-storage/app:/var/www/html/storage/app \
-    -v /data/prd-charing-storage/logs:/var/www/html/storage/logs \
+    -v /mnt/efs/prd-charing-storage/app:/var/www/html/storage/app \
+    -v /mnt/efs/prd-charing-storage/logs:/var/www/html/storage/logs \
     -e APP_NAME=Charing \
     -e APP_KEY=${{secrets.APP_KEY_PRD}} \
     -e APP_DEBUG=true \
@@ -161,7 +161,7 @@ jobs:
             sudo docker stop $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-")
             sudo docker rm $(sudo docker ps -a -q --filter="name=${{ env.APP_ENV }}-")
 
-            if ! [ -d /data/${{ env.APP_ENV }}-charing-storage/ ]; then mkdir /data/${{ env.APP_ENV }}-charing-storage/; fi
+            if ! [ -d /mnt/efs/${{ env.APP_ENV }}-charing-storage/ ]; then mkdir /mnt/efs/${{ env.APP_ENV }}-charing-storage/; fi
 
             sudo docker run \
               -p ${{ env.APP_PORT }}:8000 \
