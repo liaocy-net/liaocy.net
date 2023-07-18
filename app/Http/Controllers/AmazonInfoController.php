@@ -153,7 +153,7 @@ class AmazonInfoController extends Controller
             $spreadsheet = UtilityService::getProductsExcel($products);
 
             header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-            header('Content-Disposition: attachment; filename="products.xlsx"');
+            header('Content-Disposition: attachment; filename="' . $productBatch->filename . '.xlsx"');
             header('Cache-Control: max-age=0');
             header('Cache-Control: max-age=1');
             header('Last-Modified: ' . gmdate('D, d M Y H:i:s') . ' GMT');
