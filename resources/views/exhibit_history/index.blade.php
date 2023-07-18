@@ -196,14 +196,12 @@
             // メッセージ
             html += '<td>';
             if (history.has_feed_document) {
-                html += '<a href="{{route("exhibit_history.download_batch_feed_document_tsv")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">出品ファイル</a> ';
+                html += '<a href="{{route("exhibit_history.download_batch_feed_document_tsv")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">出品ファイル</a><br />';
             }
-            if (history.has_message && history.end_at) {
-                if (history.patch_status == "ASINファイル処理失敗") {
-                    html += '<a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">エラー情報</a>';
-                } else {
-                    html += '<br /><a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">出品結果</a>';
-                }
+            if (history.has_message) {
+                html += '<a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">';
+                html += 'メッセージ';
+                html += '</a>';
             }
             html += '</td>';
             

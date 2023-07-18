@@ -4,15 +4,14 @@ namespace App\Services;
 
 require_once(__DIR__ . "/../../vendor/autoload.php");
 
-use YConnect\Constant\ResponseType;
-use YConnect\Credential\ClientCredential;
-use YConnect\YConnectClient;
-use App\Models\Product;
 use App\Models\AmazonProductImage;
-use Illuminate\Support\Facades\Storage;
-use ZipArchive;
+use App\Models\Product;
 use CURLFile;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
+use YConnect\Credential\ClientCredential;
+use YConnect\YConnectClient;
+use ZipArchive;
 
 class YahooService
 {
@@ -150,6 +149,9 @@ class YahooService
         curl_close($ch);
         if ($httpcode == 200) {
             $returnStr = "OK";
+        } elseif ($httpcode == 503) {
+            $returnStr = "Yahoo JP サーバがメンテナンス中";
+            Log::warning("Yahoo uploadItemImagePack API Server Error Code: " . $httpcode);
         } else {
             throw new \Exception("Yahoo uploadItemImagePack API Error Code: " . $httpcode);
         }
@@ -215,6 +217,9 @@ class YahooService
                     $returnStr = $xml->Result->Error[0]->Message;
                 }
             }
+        } elseif($httpcode == 503) {
+            $returnStr = "Yahoo JP サーバがメンテナンス中";
+            Log::warning("Yahoo uploadItemImagePack API Server Error Code: " . $httpcode);
         } else {
             throw new \Exception("Yahoo itemRegist API Error Code: " . $httpcode . "RESULT: " . $result . "; ERROR: " . $err);
         }

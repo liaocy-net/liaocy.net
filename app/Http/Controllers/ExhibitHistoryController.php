@@ -471,7 +471,7 @@ class ExhibitHistoryController extends Controller
 
                         $product->save();
 
-                        array_push($exhibitToYahooJPJobs, new ExhibitToYahooJP($product));
+                        array_push($exhibitToYahooJPJobs, new ExhibitToYahooJP($product, $exhibitToYahooJPProductBatch->id));
                     }
 
                     $batch = Bus::batch($exhibitToYahooJPJobs)->name("exhibit_to_yahoo_jp")->then(function (Batch $batch) {

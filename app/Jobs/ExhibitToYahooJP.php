@@ -3,15 +3,16 @@
 namespace App\Jobs;
 
 use AmazonPHP\SellingPartner\Model\Feeds\Feed;
+use App\Models\Product;
+use App\Models\ProductBatch;
+use App\Services\FeedTypes;
+use App\Services\YahooService;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Services\YahooService;
-use App\Services\FeedTypes;
-use App\Models\Product;
 use Throwable;
 
 class ExhibitToYahooJP implements ShouldQueue
@@ -19,22 +20,24 @@ class ExhibitToYahooJP implements ShouldQueue
     use Batchable, Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected Product $product;
+    protected $productBatchId;
 
     /**
      * The number of times the job may be attempted.
      *
      * @var int
      */
-    public $tries = 5;
+    public $tries = 2;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(Product $product)
+    public function __construct(Product $product, $productBatchId)
     {
         $this->product = $product;
+        $this->productBatchId = $productBatchId;
     }
 
     /**
@@ -51,8 +54,17 @@ class ExhibitToYahooJP implements ShouldQueue
         $user = $this->product->user;
 
         $yahooService = new YahooService($user);
-        $yahooService->editItem($this->product);
-        $yahooService->uploadItemImagePack($this->product);
+        $editItemResult = $yahooService->editItem($this->product);
+        $productBatch = ProductBatch::where('id', $this->productBatchId)->first();
+        if (!isset($productBatch->message)) {
+            $productBatch->message = "";
+        } 
+        $productBatch->message .= $this->product->asin . ": " . $editItemResult . "\n";
+        $productBatch->save();
+
+        if ($editItemResult == 'OK') {
+            $yahooService->uploadItemImagePack($this->product);
+        }
     }
 
     /**
