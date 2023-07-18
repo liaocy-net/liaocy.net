@@ -23,7 +23,7 @@ env:
     -e APP_KEY=${{secrets.APP_KEY_STG}} \
     -e APP_DEBUG=true \
     -e APP_URL=https://test.charing.biz/ \
-    -e LOG_CHANNEL=stack \
+    -e LOG_CHANNEL=daily \
     -e LOG_DEPRECATIONS_CHANNEL=null \
     -e LOG_LEVEL=debug \
     -e DB_CONNECTION=mysql \
