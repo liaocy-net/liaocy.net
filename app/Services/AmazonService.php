@@ -386,7 +386,6 @@ class AmazonService
             "商品コードのタイプ",
             "商品のコンディション",
             "商品のコンディション説明",
-            "ポイント",
             "リードタイム(出荷までにかかる作業日数)"],
             ["sku",
             "price",
@@ -400,6 +399,9 @@ class AmazonService
         foreach ($headers as $header) {
             $tsv .= join("\t", $header) . "\n";
         }
+        $coditionNote = $this->user->amazon_exhibit_comment_group;
+        // remove newline
+        $coditionNote = str_replace(array("\r\n", "\r", "\n", "\t"), '', $coditionNote);
         foreach ($products as $product) {
             $contents = [
                 $product->sku,
@@ -408,11 +410,12 @@ class AmazonService
                 $product->asin,
                 "ASIN",
                 "New",
-                "",
+                $coditionNote,
                 $product->amazon_jp_leadtime_to_ship,
             ];
             $tsv .= join("\t", $contents) . "\n";
         }
+        var_dump($tsv);
         return $tsv;
     }
 

@@ -142,7 +142,7 @@ class SettingController extends Controller
                     'amazon_lead_time_more' => ['required', 'integer', 'min:1', 'max:100', 'gte:amazon_lead_time_less'],
                     'amazon_lead_time_prime' => ['required', 'integer', 'min:0', 'max:999999'],
                     'amazon_white_list_brand' => ['required', 'integer', 'min:0', 'max:999999'],
-                    'amazon_exhibit_comment_group' => ['nullable', 'string', 'max:99999'],
+                    'amazon_exhibit_comment_group' => ['nullable', 'string', 'max:160'],
                     'amazon_price_cut' => ['nullable', 'integer',  'min:1', 'max:99999'],
                     'global_amazon_lead_time' => ['integer',  'min:1', 'max:99999'],
                 ]);

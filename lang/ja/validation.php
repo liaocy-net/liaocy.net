@@ -157,6 +157,7 @@ return [
         'newpassword_confirmation' => '新しいパスワード（確認用）',
         'exhibit_to' => '出品先',
         'yahoo_jp_category_id' => 'YahooJPの出品カテゴリー',
+        'amazon_exhibit_comment_group' => 'Amazon 出品コメント',
     ],
 
 ];

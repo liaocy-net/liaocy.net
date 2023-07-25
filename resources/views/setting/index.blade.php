@@ -295,7 +295,7 @@
                                 <label class="form-label" for="amazon_exhibit_comment">Amazon 出品コメント</label>
                                 <div class="input-group" id="amazon_exhibit_comment_group">
                                     <span class="input-group-text col-6 text-wrap text-muted text-start">{{ $my->amazon_exhibit_comment_group }}</span>
-                                    <textarea class="form-control" id="amazon_exhibit_comment_group" name="amazon_exhibit_comment_group" rows="5" maxlength="2000">{{ $my->amazon_exhibit_comment_group }}</textarea>
+                                    <textarea class="form-control" id="amazon_exhibit_comment_group" name="amazon_exhibit_comment_group" rows="5" maxlength="160">{{ $my->amazon_exhibit_comment_group }}</textarea>
                                 </div>
                             </div>
 
