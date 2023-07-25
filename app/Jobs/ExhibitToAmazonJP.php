@@ -48,52 +48,51 @@ class ExhibitToAmazonJP implements ShouldQueue
             return;
         }
 
-        try {
-            $user = $this->productBatch->user;
+        $user = $this->productBatch->user;
 
-            $client_id = env("AMAZON_JP_CLIENT_ID");
-            $client_secret = env("AMAZON_JP_CLIENT_SECRET");
-            $amazon_refresh_token = $user->amazon_jp_refresh_token;
-            $amazonService = new AmazonService(
-                $client_id,
-                $client_secret,
-                $amazon_refresh_token,
-                $user,
-                "jp",
-            );
+        $client_id = env("AMAZON_JP_CLIENT_ID");
+        $client_secret = env("AMAZON_JP_CLIENT_SECRET");
+        $amazon_refresh_token = $user->amazon_jp_refresh_token;
+        $amazonService = new AmazonService(
+            $client_id,
+            $client_secret,
+            $amazon_refresh_token,
+            $user,
+            "jp",
+        );
 
-            // Exhibit and save feed_id
-            if (empty($this->productBatch->feed_id)) { // has not exhibited yet
-                $products = $this->productBatch->products;
+        // Exhibit and save feed_id
+        if (empty($this->productBatch->feed_id)) { // has not exhibited yet
+            $products = $this->productBatch->products;
 
-                $results = $amazonService->CreateFeedWithFile($products, FeedTypes::POST_FLAT_FILE_LISTINGS_DATA);
-                $feedId = $results["feedResults"]->getFeedId();
-                $this->productBatch->feed_id = $feedId;
-                $this->productBatch->feed_document = $results["feedDocument"];
-                $this->productBatch->save();
-                var_dump($this->productBatch->feed_id);
-            }
-
-            $feedId = $this->productBatch->feed_id;
-            $this->productBatch->message = "AmazonJP出品状態確認がタイムアウトしました。Amazonセーラーコンソールで確認してください。";
+            $results = $amazonService->CreateFeedWithFile($products, FeedTypes::POST_FLAT_FILE_LISTINGS_DATA);
+            $feedId = $results["feedResults"]->getFeedId();
+            $this->productBatch->feed_id = $feedId;
+            $this->productBatch->feed_document = $results["feedDocument"];
             $this->productBatch->save();
-
-            $url = $amazonService->getFeedDocument($feedId)->getUrl();
-            $message = file_get_contents($url);
-            $message = mb_convert_encoding($message,"utf-8","sjis");
-            var_dump($message);
-            $this->productBatch->message = $message;
-            $this->productBatch->save();
-
-        } catch (Throwable $e) {
-            $attempts = $this->attempts();
-            var_dump($attempts);
-            if ($attempts < $this->tries) {
-                $this->release(1 * 60 + ($attempts - 1) * 1 * 60);
-            } else {
-                throw $e;
-            }
+            var_dump($this->productBatch->feed_id);
         }
+
+        $feedId = $this->productBatch->feed_id;
+        $this->productBatch->message = "AmazonJP出品状態確認がタイムアウトしました。Amazonセーラーコンソールで確認してください。";
+        $this->productBatch->save();
+
+        $url = $amazonService->getFeedDocument($feedId)->getUrl();
+        $message = file_get_contents($url);
+        $message = mb_convert_encoding($message,"utf-8","sjis");
+        var_dump($message);
+        $this->productBatch->message = $message;
+        $this->productBatch->save();
+    }
+
+    /**
+     * ジョブを再試行する前に待機する秒数を計算
+     *
+     * @return array
+     */
+    public function backoff()
+    {
+        return [1 * 60, 2 * 60, 5 * 60, 10 * 60, 20 * 60, 40 * 60, 60 * 60];
     }
 
     public function failed($exception)

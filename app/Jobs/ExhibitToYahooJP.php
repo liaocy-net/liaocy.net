@@ -27,7 +27,7 @@ class ExhibitToYahooJP implements ShouldQueue
      *
      * @var int
      */
-    public $tries = 2;
+    public $tries = 5;
 
     /**
      * Create a new job instance.
@@ -74,7 +74,7 @@ class ExhibitToYahooJP implements ShouldQueue
      */
     public function backoff()
     {
-        return [1, 5, 10];
+        return [1 * 60, 5 * 60, 10 * 60, 20 * 60, 40 * 60, 60 * 60];
     }
 
     public function failed($exception)

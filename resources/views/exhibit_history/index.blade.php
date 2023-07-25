@@ -176,12 +176,19 @@
             
             // ASIN数
             html += '<td>';
-            html += history.total_jobs ? history.total_jobs : "-"; 
+            if (history.action == 'exhibit_to_amazon_jp') {
+                html += "-";
+            } else {
+                html += history.total_jobs ? history.total_jobs : "-"; 
+            }
+            
             html += '</td>';
 
             // 成功件数
             html += '<td>';
-            if (history.patch_status == '取得停止') {
+            if (history.action == 'exhibit_to_amazon_jp') {
+                html += "-";
+            } else if (history.patch_status == '取得停止') {
                 html += '取得停止済み';
             } else {
                 html += history.total_jobs ? (history.total_jobs - history.pending_jobs) : "-";
@@ -198,7 +205,7 @@
             if (history.has_feed_document) {
                 html += '<a href="{{route("exhibit_history.download_batch_feed_document_tsv")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">出品ファイル</a><br />';
             }
-            if (history.has_message) {
+            if (history.has_message && history.patch_status != '出品中') {
                 html += '<a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">';
                 html += 'メッセージ';
                 html += '</a>';
