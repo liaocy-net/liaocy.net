@@ -110,7 +110,7 @@ class UtilityService
             "imgurl10",
             "isAmazon_jp",
             "isAmazon_us",
-            "materialtype_us",
+            // "materialtype_us",
             "maximumHours_jp",
             "maximumHours_us",
             "minimumHours_jp",
@@ -120,13 +120,13 @@ class UtilityService
             "nc_us",
             "np_jp",
             "np_us",
-            "pp_jp",
+            // "pp_jp",
             "pp_us",
             "rankid_jp",
             "rank_jp",
             "rank_us",
-            "sellerFeedbackCount",
-            "sellerFeedbackRating",
+            // "sellerFeedbackCount",
+            // "sellerFeedbackRating",
             "sellerId",
             "shippingcost",
             "size_h_us",
@@ -145,55 +145,56 @@ class UtilityService
         $sheet->fromArray($headers, null, 'A1');
 
         foreach($products as $index => $product){
-            $sheet->setCellValue('A' . ($index + 2), $product->asin);
-            $sheet->setCellValue('B' . ($index + 2), $product->ap_jp);
-            $sheet->setCellValue('C' . ($index + 2), $product->title_jp);
-            $sheet->setCellValue('D' . ($index + 2), $product->title_us);
-            $sheet->setCellValue('E' . ($index + 2), $product->brand_jp);
-            $sheet->setCellValue('F' . ($index + 2), $product->brand_us);
-            $sheet->setCellValue('G' . ($index + 2), $product->cate_us);
-            $sheet->setCellValue('H' . ($index + 2), $product->color_us);
-            $sheet->setCellValue('I' . ($index + 2), $product->cp_jp);
-            $sheet->setCellValue('J' . ($index + 2), $product->cp_point);
-            $sheet->setCellValue('K' . ($index + 2), $product->cp_us);
-            $sheet->setCellValue('L' . ($index + 2), $product->img_url_01);
-            $sheet->setCellValue('M' . ($index + 2), $product->img_url_02);
-            $sheet->setCellValue('N' . ($index + 2), $product->img_url_03);
-            $sheet->setCellValue('O' . ($index + 2), $product->img_url_04);
-            $sheet->setCellValue('P' . ($index + 2), $product->img_url_05);
-            $sheet->setCellValue('Q' . ($index + 2), $product->img_url_06);
-            $sheet->setCellValue('R' . ($index + 2), $product->img_url_07);
-            $sheet->setCellValue('S' . ($index + 2), $product->img_url_08);
-            $sheet->setCellValue('T' . ($index + 2), $product->img_url_09);
-            $sheet->setCellValue('U' . ($index + 2), $product->img_url_10);
-            $sheet->setCellValue('V' . ($index + 2), $product->is_amazon_jp);
-            $sheet->setCellValue('W' . ($index + 2), $product->is_amazon_us);
-            $sheet->setCellValue('X' . ($index + 2), $product->material_type_us);
-            $sheet->setCellValue('Y' . ($index + 2), (is_null($product->availability_type_jp) || $product->availability_type_jp == "NOW") ? $product->maximum_hours_jp : null);
-            $sheet->setCellValue('Z' . ($index + 2), (is_null($product->availability_type_us) || $product->availability_type_us == "NOW") ? $product->maximum_hours_us : null);
-            $sheet->setCellValue('AA' . ($index + 2), (is_null($product->availability_type_jp) || $product->availability_type_jp == "NOW") ? $product->minimum_hours_jp : null);
-            $sheet->setCellValue('AB' . ($index + 2), (is_null($product->availability_type_us) || $product->availability_type_us == "NOW") ? $product->minimum_hours_us : null);
-            $sheet->setCellValue('AC' . ($index + 2), $product->model_us);
-            $sheet->setCellValue('AD' . ($index + 2), is_null($product->nc_jp) ? -1 : $product->nc_jp);
-            $sheet->setCellValue('AE' . ($index + 2), is_null($product->nc_us) ? -1 : $product->nc_us);
-            $sheet->setCellValue('AF' . ($index + 2), $product->np_jp);
-            $sheet->setCellValue('AG' . ($index + 2), $product->np_us);
-            $sheet->setCellValue('AH' . ($index + 2), $product->pp_jp);
-            $sheet->setCellValue('AI' . ($index + 2), $product->pp_us);
-            $sheet->setCellValue('AJ' . ($index + 2), $product->rank_id_jp);
-            $sheet->setCellValue('AK' . ($index + 2), $product->rank_jp);
-            $sheet->setCellValue('AL' . ($index + 2), $product->rank_us);
-            $sheet->setCellValue('AM' . ($index + 2), $product->seller_feedback_count);
-            $sheet->setCellValue('AN' . ($index + 2), $product->seller_feedback_rating);
-            $sheet->setCellValue('AO' . ($index + 2), $product->seller_id);
-            $sheet->setCellValue('AP' . ($index + 2), $product->shipping_cost);
-            $sheet->setCellValue('AQ' . ($index + 2), is_null($product->size_h_us) ? null : self::convertCmToInch($product->size_h_us));
-            $sheet->setCellValue('AR' . ($index + 2), is_null($product->size_l_us) ? null : self::convertCmToInch($product->size_l_us));
-            $sheet->setCellValue('AS' . ($index + 2), is_null($product->size_w_us) ? null : self::convertCmToInch($product->size_w_us));
-            $sheet->setCellValue('AT' . ($index + 2), $product->size_us);
-            $sheet->setCellValue('AU' . ($index + 2), is_null($product->weight_us) ? null : self::convertKgToLbs($product->weight_us));
-            $sheet->setCellValue('AV' . ($index + 2), $product->availability_type_us);
-            $sheet->setCellValue('AW' . ($index + 2), $product->availability_type_jp);
+            $columnNumber = 1;
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->asin);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->ap_jp);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->title_jp);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->title_us);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->brand_jp);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->brand_us);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->cate_us);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->color_us);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->cp_jp);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->cp_point);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->cp_us);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->img_url_01);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->img_url_02);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->img_url_03);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->img_url_04);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->img_url_05);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->img_url_06);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->img_url_07);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->img_url_08);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->img_url_09);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->img_url_10);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->is_amazon_jp);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->is_amazon_us);
+            // $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->material_type_us);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], (is_null($product->availability_type_jp) || $product->availability_type_jp == "NOW") ? $product->maximum_hours_jp : null);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], (is_null($product->availability_type_us) || $product->availability_type_us == "NOW") ? $product->maximum_hours_us : null);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], (is_null($product->availability_type_jp) || $product->availability_type_jp == "NOW") ? $product->minimum_hours_jp : null);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], (is_null($product->availability_type_us) || $product->availability_type_us == "NOW") ? $product->minimum_hours_us : null);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->model_us);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], is_null($product->nc_jp) ? -1 : $product->nc_jp);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], is_null($product->nc_us) ? -1 : $product->nc_us);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->np_jp);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->np_us);
+            // $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->pp_jp);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->pp_us);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->rank_id_jp);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->rank_jp);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->rank_us);
+            // $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->seller_feedback_count);
+            // $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->seller_feedback_rating);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->seller_id);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->shipping_cost);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], is_null($product->size_h_us) ? null : self::convertCmToInch($product->size_h_us));
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], is_null($product->size_l_us) ? null : self::convertCmToInch($product->size_l_us));
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], is_null($product->size_w_us) ? null : self::convertCmToInch($product->size_w_us));
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->size_us);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], is_null($product->weight_us) ? null : self::convertKgToLbs($product->weight_us));
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->availability_type_us);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->availability_type_jp);
         }
         return $spreadsheet;
     }
