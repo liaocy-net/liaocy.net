@@ -86,7 +86,7 @@ class ProcessAsinFile implements ShouldQueue
                     array_push($asins, $row[0]);
                 }
             }
-        } else if ($asinFileExtension === "csv") {
+        } else if ($asinFileExtension === "csv" || $asinFileExtension === "txt") {
             $file = new SplFileObject($this->asinFileAbsolutePath);
             $file->setFlags(SplFileObject::READ_CSV);
             foreach ($file as $rowIndex => $row) {
@@ -109,7 +109,7 @@ class ProcessAsinFile implements ShouldQueue
                 }
             }
         } else {
-            throw new \Exception("不適切な拡張子です。CSVを選択してください。");
+            throw new \Exception("不適切な拡張子 " . $asinFileExtension . " です。CSVを選択してください。");
         }
         $extractAmazonInfos = array();
         foreach ($asins as $asin) {
