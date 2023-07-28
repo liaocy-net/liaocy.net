@@ -253,7 +253,7 @@
                 }
 
                 html += '<td>' + (product.size_l_us ? product.size_l_us : '-') + '<br />' + (product.size_w_us ? product.size_w_us : '-') + '<br />' + (product.size_h_us ? product.size_h_us : '-') + '</td>';
-                html += '<td>' + (product.weight_us ? product.weight_us : '-') + '</td>';
+                html += '<td>' + (product.weight_us ? (Math.round(product.weight_us * 10) / 10 ) : '-') + '</td>';
                 html += '<td>' + product.can_be_exhibit_to_amazon_jp_message + '</td>';
                 html += '</tr>';
             });
