@@ -63,7 +63,7 @@ env:
     -e VITE_PUSHER_PORT="" \
     -e VITE_PUSHER_SCHEME="" \
     -e VITE_PUSHER_APP_CLUSTER="" \
-    -e PAGE_MAX_LIMIT=50 \
+    -e PAGE_MAX_LIMIT=200 \
     -e IAM_ARN=${{secrets.IAM_ARN_PRD}} \
     -e IAM_ACCESS_KEY=${{secrets.IAM_ACCESS_KEY_PRD}} \
     -e IAM_SECRECT_KEY=${{secrets.IAM_SECRECT_KEY_PRD}} \
