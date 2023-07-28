@@ -517,7 +517,7 @@ class UtilityService
 
 
         // 仕入れ価格が取得できません
-        if ($product->cp_us == null && $product->np_us == null) {
+        if (self::getPurchasePriceUS($product) && $product->np_us == null) {
             return array(
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
@@ -526,7 +526,7 @@ class UtilityService
         }
 
         // 仕入れ価格よりも低い
-        if ($product->cp_us < $user->common_purchase_price_from) {
+        if (self::getPurchasePriceUS($product) < $user->common_purchase_price_from) {
             return array(
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
@@ -535,7 +535,7 @@ class UtilityService
         }
 
         // 仕入れ価格よりも高い
-        if ($product->cp_us > $user->common_purchase_price_to) {
+        if (self::getPurchasePriceUS($product) > $user->common_purchase_price_to) {
             return array(
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
@@ -648,7 +648,7 @@ class UtilityService
 
 
         // 仕入れ価格が取得できません
-        if ($product->cp_us == null) {
+        if (self::getPurchasePriceUS($product) == null) {
             return array(
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
@@ -657,7 +657,7 @@ class UtilityService
         }
 
         // 仕入れ価格よりも低い
-        if ($product->cp_us < $user->common_purchase_price_from) {
+        if (self::getPurchasePriceUS($product) < $user->common_purchase_price_from) {
             return array(
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
@@ -666,7 +666,7 @@ class UtilityService
         }
 
         // 仕入れ価格よりも高い
-        if ($product->cp_us > $user->common_purchase_price_to) {
+        if (self::getPurchasePriceUS($product) > $user->common_purchase_price_to) {
             return array(
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
