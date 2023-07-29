@@ -214,6 +214,15 @@
             search_sort_order: $('#search_sort_order').val(),
         }, function(data) {
             let html = '';
+            data.data.sort((a, b) => {
+                if (a.can_be_exhibit_to_yahoo_jp && !b.can_be_exhibit_to_yahoo_jp) {
+                    return -1;
+                } else if (!a.can_be_exhibit_to_yahoo_jp && b.can_be_exhibit_to_yahoo_jp) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            });
             data.data.forEach(product => {
                 if (product.can_be_exhibit_to_yahoo_jp) {
                     html += '<tr>';
