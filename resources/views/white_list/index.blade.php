@@ -25,7 +25,7 @@
             <div class="card-body">
 
                 <div class="mb-4">
-                    <h5 class="fw-bold">Amazon ホワイトリスト設定</h5>
+                    <h5 class="fw-bold">Amazon US ホワイトリスト設定</h5>
 
                     <div class="">
                         <div class="row mb-3">

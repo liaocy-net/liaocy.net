@@ -83,7 +83,7 @@
                                         <th class="" onclick="alert('here')">ASIN</th>
                                         <th>画像</th>
                                         <th class="">タイトル</th>
-                                        <th class="">ブランド</th>
+                                        <th class="">ブランド(US)</th>
                                         <th class="">仕入価格(USD)</th>
                                         <th class="">最低利益価格(JPY)</th>
                                         <th class="">最低利益率価格(JPY)</th>
@@ -108,7 +108,7 @@
                                         <th class="" onclick="alert('here')">ASIN</th>
                                         <th>画像</th>
                                         <th class="">タイトル</th>
-                                        <th class="">ブランド</th>
+                                        <th class="">ブランド(US)</th>
                                         <th class="">仕入価格(USD)</th>
                                         <th class="">最低利益価格(JPY)</th>
                                         <th class="">最低利益率価格(JPY)</th>
@@ -239,7 +239,7 @@
                 html += '<td>' + product.asin + '<br />' + '<a target="_blank" href="https://www.amazon.com/dp/' + product.asin + '">US</a>' + '</td>';
                 html += '<td><img style="max-width:50px;" src="' + product.img_url_01 + '" /></td>';
                 html += '<td>' + (product.title_jp ? product.title_jp : '-') + '</div></td>';
-                html += '<td>' + (product.brand_jp ? product.brand_jp : '-') + '</div></td>';
+                html += '<td>' + (product.brand_us ? product.brand_us : '-') + '</div></td>';
 
                 html += '<td>' + (product.purchase_price_us ? product.purchase_price_us : '-') + '</td>';
 

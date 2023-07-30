@@ -460,12 +460,12 @@ class UtilityService
         
         // ブランドがホワイトリストに入っているか
         $whiteListCount = WhiteList::where('user_id', $user->id)->count();
-        $whiteList = WhiteList::where('user_id', $user->id)->where('brand', $product->brand_jp)->first();
+        $whiteList = WhiteList::where('user_id', $user->id)->where('brand', $product->brand_us)->first();
         if ($whiteListCount > 0 && !$whiteList) {
             return array(
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
-                'message' => 'ブランドがホワイトリストに入っていません'
+                'message' => 'Amazon US ブランドがホワイトリストに入っていません'
             );
         }
 
