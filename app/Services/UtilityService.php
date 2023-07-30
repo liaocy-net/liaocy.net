@@ -448,6 +448,15 @@ class UtilityService
                 'message' => 'AmazonJP出品から削除されました'
             );
         }
+
+        // 仕入れ価格が取得できません。
+        if(self::getPurchasePriceUS($product) == null){
+            return array(
+                'canBeExhibit' => false,
+                'exhibitPrice' => null,
+                'message' => '仕入れ価格が取得できません'
+            );
+        }
         
         // ブランドがホワイトリストに入っているか
         $whiteListCount = WhiteList::where('user_id', $user->id)->count();
