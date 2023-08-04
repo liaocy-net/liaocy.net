@@ -310,6 +310,10 @@ class AmazonService
             $result['is_prime'] = $office->getPrimeInformation() ? $office->getPrimeInformation()->getIsPrime() : null;
             $result['shipping_cost'] = $office->getShipping()->getAmount();
             if ($this->nation == 'jp') {
+                if ($result['cp'] == null && $office->getListingPrice() != null && $office->getListingPrice()->getAmount() != null) {
+                    $result['cp'] = $office->getListingPrice()->getAmount();
+                }
+
                 if($office->getPoints() != null) {
                     $result['ap'] = $office->getPoints()->getPointsNumber();
                     $result['cp_point'] = $office->getPoints()->getPointsNumber();
@@ -327,6 +331,7 @@ class AmazonService
             } else {
                 $result['pp'] = null;
             }
+
             break;
         }
 
