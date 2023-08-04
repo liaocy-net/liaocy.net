@@ -338,11 +338,6 @@ class AmazonService
         return $result;
     }
 
-    public function genSKU()
-    {
-        return strtoupper(md5($this->product->id));
-    }
-
     public function getFeedDocument($feed_id)
     {
         // if(empty($this->feedId)) {
