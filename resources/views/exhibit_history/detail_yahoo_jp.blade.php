@@ -74,7 +74,7 @@
                 <form id="formProductsList" class="mb-3" action="{{route('exhibit_history.process_products')}}" method="POST">
                     <div class="">
                         <h5 class="fw-bold">商品一覧</h5>
-                        <p class="text-muted">Amazon JP に出品されていない商品は非表示にされた</p>
+                        <p class="text-muted">Amazon US に出品されていない商品は出品しません</p>
                         <div id="tab_products" class="table-responsive text-nowrap">
                             <table id="tableProductsList" class="table table-bordered dataTable table-striped text-center text-wrap" style="font-size:12px">
                                 <thead class="table-light">
