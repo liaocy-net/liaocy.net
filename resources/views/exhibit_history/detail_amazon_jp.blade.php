@@ -249,10 +249,10 @@
 
                 html += '<td>' + (product.purchase_price_us ? product.purchase_price_us : '-') + '</td>';
 
-                html += '<td>' + (product.can_be_exhibit_to_amazon_jp ? product.hope_price_jpy : '-') + '</td>';
-                html += '<td>' + (product.can_be_exhibit_to_amazon_jp ? product.min_hope_price_jpy : '-') + '</td>';
-                html += '<td>' + (product.can_be_exhibit_to_amazon_jp ? product.rate_price_jpy : '-') + '</td>';
-                html += '<td>' + (product.can_be_exhibit_to_amazon_jp ? product.min_rate_price_jpy : '-') + '</td>';
+                html += '<td>' + (product.purchase_price_us ? product.hope_price_jpy : '-') + '</td>';
+                html += '<td>' + (product.purchase_price_us ? product.min_hope_price_jpy : '-') + '</td>';
+                html += '<td>' + (product.purchase_price_us ? product.rate_price_jpy : '-') + '</td>';
+                html += '<td>' + (product.purchase_price_us ? product.min_rate_price_jpy : '-') + '</td>';
                 html += '<td>' + (product.cp_jp ? product.cp_jp : '-') + '</td>';
 
                 if (product.can_be_exhibit_to_amazon_jp_price) {

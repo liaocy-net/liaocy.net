@@ -243,8 +243,8 @@
 
                 html += '<td>' + (product.purchase_price_us ? product.purchase_price_us : '-') + '</td>';
 
-                html += '<td>' + (product.can_be_exhibit_to_yahoo_jp ? product.yahoo_jp_min_hope_price_jpy : "-") + '</td>';
-                html += '<td>' + (product.can_be_exhibit_to_yahoo_jp ? product.yahoo_jp_min_rate_price_jpy : "-") + '</td>';
+                html += '<td>' + (product.purchase_price_us ? product.yahoo_jp_min_hope_price_jpy : "-") + '</td>';
+                html += '<td>' + (product.purchase_price_us ? product.yahoo_jp_min_rate_price_jpy : "-") + '</td>';
 
                 if (product.can_be_exhibit_to_yahoo_jp_price) {
                     html += '<td>' + product.can_be_exhibit_to_yahoo_jp_price + '</td>';
