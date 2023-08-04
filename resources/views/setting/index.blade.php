@@ -240,6 +240,7 @@
                             </div>
                             <div class="col-sm-6 mb-3">
                                 <label class="form-label" for="amazon_point_rate">ポイント比率</label>
+                                <p class="small text-muted">＞＞ポイント比率※セラーセントラルでも同率の設定をしてください。</p>
                                 <div class="input-group" id="amazon_point_rate_group">
                                     <span class="input-group-text col-5">{{ $my->amazon_point_rate * 100 }}%</span>
                                     <input type="number" id="amazon_point_rate" name="amazon_point_rate" class="form-control" min="0" max="999999" value="{{ $my->amazon_point_rate * 100 }}"/>
