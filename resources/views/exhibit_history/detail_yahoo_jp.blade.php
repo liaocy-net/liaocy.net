@@ -238,7 +238,7 @@
                 
                 html += '<td>' + product.asin + '<br />' + '<a target="_blank" href="https://www.amazon.com/dp/' + product.asin + '">US</a>' + '</td>';
                 html += '<td><img style="max-width:50px;" src="' + product.img_url_01 + '" /></td>';
-                html += '<td>' + (product.title_jp ? product.title_jp : '-') + '</div></td>';
+                html += '<td>' + (product.title_jp ? product.title_jp : product.title_us) + '</div></td>';
                 html += '<td>' + (product.brand_us ? product.brand_us : '-') + '</div></td>';
 
                 html += '<td>' + (product.purchase_price_us ? product.purchase_price_us : '-') + '</td>';
