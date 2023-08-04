@@ -396,7 +396,7 @@ class ExhibitHistoryController extends Controller
                         $product->amazon_is_in_checklist = false; //Amazon CheckList に入っているかどうか
                         $product->amazon_latest_check_at = Carbon::now(); //最新チェック日時
 
-                        $product->amazon_jp_leadtime_to_ship = Setting::getInt("global_amazon_lead_time", 15);
+                        $product->amazon_jp_leadtime_to_ship = $my->amazon_lead_time_prime;
                         if ($product->maximum_hours_us && $product->maximum_hours_us > $my->amazon_lead_time_more) {
                             $product->amazon_jp_leadtime_to_ship = $my->amazon_lead_time_more;
                         }
