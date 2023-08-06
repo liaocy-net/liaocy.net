@@ -70,11 +70,10 @@
                         </div>
                     </form>
                 </div>
-
                 <form id="formProductsList" class="mb-3" action="{{route('exhibit_history.process_products')}}" method="POST">
                     <div class="">
                         <h5 class="fw-bold">商品一覧</h5>
-                        <p class="text-muted">Amazon US または Amazon JP に出品されていない商品は出品しません</p>
+                        <input type="checkbox" id="donotShowProductCannotExhibit" name="donotShowProductCannotExhibit" class="form-check-input" checked onchange="refresh()" /> 出品可能商品のみ表示
                         <div id="tab_products" class="table-responsive text-nowrap">
                             <table id="tableProductsList" class="table table-bordered dataTable table-striped text-center text-wrap" style="font-size:12px">
                                 <thead class="table-light">
@@ -218,17 +217,9 @@
             title: $('#search_file_title').val(),
             search_sort_column: $('#search_sort_column').val(),
             search_sort_order: $('#search_sort_order').val(),
+            donot_show_product_cannot_exhibit: $('#donotShowProductCannotExhibit').prop('checked') ? 1 : 0,
         }, function(data) {
             let html = '';
-            data.data.sort((a, b) => {
-                if (a.can_be_exhibit_to_amazon_jp && !b.can_be_exhibit_to_amazon_jp) {
-                    return -1;
-                } else if (!a.can_be_exhibit_to_amazon_jp && b.can_be_exhibit_to_amazon_jp) {
-                    return 1;
-                } else {
-                    return 0;
-                }
-            });
             data.data.forEach(product => {
                 if (product.can_be_exhibit_to_amazon_jp) {
                     html += '<tr>';

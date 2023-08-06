@@ -4,22 +4,20 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ExhibitToAmazonJP;
 use App\Jobs\ExhibitToYahooJP;
-use App\Models\JobBatch;
-use App\Models\ProductBatch;
-use Illuminate\Http\Request;
-use App\Models\User;
-use Illuminate\Support\Facades\Validator;
-use PhpParser\Node\Expr\Cast\Array_;
-use App\Services\UtilityService;
 use App\Models\Product;
-use App\Models\Setting;
-use App\Models\ProductExhibitHistory;
-use Illuminate\Support\Facades\Bus;
-use Illuminate\Bus\Batch;
-use Throwable;
-use Carbon\Carbon;
-use Illuminate\Support\Facades\DB;
+use App\Models\ProductBatch;
+use App\Models\User;
+use App\Services\UtilityService;
 use App\Services\YahooService;
+use Carbon\Carbon;
+use Illuminate\Bus\Batch;
+use Illuminate\Http\Request;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 
 class ExhibitHistoryController extends Controller
 {
@@ -219,6 +217,7 @@ class ExhibitHistoryController extends Controller
                 'title' => ['nullable', 'string', 'max:255'],
                 'search_sort_column' => ['required', 'string', 'max:255', 'regex:/^[created|asin|title|price|weight]+$/u'],
                 'search_sort_order' => ['required', 'string', 'max:255', 'regex:/^[asc|desc]+$/u'],
+                'donot_show_product_cannot_exhibit' => ['required', 'boolean'],
             ]);
 
             if ($validator->fails()) {
@@ -273,12 +272,10 @@ class ExhibitHistoryController extends Controller
                 ->select('*')
                 ->where($where)
                 ->orderByRaw($orderByRaw)
-                ->paginate(
-                    $perPage = env("PAGE_MAX_LIMIT", 50), 
-                    $columns = ['*'], 
-                    $pageName = 'page',
-                    $page = $page
-                );
+                ->limit(10000)
+                ->get();
+
+            $data = [];
 
             foreach ($products as $product) {
                 $product->purchase_price_us = UtilityService::getPurchasePriceUS($product);
@@ -291,22 +288,38 @@ class ExhibitHistoryController extends Controller
                 $product->yahoo_jp_min_hope_price_jpy = UtilityService::calYahooJPMinHopePrice($my, $product);
                 $product->yahoo_jp_min_rate_price_jpy = UtilityService::calYahooJPMinRatePrice($my, $product);
 
-                $canBeExhibitToAmazonJP = UtilityService::canBeExhibitToAmazonJP($my, $product);
-                $product->can_be_exhibit_to_amazon_jp = $canBeExhibitToAmazonJP["canBeExhibit"];
-                $product->can_be_exhibit_to_amazon_jp_message = $canBeExhibitToAmazonJP["message"];
-                $product->can_be_exhibit_to_amazon_jp_price = $canBeExhibitToAmazonJP["exhibitPrice"];
-
-                $canBeExhibitToYahooJP = UtilityService::canBeExhibitToYahooJP($my, $product);
-                $product->can_be_exhibit_to_yahoo_jp = $canBeExhibitToYahooJP["canBeExhibit"];
-                $product->can_be_exhibit_to_yahoo_jp_message = $canBeExhibitToYahooJP["message"];
-                $product->can_be_exhibit_to_yahoo_jp_price = $canBeExhibitToYahooJP["exhibitPrice"];
+                if ($request->input('exhibit_to') == 'amazon_jp') {
+                    $canBeExhibitToAmazonJP = UtilityService::canBeExhibitToAmazonJP($my, $product);
+                    $product->can_be_exhibit_to_amazon_jp = $canBeExhibitToAmazonJP["canBeExhibit"];
+                    $product->can_be_exhibit_to_amazon_jp_message = $canBeExhibitToAmazonJP["message"];
+                    $product->can_be_exhibit_to_amazon_jp_price = $canBeExhibitToAmazonJP["exhibitPrice"];
+                    if ($request->input("donot_show_product_cannot_exhibit") && !$product->can_be_exhibit_to_amazon_jp) {
+                        continue;
+                    }
+                }
+                if ($request->input('exhibit_to') == 'yahoo_jp') {
+                    $canBeExhibitToYahooJP = UtilityService::canBeExhibitToYahooJP($my, $product);
+                    $product->can_be_exhibit_to_yahoo_jp = $canBeExhibitToYahooJP["canBeExhibit"];
+                    $product->can_be_exhibit_to_yahoo_jp_message = $canBeExhibitToYahooJP["message"];
+                    $product->can_be_exhibit_to_yahoo_jp_price = $canBeExhibitToYahooJP["exhibitPrice"];
+                    if ($request->input("donot_show_product_cannot_exhibit") && !$product->can_be_exhibit_to_yahoo_jp) {
+                        continue;
+                    }
+                }
+                array_push($data, $product);
             }
-
-            return response()->json($products);
-
+            $data = $this->paginate($data, env("PAGE_MAX_LIMIT", 50), $page);
+            return response()->json($data);
         } catch (\Exception $e) {
             return response($e->getMessage(), 442);
         }
+    }
+
+    public function paginate($items, $perPage = 5, $page = null, $options = [])
+    {
+        $page = $page ?: (Paginator::resolveCurrentPage() ?: 1);
+        $items = $items instanceof Collection ? $items : Collection::make($items);
+        return new LengthAwarePaginator($items->forPage($page, $perPage)->values(), $items->count(), $perPage, $page, $options);
     }
 
     public function processProducts(Request $request) {
