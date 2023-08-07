@@ -191,6 +191,7 @@
                                 </div>
                             </div>
                             <div class="col-sm-6 mb-3">
+                                <p class="small text-muted">　</p>
                                 <label class="form-label" for="amazon_using_sale_commission">販売手数料</label>
                                 <div class="input-group" id="amazon_using_sale_commission_group">
                                     <span class="input-group-text col-5">{{ $my->amazon_using_sale_commission * 100 }}%</span>
@@ -248,6 +249,7 @@
                                 </div>
                             </div>
                             <div class="col-sm-6 mb-3">
+                                <p class="small text-muted">　</p>
                                 <label class="form-label" for="amazon_lead_time_prime">プライムリードタイム</label>
                                 <div class="input-group" id="amazon_lead_time_prime_group">
                                     <span class="input-group-text col-5">{{ $my->amazon_lead_time_prime }}日</span>
@@ -292,6 +294,22 @@
                                     </div>
                                 </div>
                             @endif
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="amazon_jp_should_update_price">Amazon JP 価格自動改定</label>
+                                <div class="input-group" id="amazon_jp_should_update_price">
+                                    <span class="input-group-text col-5">Amazon JP 価格自動改定</span>
+                                    <div class="col-form-label input-group-text col-7">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="amazon_jp_should_update_price" id="amazon_jp_should_update_price_on" value="1" @if ($my->amazon_jp_should_update_price === 1) checked @endif>
+                                            <label class="form-check-label" for="amazon_jp_should_update_price_on">ON</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="amazon_jp_should_update_price" id="amazon_jp_should_update_price_off" value="0" @if ($my->amazon_jp_should_update_price === 0) checked @endif>
+                                            <label class="form-check-label" for="amazon_jp_should_update_price_off">OFF</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-sm-12 mb-3">
                                 <label class="form-label" for="amazon_exhibit_comment">Amazon 出品コメント</label>
                                 <div class="input-group" id="amazon_exhibit_comment_group">
@@ -347,6 +365,7 @@
                                 </div>
                             </div>
                             <div class="col-sm-6 mb-3">
+                                <p class="small text-muted">　</p>
                                 <label class="form-label" for="yahoo_using_sale_commission">販売手数料</label>
                                 <div class="input-group" id="yahoo_using_sale_commission_group">
                                     <span class="input-group-text col-5">{{ $my->yahoo_using_sale_commission * 100 }}%</span>
@@ -371,8 +390,22 @@
                                     </div>
                                 </div>
                             @endif
-
-
+                            <div class="col-sm-6 mb-3">
+                                <label class="form-label" for="yahoo_jp_should_update_price">Yahoo JP 価格自動改定</label>
+                                <div class="input-group" id="yahoo_jp_should_update_price">
+                                    <span class="input-group-text col-5">Yahoo JP 価格自動改定</span>
+                                    <div class="col-form-label input-group-text col-7">
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="yahoo_jp_should_update_price" id="yahoo_jp_should_update_price_on" value="0" @if ($my->yahoo_jp_should_update_price == true) checked @endif>
+                                            <label class="form-check-label" for="yahoo_jp_should_update_price_on">ON</label>
+                                        </div>
+                                        <div class="form-check form-check-inline">
+                                            <input class="form-check-input" type="radio" name="yahoo_jp_should_update_price" id="yahoo_jp_should_update_price_off" value="1" @if ($my->yahoo_jp_should_update_price == false) checked @endif>
+                                            <label class="form-check-label" for="yahoo_jp_should_update_price_off">OFF</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="col-sm-12 mb-3">
                                 <label class="form-label" for="yahoo_exhibit_comment">Yahoo 出品コメント</label>
                                 <div class="input-group" id="yahoo_exhibit_comment_group">

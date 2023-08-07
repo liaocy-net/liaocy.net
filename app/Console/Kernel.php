@@ -110,6 +110,10 @@ class Kernel extends ConsoleKernel
 
             $user = User::find($product_user->user_id);
 
+            if ($user->amazon_jp_should_update_price === 0) {
+                continue;
+            }
+
             $products = Product::where([
                 ["user_id", $product_user->user_id],
                 ["amazon_jp_need_update_exhibit_info", true],
@@ -161,6 +165,10 @@ class Kernel extends ConsoleKernel
         foreach($product_users as $product_user) {
 
             $user = User::find($product_user->user_id);
+
+            if ($user->yahoo_jp_should_update_price === 0) {
+                continue;
+            }
 
             $products = Product::where([
                 ["user_id", $product_user->user_id],

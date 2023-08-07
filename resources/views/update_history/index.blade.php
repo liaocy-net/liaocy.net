@@ -43,6 +43,13 @@
 
                 <div id="tab_amazon" class="mb-4">
                     <h5 class="fw-bold">アマゾン価格改定履歴</h5>
+                    @if ($my->amazon_jp_should_update_price === 1)
+                        <span class="text-success">価格自動改定稼働中</span>
+                    @elseif ($my->amazon_jp_should_update_price === 0)
+                        <span class="text-warning">価格自動改定停止中</span>
+                    @else
+                        <span class="text-danger">エラーが発生しています。管理者に連絡してください。</span>
+                    @endif
                     <div class="table-responsive text-nowrap">
                         <table class="table table-bordered table-striped text-center">
                             <thead class="table-light">
@@ -71,6 +78,13 @@
 
                 <div id="tab_yahoo" class="mb-4">
                     <h5 class="fw-bold">Yahoo価格改定履歴</h5>
+                    @if ($my->yahoo_jp_should_update_price === 1)
+                        <span class="text-success">価格自動改定稼働中</span>
+                    @elseif ($my->yahoo_jp_should_update_price === 0)
+                        <span class="text-warning">価格自動改定停止中</span>
+                    @else
+                        <span class="text-danger">エラーが発生しています。管理者に連絡してください。</span>
+                    @endif
                     <div class="table-responsive text-nowrap">
                         <table class="table table-bordered table-striped text-center">
                             <thead class="table-light">

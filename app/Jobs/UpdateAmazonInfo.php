@@ -59,23 +59,26 @@ class UpdateAmazonInfo implements ShouldQueue
                 $this->product->yahoo_latest_check_at = Carbon::now(); //最新チェック日時
                 $this->product->yahoo_is_in_checklist = false;
                 $this->product->save();
-                //YahooJP出品可能かどうかをチェックする
-                $canBeExhibitToYahooJP = UtilityService::canBeExhibitToYahooJP($user, $this->product);
-                if ($canBeExhibitToYahooJP["canBeExhibit"]) {
-                    $newPrice = $canBeExhibitToYahooJP["exhibitPrice"]; //最新出品価格
 
-                    if ($newPrice != $this->product->yahoo_jp_latest_exhibit_price) {
-                        //出品価格が変更されている場合は、出品価格を更新する
-                        $this->product->yahoo_jp_latest_exhibit_price = $newPrice;
-                        $this->product->yahoo_jp_latest_exhibit_quantity = $user->yahoo_stock;
+                if ($user->yahoo_jp_should_update_price) {
+                    //YahooJP出品可能かどうかをチェックする
+                    $canBeExhibitToYahooJP = UtilityService::canBeExhibitToYahooJP($user, $this->product);
+                    if ($canBeExhibitToYahooJP["canBeExhibit"]) {
+                        $newPrice = $canBeExhibitToYahooJP["exhibitPrice"]; //最新出品価格
+
+                        if ($newPrice != $this->product->yahoo_jp_latest_exhibit_price) {
+                            //出品価格が変更されている場合は、出品価格を更新する
+                            $this->product->yahoo_jp_latest_exhibit_price = $newPrice;
+                            $this->product->yahoo_jp_latest_exhibit_quantity = $user->yahoo_stock;
+                            $this->product->yahoo_jp_need_update_exhibit_info = true;
+                            $this->product->save();
+                        }
+                    } else {
+                        //出品できない場合は、在庫を0にする
+                        $this->product->yahoo_jp_latest_exhibit_quantity = 0;
                         $this->product->yahoo_jp_need_update_exhibit_info = true;
                         $this->product->save();
                     }
-                } else {
-                    //出品できない場合は、在庫を0にする
-                    $this->product->yahoo_jp_latest_exhibit_quantity = 0;
-                    $this->product->yahoo_jp_need_update_exhibit_info = true;
-                    $this->product->save();
                 }
             }
 
@@ -83,23 +86,26 @@ class UpdateAmazonInfo implements ShouldQueue
                 $this->product->amazon_latest_check_at = Carbon::now(); //最新チェック日時
                 $this->product->amazon_is_in_checklist = false;
                 $this->product->save();
-                UtilityService::updateJPAmazonInfo($this->product); //AmazonJP更新要の場合のみ、AmazonJPの情報を更新する
-                //AmazonJP出品可能かどうかをチェックする
-                $canBeExhibitToAmazonJP = UtilityService::canBeExhibitToAmazonJP($user, $this->product);
-                if ($canBeExhibitToAmazonJP["canBeExhibit"]) {
-                    $newPrice = $canBeExhibitToAmazonJP["exhibitPrice"]; //最新出品価格
-                    if ($newPrice != $this->product->amazon_jp_latest_exhibit_price) {
-                        //出品価格が変更されている場合は、出品価格を更新する
-                        $this->product->amazon_jp_latest_exhibit_price = $newPrice;
-                        $this->product->yahoo_jp_latest_exhibit_quantity = $user->amazon_stock;
+
+                if ($user->amazon_jp_should_update_price) {
+                    UtilityService::updateJPAmazonInfo($this->product); //AmazonJP更新要の場合のみ、AmazonJPの情報を更新する
+                    //AmazonJP出品可能かどうかをチェックする
+                    $canBeExhibitToAmazonJP = UtilityService::canBeExhibitToAmazonJP($user, $this->product);
+                    if ($canBeExhibitToAmazonJP["canBeExhibit"]) {
+                        $newPrice = $canBeExhibitToAmazonJP["exhibitPrice"]; //最新出品価格
+                        if ($newPrice != $this->product->amazon_jp_latest_exhibit_price) {
+                            //出品価格が変更されている場合は、出品価格を更新する
+                            $this->product->amazon_jp_latest_exhibit_price = $newPrice;
+                            $this->product->yahoo_jp_latest_exhibit_quantity = $user->amazon_stock;
+                            $this->product->amazon_jp_need_update_exhibit_info = true;
+                            $this->product->save();
+                        }
+                    } else {
+                        //出品できない場合は、在庫を0にする
+                        $this->product->amazon_jp_latest_exhibit_quantity = 0;
                         $this->product->amazon_jp_need_update_exhibit_info = true;
                         $this->product->save();
                     }
-                } else {
-                    //出品できない場合は、在庫を0にする
-                    $this->product->amazon_jp_latest_exhibit_quantity = 0;
-                    $this->product->amazon_jp_need_update_exhibit_info = true;
-                    $this->product->save();
                 }
             }
 

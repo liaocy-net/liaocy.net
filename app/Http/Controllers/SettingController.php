@@ -11,7 +11,6 @@ use App\Models\YahooJpCategory;
 use App\Services\UtilityService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use SplFileObject;
@@ -145,6 +144,7 @@ class SettingController extends Controller
                     'amazon_exhibit_comment_group' => ['nullable', 'string', 'max:160'],
                     'amazon_price_cut' => ['nullable', 'integer',  'min:1', 'max:99999'],
                     'global_amazon_lead_time' => ['integer',  'min:1', 'max:99999'],
+                    'amazon_jp_should_update_price' => ['required', 'integer', 'min:0', 'max:1'],
                 ]);
 
                 if ($validator->fails()) {
@@ -189,6 +189,7 @@ class SettingController extends Controller
                 $my->amazon_white_list_brand = $params["amazon_white_list_brand"];
                 $my->amazon_exhibit_comment_group = $params["amazon_exhibit_comment_group"];
                 $my->amazon_price_cut = $params["amazon_price_cut"];
+                $my->amazon_jp_should_update_price = $params["amazon_jp_should_update_price"];
                 $my->save();
 
                 return redirect()->route('setting.index', ['#divAmazonSetting'])->with('success', 'Amazon設定を更新しました。');
@@ -201,6 +202,7 @@ class SettingController extends Controller
                     'yahoo_using_sale_commission' => ['required', 'integer', 'min:0', 'max:100'],
                     'yahoo_stock' => ['required', 'integer', 'min:0', 'max:999999'],
                     'yahoo_exhibit_comment_group' => ['required', 'string', 'max:99999'],
+                    'yahoo_jp_should_update_price' => ['required', 'integer', 'min:0', 'max:1'],
                 ]);
 
                 if ($validator->fails()) {
@@ -213,6 +215,7 @@ class SettingController extends Controller
                 $my->yahoo_using_sale_commission = $params["yahoo_using_sale_commission"] / 100;
                 $my->yahoo_stock = $params["yahoo_stock"];
                 $my->yahoo_exhibit_comment_group = $params["yahoo_exhibit_comment_group"];
+                $my->yahoo_jp_should_update_price = $params["yahoo_jp_should_update_price"];
                 $my->save();
 
                 if ($request->hasFile('yahoo_category')) {
