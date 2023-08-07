@@ -61,8 +61,8 @@ class ExhibitHistoryController extends Controller
                 array_push($where, ['filename', 'like', '%' . $request->input('filename') . '%']);
             }
             if ($request->input('period_from') && $request->input('period_to')) {
-                array_push($where, ['product_batches.created_at', '>=', $request->input('period_from')]);
-                array_push($where, ['product_batches.created_at', '<=', $request->input('period_to')]);
+                array_push($where, ['product_batches.created_at', '>=', $request->input('period_from') . ' 00:00:00']);
+                array_push($where, ['product_batches.created_at', '<=', $request->input('period_to') . ' 23:59:59']);
             }
 
             if ($platform == "amazon") {
