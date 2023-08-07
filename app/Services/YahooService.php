@@ -159,14 +159,14 @@ class YahooService
         return $returnStr;
     }
     
-
+    // YahooJP商品管理番号生成
     private function getItemCode($product)
     {
         $itemCode = $product->asin;
         if (empty($itemCode)) {
             throw new \Exception("Yahoo itemCode is empty");
         }
-        return $itemCode;
+        return "HFAY" . $itemCode . "K";
     }
 
     public function editItem($product)

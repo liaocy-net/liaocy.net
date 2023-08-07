@@ -865,7 +865,7 @@ class UtilityService
 
     public static function genSKU(Product $product)
     {
-        return "MZ-(" . $product->asin . ")";
+        return "MZ-" . $product->asin;
     }
 
     public static function updateUSAmazonInfo($product)
