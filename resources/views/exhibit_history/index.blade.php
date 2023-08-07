@@ -33,9 +33,9 @@
                             <div class="col-sm-5 mb-2">
                                 <label class="form-label" for="search_period">期間</label>
                                 <div class="input-group input-daterange" id="search_period">
-                                    <input type="text" id="search_period_from" name="search_period_from" placeholder="YYYY-MM-DD" class="form-control flatpickr-input" />
+                                    <input type="text" id="search_period_from" name="search_period_from" placeholder="YYYY-MM-DD" class="form-control flatpickr-input" value="{{ $lastMonthToday }}" />
                                     <span class="input-group-text">～</span>
-                                    <input type="text" id="search_period_to" name="search_period_to" placeholder="YYYY-MM-DD" class="form-control flatpickr-input" />
+                                    <input type="text" id="search_period_to" name="search_period_to" placeholder="YYYY-MM-DD" class="form-control flatpickr-input"  value="{{ $today }}"/>
                                 </div>
                             </div>
                             <div class="col-auto mb-2 d-inline-flex align-items-end">

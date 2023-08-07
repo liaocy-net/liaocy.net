@@ -30,7 +30,9 @@ class ExhibitHistoryController extends Controller
     {
         $my = User::find(auth()->id());
         return view('exhibit_history.index', [
-            'my' => $my
+            'my' => $my,
+            'lastMonthToday' => Carbon::now()->subMonth()->format('Y-m-d'),
+            'today' => Carbon::now()->format('Y-m-d'),
         ]);
     }
 
