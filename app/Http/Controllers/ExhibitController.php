@@ -84,37 +84,25 @@ class ExhibitController extends Controller
             $asinFileOriginalName = $request->asin_file->getClientOriginalName();
             $asinFileAbsolutePath = storage_path() . '/app/' . $fileRelativePath;
 
-            # Product Batchの作成
-            $productBatch = new ProductBatch();
-            $productBatch->user_id = auth()->id();
-            $productBatch->action = "extract_amazon_info_for_exhibit";
-            $filename = pathinfo($asinFileOriginalName, PATHINFO_FILENAME);
-            $ext = pathinfo($asinFileOriginalName, PATHINFO_EXTENSION);
-            $existing_file_count = ProductBatch::where('user_id', auth()->id())->where('filename', 'like', $filename . '%')->count();
-            if ($existing_file_count > 0) {
-                $filename = $filename . "_" . ($existing_file_count + 1);
-            }
-            $productBatch->filename = $filename . "." . $ext;
-            if (in_array("amazon", $request->exhibit_to)) {
-                $productBatch->is_exhibit_to_amazon = true;
-            } else {
-                $productBatch->is_exhibit_to_amazon = false;
-            }
             $yahooJpCategory = null;
             if (in_array("yahoo", $request->exhibit_to)) {
-                $productBatch->is_exhibit_to_yahoo = true;
                 # Yahoo! JAPANカテゴリーの確認
                 $yahooJpCategory = YahooJpCategory::find($request->yahoo_jp_category_id);
                 if ($yahooJpCategory === null) {
                     throw new \Exception("Yahoo! JAPANカテゴリーを選択してください。");
                 }
-            } else {
-                $productBatch->is_exhibit_to_yahoo = false;
             }
-            $productBatch->save();
 
             # ファイルの処理Queue
-            ProcessAsinFile::dispatch($asinFileAbsolutePath, $productBatch, $my, "extract_amazon_info_for_exhibit", $yahooJpCategory, true)->onQueue("process_asin_file_" . $my->getJobSuffix());
+            ProcessAsinFile::dispatch(
+                $asinFileAbsolutePath,
+                $my, 
+                "extract_amazon_info_for_exhibit", 
+                $yahooJpCategory, 
+                true, 
+                $asinFileOriginalName,
+                $request->exhibit_to
+            )->onQueue("process_asin_file_" . $my->getJobSuffix());
 
             return redirect()->route('exhibit.index')->with('success', 'Amazon情報取得ジョブを登録しました。');
         } catch (\Exception $e) {

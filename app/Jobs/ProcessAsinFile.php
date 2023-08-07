@@ -14,7 +14,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Bus;
-use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use SplFileObject;
 use Throwable;
@@ -23,15 +22,14 @@ class ProcessAsinFile implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected ProductBatch $productBatch;
     protected string $asinFileAbsolutePath;
     protected User $my;
     protected string $extractAmazonInfoQueueName;
     protected ?YahooJpCategory $yahooJpCategory;
     protected $shouldDownloadImages;
-
+    protected $asinFileOriginalName;
+    protected $exhibitTo;
     public $maxAsinCount = 20 * 10000;
-
     public $timeout = 60 * 60;
     public $failOnTimeout = true;
 
@@ -40,15 +38,37 @@ class ProcessAsinFile implements ShouldQueue
      *
      * @return void
      */
-    public function __construct($asinFileAbsolutePath, $productBatch, $my, $extractAmazonInfoQueueName, $yahooJpCategory, $shouldDownloadImages)
+    public function __construct($asinFileAbsolutePath, $my, $extractAmazonInfoQueueName, $yahooJpCategory, $shouldDownloadImages, $asinFileOriginalName, $exhibitTo)
     {
         $this->asinFileAbsolutePath = $asinFileAbsolutePath;
-        $this->productBatch = $productBatch;
         $this->my = $my;
         $this->extractAmazonInfoQueueName = $extractAmazonInfoQueueName;
         $this->maxAsinCount = env('MAX_ASIN_COUNT_PER_FILE', 20 * 10000);
         $this->yahooJpCategory = $yahooJpCategory;
         $this->shouldDownloadImages = $shouldDownloadImages;
+        $this->asinFileOriginalName = $asinFileOriginalName;
+        $this->exhibitTo = $exhibitTo;
+    }
+
+    public function createProductBatch()
+    {
+        # Product Batchの作成
+        $productBatch = new ProductBatch();
+        $productBatch->user_id = $this->my->id;
+        $productBatch->action = "extract_amazon_info_for_exhibit";
+        $filename = pathinfo($this->asinFileOriginalName, PATHINFO_FILENAME);
+        $ext = pathinfo($this->asinFileOriginalName, PATHINFO_EXTENSION);
+        $existing_file_count = ProductBatch::where('user_id', $this->my->id)->where('filename', 'like', $filename . '%')->count();
+        if ($existing_file_count > 0) {
+            $filename = $filename . "_" . ($existing_file_count + 1);
+        }
+        $productBatch->filename = $filename . "." . $ext;
+        $productBatch->is_exhibit_to_amazon = in_array("amazon", $this->exhibitTo);
+        if ($this->yahooJpCategory !== null) {
+            $productBatch->is_exhibit_to_yahoo = true;
+        }
+        $productBatch->save();
+        return $productBatch;
     }
 
     /**
@@ -111,41 +131,42 @@ class ProcessAsinFile implements ShouldQueue
         } else {
             throw new \Exception("不適切な拡張子 " . $asinFileExtension . " です。CSVを選択してください。");
         }
-        $extractAmazonInfos = array();
-        foreach ($asins as $asin) {
-            $product = new Product();
-            $product->user_id = $this->my->id;
-            $product->asin = $asin;
-            $product->sku = UtilityService::genSKU($product);
-            if (isset($this->yahooJpCategory)){
-                $product->yahoo_jp_product_category = $this->yahooJpCategory->product_category;
-                $product->yahoo_jp_path = $this->yahooJpCategory->path;
+
+        $asinTrunks = array_chunk($asins, 10000);
+        foreach ($asinTrunks as $asinTrunk) {
+            $extractAmazonInfos = array();
+            $productBatch = $this->createProductBatch();
+            foreach ($asinTrunk as $asin) {
+                $product = new Product();
+                $product->user_id = $this->my->id;
+                $product->asin = $asin;
+                $product->sku = UtilityService::genSKU($product);
+                if ($this->yahooJpCategory) {
+                    $product->yahoo_jp_product_category = $this->yahooJpCategory->product_category;
+                    $product->yahoo_jp_path = $this->yahooJpCategory->path;
+                }
+                $product->save();
+                $product->productBatches()->attach($productBatch);
+                array_push($extractAmazonInfos, new ExtractAmazonInfo($product, $this->shouldDownloadImages));
             }
-            $product->save();
-            $product->productBatches()->attach($this->productBatch);
-            array_push($extractAmazonInfos, new ExtractAmazonInfo($product, $this->shouldDownloadImages));
-        }
-        $batch = Bus::batch($extractAmazonInfos)->name($this->extractAmazonInfoQueueName)->then(function (Batch $batch) {
-            // すべてのジョブが正常に完了
-        })->catch(function (Batch $batch, Throwable $e) {
-            // バッチジョブの失敗をはじめて検出
-        })->finally(function (Batch $batch) {
-            // バッチジョブの完了
-            $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
-            $productBatch->finished_at = now();
+            $batch = Bus::batch($extractAmazonInfos)->name($this->extractAmazonInfoQueueName)->then(function (Batch $batch) {
+                // すべてのジョブが正常に完了
+            })->catch(function (Batch $batch, Throwable $e) {
+                // バッチジョブの失敗をはじめて検出
+            })->finally(function (Batch $batch) {
+                // バッチジョブの完了
+                $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
+                $productBatch->finished_at = now();
+                $productBatch->save();
+            })->onQueue($this->extractAmazonInfoQueueName . "_" . $this->my->getJobSuffix())->allowFailures()->dispatch();
+
+            $productBatch->job_batch_id = $batch->id;
             $productBatch->save();
-        })->onQueue($this->extractAmazonInfoQueueName . "_" . $this->my->getJobSuffix())->allowFailures()->dispatch();
-        
-        $this->productBatch->job_batch_id = $batch->id;
-        $this->productBatch->save();
+        }
     }
 
     public function failed($exception)
     {
-        $this->productBatch->finished_at = now();
-        $this->productBatch->message = $exception->getMessage();
-        $this->productBatch->save();
-
         if (env('APP_DEBUG', 'false') == 'true') {
             var_dump($exception->getMessage());
         }
