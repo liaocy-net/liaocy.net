@@ -29,6 +29,7 @@ class ProcessAsinFile implements ShouldQueue
     protected $shouldDownloadImages;
     protected $asinFileOriginalName;
     protected $exhibitTo;
+    protected $productBatch;
     public $maxAsinCount = 20 * 10000;
     public $timeout = 60 * 60;
     public $failOnTimeout = true;
@@ -48,6 +49,7 @@ class ProcessAsinFile implements ShouldQueue
         $this->shouldDownloadImages = $shouldDownloadImages;
         $this->asinFileOriginalName = $asinFileOriginalName;
         $this->exhibitTo = $exhibitTo;
+        $this->productBatch = $this->createProductBatch();
     }
 
     public function createProductBatch()
@@ -133,9 +135,13 @@ class ProcessAsinFile implements ShouldQueue
         }
 
         $asinTrunks = array_chunk($asins, 10000);
-        foreach ($asinTrunks as $asinTrunk) {
+        foreach ($asinTrunks as $i => $asinTrunk) {
             $extractAmazonInfos = array();
-            $productBatch = $this->createProductBatch();
+            if ($i === 0) {
+                $productBatch = $this->productBatch;
+            } else {
+                $productBatch = $this->createProductBatch();
+            }
             foreach ($asinTrunk as $asin) {
                 $product = new Product();
                 $product->user_id = $this->my->id;
@@ -167,6 +173,9 @@ class ProcessAsinFile implements ShouldQueue
 
     public function failed($exception)
     {
+        $this->productBatch->finished_at = now();
+        $this->productBatch->message = $exception->getMessage();
+        $this->productBatch->save();
         if (env('APP_DEBUG', 'false') == 'true') {
             var_dump($exception->getMessage());
         }

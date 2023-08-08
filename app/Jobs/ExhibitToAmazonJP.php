@@ -70,7 +70,6 @@ class ExhibitToAmazonJP implements ShouldQueue
             $this->productBatch->feed_id = $feedId;
             $this->productBatch->feed_document = $results["feedDocument"];
             $this->productBatch->save();
-            var_dump($this->productBatch->feed_id);
         }
 
         $feedId = $this->productBatch->feed_id;
@@ -80,7 +79,6 @@ class ExhibitToAmazonJP implements ShouldQueue
         $url = $amazonService->getFeedDocument($feedId)->getUrl();
         $message = file_get_contents($url);
         $message = mb_convert_encoding($message,"utf-8","sjis");
-        var_dump($message);
         $this->productBatch->message = $message;
         $this->productBatch->save();
     }

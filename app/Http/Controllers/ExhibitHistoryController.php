@@ -79,6 +79,7 @@ class ExhibitHistoryController extends Controller
                 ->select('*', 
                     'product_batches.id AS id', 
                     'product_batches.id AS product_batch_id', 
+                    'product_batches.created_at AS product_batch_created_at',
                     'product_batches.finished_at AS product_batch_finished_at',
                     'product_batches.message AS product_batch_message')
                 ->where($where)
@@ -101,7 +102,7 @@ class ExhibitHistoryController extends Controller
                     $productBatch->patch_status = UtilityService::getExhibitPatchStatus($productBatch);
                 }
                 
-                $productBatch->start_at = $productBatch->created_at ? date('Y-m-d H:i:s', strtotime($productBatch->created_at)) : false;
+                $productBatch->start_at = $productBatch->product_batch_created_at ? date('Y-m-d H:i:s', strtotime($productBatch->product_batch_created_at)) : false;
                 $productBatch->end_at = $productBatch->product_batch_finished_at ? date('Y-m-d H:i:s', strtotime($productBatch->product_batch_finished_at)) : false;
                 $productBatch->cancelled_at = $productBatch->cancelled_at ? date('Y-m-d H:i:s', $productBatch->cancelled_at) : false;
 
