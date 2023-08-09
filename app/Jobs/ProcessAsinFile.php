@@ -99,11 +99,6 @@ class ProcessAsinFile implements ShouldQueue
             }
             $rows = $sheet->rangeToArray('A2:A' . $sheet->getHighestRow(), null, true, false);
             foreach ($rows as $index => $row) {
-                $matches = array();
-                preg_match('/^(B[\dA-Z]{9}|\d{9}(X|\d))$/', $row[0], $matches);
-                if (count($matches) != 2) {
-                    throw new \Exception("ASINのフォーマットが不適切です。" . ($index + 2) . " 行目にある " . $row[0] . " を確認してください。");
-                }
                 if (!in_array($row[0], $asins)) {
                     array_push($asins, $row[0]);
                 }
@@ -116,11 +111,6 @@ class ProcessAsinFile implements ShouldQueue
                 } else {
                     if (empty($row[0])) {
                         continue;
-                    }
-                    $matches = array();
-                    preg_match('/^(B[\dA-Z]{9}|\d{9}(X|\d))$/', $row[0], $matches);
-                    if (count($matches) != 2) {
-                        throw new \Exception("ASINのフォーマットが不適切です。" . ($rowIndex + 1) . " 行目にある " . $row[0] . " を確認してください。");
                     }
                     if (!in_array($row[0], $asins)) {
                         array_push($asins, $row[0]);
