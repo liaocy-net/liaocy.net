@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\User;
-use Illuminate\Support\Facades\Validator;
 use App\Services\UtilityService;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use SplFileObject;
 
 class UpdateHistoryController extends Controller
 {
@@ -49,9 +50,17 @@ class UpdateHistoryController extends Controller
             }
 
             if ($platform == "amazon") {
-                array_push($where, ['action', 'update_amazon_jp_exhibit']);        
+                array_push($where, ['action', 'update_amazon_jp_exhibit']);
+                $exhibitingProductCount = $my->products()->where([
+                    ["amazon_jp_has_exhibited", true], //AmazonJPへ出品済み
+                    ["cancel_exhibit_to_amazon_jp", "=", false], //削除されていない
+                ])->count();
             } elseif ($platform == "yahoo") {
                 array_push($where, ['action', 'update_yahoo_jp_exhibit']);
+                $exhibitingProductCount = $my->products()->where([
+                    ["yahoo_jp_has_exhibited", true], //AmazonJPへ出品済み
+                    ["cancel_exhibit_to_yahoo_jp", "=", false], //削除されていない
+                ])->count();
             } else {
                 throw new \Exception("platform is invalid", 442);
             }
@@ -86,10 +95,77 @@ class UpdateHistoryController extends Controller
                 unset($productBatch->feed_document);
             }
 
-            return response()->json($productBatches);
+            return response()->json(array(
+                'status' => 'success',
+                'product_batches' => $productBatches,
+                'exhibiting_product_count' => $exhibitingProductCount,
+            ));
 
         } catch (\Exception $e) {
             return response($e->getMessage(), 442);
+        }
+    }
+
+
+    public function deleteExhibitingProducts(Request $request) {
+        try {
+            $my = User::find(auth()->id());
+
+            $validator = Validator::make($request->all(), [
+                'platform' => ['required', 'string', 'max:255', 'regex:/^[amazon|yahoo]+$/u'],
+            ]);
+
+            if ($validator->fails()) {
+                throw new \Exception($validator->errors()->first(), 442);
+            }
+
+            if (!$request->hasFile('asin_file')) {
+                throw new \Exception("ASINファイルが選択されていません。");
+            }
+
+            # ファイルの拡張子がcsvであるかの確認
+            $fileExtension = $request->asin_file->getClientOriginalExtension();
+            if ($fileExtension !== "csv") {
+                throw new \Exception("ASINファイルの拡張子がcsvではありません。");
+            }
+
+            $file = new SplFileObject($request->asin_file);
+            $file->setFlags(SplFileObject::READ_CSV);
+            $asins = [];
+            foreach ($file as $rowIndex => $row) {
+                if ($rowIndex === 0) {
+                } else {
+                    if (empty($row[0])) {
+                        continue;
+                    }
+                    if (!in_array($row[0], $asins)) {
+                        array_push($asins, $row[0]);
+                    }
+                }
+            }
+
+            $platform = $request->input('platform');
+            if ($platform == "amazon") {
+                $my->products()->where([
+                    ["amazon_jp_has_exhibited", true], //AmazonJPへ出品済み
+                    ["cancel_exhibit_to_amazon_jp", "=", false], //削除されていない
+                ])->whereIn('asin', $asins)->update([
+                    "cancel_exhibit_to_amazon_jp" => true,
+                ]);
+                return redirect()->route('update_history.index')->with('success', 'Amazon JP 出品中から削除しました。');
+            } elseif ($platform == "yahoo") {
+                $my->products()->where([
+                    ["yahoo_jp_has_exhibited", true], //YahooJPへ出品済み
+                    ["cancel_exhibit_to_yahoo_jp", "=", false], //削除されていない
+                ])->whereIn('asin', $asins)->update([
+                    "cancel_exhibit_to_yahoo_jp" => true,
+                ]);
+                return redirect()->route('update_history.index')->with('success', 'Yahoo JP 出品中から削除しました。');
+            } else {
+                throw new \Exception("platform is invalid: " . $platform, 442);
+            }
+        } catch (\Exception $e) {
+            return back()->withErrors($e->getMessage());
         }
     }
 

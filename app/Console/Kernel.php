@@ -110,6 +110,7 @@ class Kernel extends ConsoleKernel
 
             $user = User::find($product_user->user_id);
 
+            // 出品情報更新を停止している場合はスキップ
             if ($user->amazon_jp_should_update_price === 0) {
                 continue;
             }
@@ -166,6 +167,7 @@ class Kernel extends ConsoleKernel
 
             $user = User::find($product_user->user_id);
 
+            // 出品情報更新を停止している場合はスキップ
             if ($user->yahoo_jp_should_update_price === 0) {
                 continue;
             }

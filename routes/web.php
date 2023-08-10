@@ -112,6 +112,7 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
 
     /* 価格改定履歴 */
     Route::get('/update_history/get_update_histories', [UpdateHistoryController::class, 'getUpdateHistories'])->name('update_history.get_update_histories');
+    Route::post('/update_history/delete_exhibiting_products', [UpdateHistoryController::class, 'deleteExhibitingProducts'])->name('update_history.delete_exhibiting_products');
     Route::resource('/update_history', UpdateHistoryController::class);
 
     /* ブラックリスト */

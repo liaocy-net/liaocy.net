@@ -42,7 +42,7 @@
                 </div>
 
                 <div id="tab_amazon" class="mb-4">
-                    <h5 class="fw-bold">アマゾン価格改定履歴</h5>
+                    <h5 class="fw-bold">Amazon JP 価格改定履歴 （出品中商品数 <span id="span_amazon_exhibiting_product_count">...</span>）</h5>
                     @if ($my->amazon_jp_should_update_price === 1)
                         <span class="text-success">価格自動改定稼働中</span>
                     @elseif ($my->amazon_jp_should_update_price === 0)
@@ -51,6 +51,16 @@
                         <span class="text-danger">エラーが発生しています。管理者に連絡してください。</span>
                     @endif
                     <div class="table-responsive text-nowrap">
+                        <form id="formDeleteAmazonExhibitingProduct" class="mb-3" action="{{route('update_history.delete_exhibiting_products')}}" method="post" enctype="multipart/form-data">
+                            @csrf
+                            <input type="hidden" name="platform" value="amazon"/>
+                            <div class="col-sm-6 mb-3">
+                                <div class="input-group">
+                                    <input type="file" id="asin_file" name="asin_file" class="form-control"/>
+                                    <button type="submit" class="btn btn-primary waves-effect waves-light"><i class="fas fa-remove me-1"></i>Amazon JP 出品中から削除</button>
+                                </div>
+                            </div>
+                        </form>
                         <table class="table table-bordered table-striped text-center">
                             <thead class="table-light">
                                 <tr>
@@ -77,7 +87,7 @@
                 </div>
 
                 <div id="tab_yahoo" class="mb-4">
-                    <h5 class="fw-bold">Yahoo価格改定履歴</h5>
+                    <h5 class="fw-bold">Yahoo JP 価格改定履歴 （出品中商品数 <span id="span_yahoo_exhibiting_product_count">...</span>）</h5>
                     @if ($my->yahoo_jp_should_update_price === 1)
                         <span class="text-success">価格自動改定稼働中</span>
                     @elseif ($my->yahoo_jp_should_update_price === 0)
@@ -86,6 +96,16 @@
                         <span class="text-danger">エラーが発生しています。管理者に連絡してください。</span>
                     @endif
                     <div class="table-responsive text-nowrap">
+                        <form id="formDeleteYahooExhibitingProduct" class="mb-3" action="{{route('update_history.delete_exhibiting_products')}}" method="post" enctype="multipart/form-data">
+                            @csrf
+                            <input type="hidden" name="platform" value="yahoo"/>
+                            <div class="col-sm-6 mb-3">
+                                <div class="input-group">
+                                    <input type="file" id="asin_file" name="asin_file" class="form-control"/>
+                                    <button type="submit" class="btn btn-primary waves-effect waves-light"><i class="fas fa-remove me-1"></i>Yahoo JP 出品中から削除</button>
+                                </div>
+                            </div>
+                        </form>
                         <table class="table table-bordered table-striped text-center">
                             <thead class="table-light">
                                 <tr>
@@ -145,8 +165,9 @@
             period_from: $('#search_period_from').val(),
             period_to: $('#search_period_to').val(),
         }, function(data) {
+            $('#span_amazon_exhibiting_product_count').html(data.exhibiting_product_count);
             let html = '';
-            data.data.forEach(history => {
+            data.product_batches.data.forEach(history => {
                 html += '<tr>';
                 html += '<td>' + (history.start_at ? history.start_at : '-') + '</td>';
                 html += '<td>' + history.patch_status + '</td>';
@@ -183,8 +204,9 @@
             period_from: $('#search_period_from').val(),
             period_to: $('#search_period_to').val(),
         }, function(data) {
+            $('#span_yahoo_exhibiting_product_count').html(data.exhibiting_product_count);
             let html = '';
-            data.data.forEach(history => {
+            data.product_batches.data.forEach(history => {
                 html += '<tr>';
                 html += '<td>' + (history.start_at ? history.start_at : '-') + '</td>';
                 html += '<td>' + history.patch_status + '</td>';
