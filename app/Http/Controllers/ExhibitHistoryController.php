@@ -18,6 +18,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
+use Throwable;
 
 class ExhibitHistoryController extends Controller
 {
@@ -299,6 +300,22 @@ class ExhibitHistoryController extends Controller
                     if ($request->input("donot_show_product_cannot_exhibit") && !$product->can_be_exhibit_to_amazon_jp) {
                         continue;
                     }
+                    // AmazonJP希望利益額
+                    $product->amazon_hope_profit = $my->amazon_hope_profit;
+                    // AmazonJP最低利益額
+                    $product->amazon_min_profit = $my->amazon_min_profit;
+                    // AmazonJP希望利益率
+                    $product->amazon_hope_profit_rate = $my->amazon_hope_profit_rate;
+                    // AmazonJP最低利益率
+                    $product->amazon_min_profit_rate = $my->amazon_min_profit_rate;
+                    // Amazon手数料率
+                    $product->amazon_using_sale_commission = $my->amazon_using_sale_commission;
+                    // Amazon Point比率
+                    $product->amazon_point_rate = $my->amazon_point_rate;
+                    // 値下げ額
+                    $product->amazon_price_cut = $my->amazon_price_cut;
+                    // 値上げ率
+                    $product->amazon_price_increase_rate = $my->amazon_price_increase_rate;
                 }
                 if ($request->input('exhibit_to') == 'yahoo_jp') {
                     $canBeExhibitToYahooJP = UtilityService::canBeExhibitToYahooJP($my, $product);
@@ -308,7 +325,23 @@ class ExhibitHistoryController extends Controller
                     if ($request->input("donot_show_product_cannot_exhibit") && !$product->can_be_exhibit_to_yahoo_jp) {
                         continue;
                     }
+                    // YahooJP最低利益額
+                    $product->yahoo_min_profit = $my->yahoo_min_profit;
+                    // 利益率
+                    $product->yahoo_profit_rate = $my->yahoo_profit_rate;
+                    // 販売手数料
+                    $product->yahoo_using_sale_commission = $my->yahoo_using_sale_commission;
                 }
+                // 為替(円)
+                $product->common_currency_rate = $my->common_currency_rate;
+                // 関税消費税
+                $product->common_customs_tax = $my->common_customs_tax;
+                // 国内送料
+                $product->common_country_shipping = $my->common_country_shipping;
+                // 国際送料
+                $product->foreign_shipping = UtilityService::calForeignShippingUSD($my, $product);
+
+
                 array_push($data, $product);
             }
             $data = $this->paginate($data, env("PAGE_MAX_LIMIT", 50), $page);

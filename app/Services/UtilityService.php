@@ -729,6 +729,18 @@ class UtilityService
         );
     }
 
+    // 国際送料計算（USD）
+    public static function calForeignShippingUSD($user, $product) {
+        $weightKG = $product->weight_us;
+        if ($weightKG) {
+            $foreignShipping = ForeignShipping::where('weight_kg', '>=', $weightKG)->orderBy('weight_kg', 'asc')->first();
+            if ($foreignShipping) {
+                return $foreignShipping->usd_fee;
+            }
+        }
+        return null;
+    }
+
     // 国際送料計算
     public static function calForeignShipping($user, $product) {
         $weightKG = $product->weight_us;

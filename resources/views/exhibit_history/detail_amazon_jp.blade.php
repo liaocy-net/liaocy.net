@@ -75,24 +75,36 @@
                         <h5 class="fw-bold">商品一覧</h5>
                         <input type="checkbox" id="donotShowProductCannotExhibit" name="donotShowProductCannotExhibit" class="form-check-input" checked onchange="refresh()" /> 出品可能商品のみ表示
                         <div id="tab_products" class="table-responsive text-nowrap">
-                            <table id="tableProductsList" class="table table-bordered dataTable table-striped text-center text-wrap" style="font-size:12px">
+                            <table id="tableProductsList" class="table table-bordered dataTable table-striped text-center text-wrap" style="font-size:9px">
                                 <thead class="table-light">
                                     <tr>
-                                        <th class="dt-checkboxes-cell dt-checkboxes-select-all"><input type="checkbox" class="checkbox_all form-check-input"></th>
-                                        <th class="" onclick="alert('here')">ASIN</th>
-                                        <th>画像</th>
-                                        <th class="">タイトル</th>
-                                        <th class="">ブランド(US)</th>
-                                        <th class="">仕入価格(USD)</th>
-                                        <th class="">希望利益価格(JPY)</th>
-                                        <th class="">最低利益価格(JPY)</th>
-                                        <th class="">希望利益率価格(JPY)</th>
-                                        <th class="">最低利益率価格(JPY)</th>
-                                        <th class="">ライバル最低価格(JPY)</th>
-                                        <th class="">最終出品価格(JPY)</th>
-                                        <th class="">サイズ(cm)</th>
-                                        <th class="">重量(kg)</th>
-                                        <th>メッセージ</th>
+                                        <th style="font-size: 9px;" class="dt-checkboxes-cell dt-checkboxes-select-all"><input type="checkbox" class="checkbox_all form-check-input"></th>
+                                        <th style="font-size: 9px;">画像</th>
+                                        <th style="font-size: 9px;" class="">タイトル</th>
+                                        <th style="font-size: 9px;" class="">ブランド(US)</th>
+                                        <th style="font-size: 9px;" class="">ASIN</th>
+                                        <th style="font-size: 9px;" class="">US価格($)</th>
+                                        <th style="font-size: 9px;" class="">希望利益額(円)</th>
+                                        <th style="font-size: 9px;" class="">最低利益額(円)</th>
+                                        <th style="font-size: 9px;" class="">希望利益率(%)</th>
+                                        <th style="font-size: 9px;" class="">最低利益率(%)</th>
+                                        <th style="font-size: 9px;" class="">為替(円)</th>
+                                        <th style="font-size: 9px;" class="">関税消費税率</th>
+                                        <th style="font-size: 9px;" class="">国内送料(円)</th>
+                                        <th style="font-size: 9px;" class="">国際送料($)</th>
+                                        <th style="font-size: 9px;" class="">Amazon手数料率(%)</th>
+                                        <th style="font-size: 9px;" class="">Amazonポイント比率</th>
+                                        <th style="font-size: 9px;" class="">値下げ額(円)</th>
+                                        <th style="font-size: 9px;" class="">値上げ率(%)</th>
+                                        <th style="font-size: 9px;" class="">ライバル価格(円)</th>
+                                        <th style="font-size: 9px;" class="">希望利益計算価格(円)</th>
+                                        <th style="font-size: 9px;" class="">最低利益計算価格(円)</th>
+                                        <th style="font-size: 9px;" class="">希望利益計算率価格(円)</th>
+                                        <th style="font-size: 9px;" class="">最低利益計算率価格(円)</th>
+                                        <th style="font-size: 9px;" class="">最終出品価格(JPY)</th>
+                                        <th style="font-size: 9px;" class="">サイズ(cm)</th>
+                                        <th style="font-size: 9px;" class="">重量(kg)</th>
+                                        <th style="font-size: 9px;">メッセージ</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -104,25 +116,6 @@
                                         </td>
                                     </tr>
                                 </tbody>
-                                <tfoot class="table-light">
-                                    <tr>
-                                        <th class="dt-checkboxes-cell dt-checkboxes-select-all"><input type="checkbox" class="checkbox_all form-check-input"></th>
-                                        <th class="" onclick="alert('here')">ASIN</th>
-                                        <th>画像</th>
-                                        <th class="">タイトル</th>
-                                        <th class="">ブランド(US)</th>
-                                        <th class="">仕入価格(USD)</th>
-                                        <th class="">希望利益価格(JPY)</th>
-                                        <th class="">最低利益価格(JPY)</th>
-                                        <th class="">希望利益率価格(JPY)</th>
-                                        <th class="">最低利益率価格(JPY)</th>
-                                        <th class="">ライバル最低価格(JPY)</th>
-                                        <th class="">最終出品価格(JPY)</th>
-                                        <th class="">サイズ(cm)</th>
-                                        <th class="">重量(kg)</th>
-                                        <th>メッセージ</th>
-                                    </tr>
-                                </tfoot>
                             </table>
                         </div>
                         
@@ -233,27 +226,60 @@
                 }
                 html += '</td>';
                 
-                html += '<td>' + product.asin + '<br />' + '<a target="_blank" href="https://www.amazon.com/dp/' + product.asin + '">US</a> <a target="_blank" href="https://www.amazon.co.jp/dp/' + product.asin + '">JP</a>' + '</td>';
                 html += '<td><img style="max-width:50px;" src="' + product.img_url_01 + '" /></td>';
                 html += '<td>' + (product.title_jp ? product.title_jp : '-') + '</div></td>';
                 html += '<td>' + (product.brand_us ? product.brand_us : '-') + '</div></td>';
+                html += '<td>' + product.asin + '<br />' + '<a target="_blank" href="https://www.amazon.com/dp/' + product.asin + '">US</a> <a target="_blank" href="https://www.amazon.co.jp/dp/' + product.asin + '">JP</a>' + '</td>';
 
+                // 仕上げ価格($)
                 html += '<td>' + (product.purchase_price_us ? product.purchase_price_us : '-') + '</td>';
+                // 希望利益額(円)
+                html += '<td>' + product.amazon_hope_profit + '</td>';
+                // 最低利益額(円)
+                html += '<td>' + product.amazon_min_profit + '</td>';
+                // 希望利益率(%)
+                html += '<td>' + product.amazon_hope_profit_rate * 100 + '</td>';
+                // 最低利益率(%)
+                html += '<td>' + product.amazon_min_profit_rate * 100 + '</td>';
 
-                html += '<td>' + (product.purchase_price_us ? product.hope_price_jpy : '-') + '</td>';
-                html += '<td>' + (product.purchase_price_us ? product.min_hope_price_jpy : '-') + '</td>';
-                html += '<td>' + (product.purchase_price_us ? product.rate_price_jpy : '-') + '</td>';
-                html += '<td>' + (product.purchase_price_us ? product.min_rate_price_jpy : '-') + '</td>';
+                // 為替(円)
+                html += '<td>' + product.common_currency_rate + '</td>';
+                // 関税消費税率
+                html += '<td>' + product.common_customs_tax * 100 + '</td>';
+                // 国内送料(円)
+                html += '<td>' + product.common_country_shipping + '</td>';
+                // 国際送料($)
+                html += '<td>' + product.foreign_shipping + '</td>';
+                // AMAZON手数料率(%)
+                html += '<td>' + product.amazon_using_sale_commission * 100 + '</td>';
+                // AMAZONポイント比率
+                html += '<td>' + product.amazon_point_rate * 100 + '</td>';
+                // 値下げ額(円)
+                html += '<td>' + product.amazon_price_cut + '</td>';
+                // 値上げ率(%)
+                html += '<td>' + product.amazon_price_increase_rate * 100 + '</td>';
+
+                // ライバル価格
                 html += '<td>' + (product.cp_jp ? product.cp_jp : '-') + '</td>';
-
+                // 希望利益計算価格(円)
+                html += '<td>' + (product.purchase_price_us ? product.hope_price_jpy : '-') + '</td>';
+                // 最低利益計算価格(円)
+                html += '<td>' + (product.purchase_price_us ? product.min_hope_price_jpy : '-') + '</td>';
+                // 希望利益計算率価格(円)
+                html += '<td>' + (product.purchase_price_us ? product.rate_price_jpy : '-') + '</td>';
+                // 最低利益計算率価格(円)
+                html += '<td>' + (product.purchase_price_us ? product.min_rate_price_jpy : '-') + '</td>';
+                // 最終出品価格(JPY)
                 if (product.can_be_exhibit_to_amazon_jp_price) {
                     html += '<td>' + product.can_be_exhibit_to_amazon_jp_price + '</td>';
                 } else {
                     html += '<td>-</td>';
                 }
-
+                // サイズ(CM)
                 html += '<td>' + (product.size_l_us ? product.size_l_us : '-') + '<br />' + (product.size_w_us ? product.size_w_us : '-') + '<br />' + (product.size_h_us ? product.size_h_us : '-') + '</td>';
+                // 重量(KG)
                 html += '<td>' + (product.weight_us ? (Math.round(product.weight_us * 10) / 10 ) : '-') + '</td>';
+                // メッセージ
                 html += '<td>' + product.can_be_exhibit_to_amazon_jp_message + '</td>';
                 html += '</tr>';
             });
