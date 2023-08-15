@@ -738,7 +738,7 @@ class UtilityService
                 return $foreignShipping->usd_fee;
             }
         }
-        return null;
+        return round($user->common_foreign_shipping_without_weight / $user->common_currency_rate, 2);
     }
 
     // 国際送料計算
