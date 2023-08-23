@@ -180,21 +180,83 @@ class YahooService
         $header = [
             'Authorization: Bearer ' . $yahooAccessToken,
         ];
-        $name = $product->title_jp ? $product->title_jp : $product->title_us;
-        $name = mb_strlen($name) > 75 ? mb_substr($name, 0, 75) : $name;
         $params = array(
             'access_token' => $yahooAccessToken,
             'seller_id' => $this->user->yahoo_store_account,
             'item_code' => $this->getItemCode($product),
             'path' => $product->yahoo_jp_path,
             'product_category' => $product->yahoo_jp_product_category,
-            'name' => $name,
             'price' => $product->yahoo_jp_latest_exhibit_price,
         );
-
-        if (!empty($this->user->yahoo_exhibit_comment_group)) {
-            $params['caption'] = $this->user->yahoo_exhibit_comment_group;
+        // 商品名
+        $name = $product->title_jp ? $product->title_jp : $product->title_us;
+        $params["name"] = (mb_strlen($name) > 65 ? mb_substr($name, 0, 65) : $name) . " 並行輸入品";
+        // caption 商品説明
+        $brand = $product->brand_jp ? $product->brand_jp : $product->brand_us;
+        $caption = $name . "<br />";
+        $caption .= "ブランド: " . $brand . "<br />";
+        if (!empty($product->size_us)) {
+            $caption .= "商品サイズ: " . $product->size_us . "<br />";
         }
+        if (!empty($product->size_h_us)) {
+            $caption .= "高さ: " . $product->size_h_us . "cm<br />";
+        }
+        if (!empty($product->size_w_us)) {
+            $caption .= "横幅: " . $product->size_w_us . "cm<br />";
+        }
+        if (!empty($product->size_l_us)) {
+            $caption .= "奥行: " . $product->size_l_us . "cm<br />";
+        }
+        if (!empty($product->weight_us)) {
+            $caption .= "重量: " . round($product->weight_us * 1000) . "g<br />";
+        }
+        if (!empty($product->color_us)) {
+            $caption .= "色: " . $product->color_us . "<br />";
+        }
+        if (!empty($product->material_type_us)) {
+            $caption .= "素材: " . $product->material_type_us . "<br />";
+        }
+        $params["caption"] = $caption;
+        // explanation 商品説明
+        $explanation = $name . "\n";
+        $explanation .= "ブランド: " . $brand . "\n";
+        if (!empty($product->size_us)) {
+            $explanation .= "商品サイズ: " . $product->size_us . "\n";
+        }
+        if (!empty($product->size_h_us)) {
+            $explanation .= "高さ: " . $product->size_h_us . "cm\n";
+        }
+        if (!empty($product->size_w_us)) {
+            $explanation .= "横幅: " . $product->size_w_us . "cm\n";
+        }
+        if (!empty($product->size_l_us)) {
+            $explanation .= "奥行: " . $product->size_l_us . "cm\n";
+        }
+        if (!empty($product->weight_us)) {
+            $explanation .= "重量: " . round($product->weight_us * 1000) . "g\n";
+        }
+        if (!empty($product->color_us)) {
+            $explanation .= "色: " . $product->color_us . "\n";
+        }
+        if (!empty($product->material_type_us)) {
+            $explanation .= "素材: " . $product->material_type_us . "\n";
+        }
+        if (!empty($this->user->yahoo_exhibit_comment_group)) {
+            $explanation .= "\n";
+            $explanation .= $this->user->yahoo_exhibit_comment_group . "\n";
+        }
+        $explanation = mb_strlen($explanation) > 500 ? mb_substr($explanation, 0, 500) : $explanation;
+        $params["explanation"] = $explanation;
+        // headline キャッチコピー
+        $headline = "送料無料!" . $product->title_jp . $product->title_us . "\n";
+        $headline = mb_strlen($headline) > 30 ? mb_substr($headline, 0, 30) : $headline;
+        $params["headline"] = $headline;
+        // abstract 商品説明
+        $abstract = "";
+        if (!empty($this->user->yahoo_exhibit_comment_group)) {
+            $abstract .= $this->user->yahoo_exhibit_comment_group . "\n";
+        }
+        $params["abstract"] = $abstract;
 
         $ch = curl_init($api);
         curl_setopt_array($ch, array(
