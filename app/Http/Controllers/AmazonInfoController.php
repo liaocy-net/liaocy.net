@@ -105,7 +105,7 @@ class AmazonInfoController extends Controller
                     null, 
                     false,
                     $asinFileOriginalName,
-                    null
+                    []
                 )->onQueue("process_asin_file_" . $my->getJobSuffix());
 
                 return redirect()->route('amazon_info.index')->with('success', 'Amazon情報取得ジョブが登録されました。');
