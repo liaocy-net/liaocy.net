@@ -210,6 +210,7 @@ class YahooService
         if (!empty($product->weight_us)) {
             $caption .= "重量: " . round($product->weight_us * 1000) . "g<br />";
         }
+        $caption .= "商品番号: " . $this->getItemCode($product) . "<br />";
         if (!empty($product->color_us)) {
             $caption .= "色: " . $product->color_us . "<br />";
         }
@@ -235,6 +236,7 @@ class YahooService
         if (!empty($product->weight_us)) {
             $explanation .= "重量: " . round($product->weight_us * 1000) . "g\n";
         }
+        $explanation .= "商品番号: " . $this->getItemCode($product) . "\n";
         if (!empty($product->color_us)) {
             $explanation .= "色: " . $product->color_us . "\n";
         }
