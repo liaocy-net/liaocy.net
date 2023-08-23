@@ -57,7 +57,7 @@ class ProcessAsinFile implements ShouldQueue
         # Product Batchの作成
         $productBatch = new ProductBatch();
         $productBatch->user_id = $this->my->id;
-        $productBatch->action = "extract_amazon_info_for_exhibit";
+        $productBatch->action = $this->extractAmazonInfoQueueName;
         $filename = pathinfo($this->asinFileOriginalName, PATHINFO_FILENAME);
         $ext = pathinfo($this->asinFileOriginalName, PATHINFO_EXTENSION);
         $existing_file_count = ProductBatch::where('user_id', $this->my->id)->where('filename', 'like', $filename . '%')->count();

@@ -85,18 +85,6 @@ class AmazonInfoController extends Controller
                 $asinFileOriginalName = $request->asin_file->getClientOriginalName();
                 $asinFileAbsolutePath = storage_path() . '/app/' . $fileRelativePath;
 
-                $productBatch = new ProductBatch();
-                $productBatch->user_id = auth()->id();
-                $productBatch->action = "extract_amazon_info";
-                $filename = pathinfo($asinFileOriginalName, PATHINFO_FILENAME);
-                $ext = pathinfo($asinFileOriginalName, PATHINFO_EXTENSION);
-                $existing_file_count = ProductBatch::where('user_id', auth()->id())->where('filename', 'like', $filename . '%')->count();
-                if ($existing_file_count > 0) {
-                    $filename = $filename . "_" . ($existing_file_count + 1);
-                }
-                $productBatch->filename = $filename. "." . $ext;
-                $productBatch->save();
-
                 # ファイルの処理Queue
                 ProcessAsinFile::dispatch(
                     $asinFileAbsolutePath,
