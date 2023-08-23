@@ -221,7 +221,8 @@ class ExhibitHistoryController extends Controller
                 'title' => ['nullable', 'string', 'max:255'],
                 'search_sort_column' => ['required', 'string', 'max:255', 'regex:/^[created|asin|title|price|weight]+$/u'],
                 'search_sort_order' => ['required', 'string', 'max:255', 'regex:/^[asc|desc]+$/u'],
-                'donot_show_product_cannot_exhibit' => ['required', 'boolean'],
+                'show_product_can_exhibit' => ['required', 'boolean'],
+                'show_product_cannot_exhibit' => ['required', 'boolean'],
             ]);
 
             if ($validator->fails()) {
@@ -297,7 +298,12 @@ class ExhibitHistoryController extends Controller
                     $product->can_be_exhibit_to_amazon_jp = $canBeExhibitToAmazonJP["canBeExhibit"];
                     $product->can_be_exhibit_to_amazon_jp_message = $canBeExhibitToAmazonJP["message"];
                     $product->can_be_exhibit_to_amazon_jp_price = $canBeExhibitToAmazonJP["exhibitPrice"];
-                    if ($request->input("donot_show_product_cannot_exhibit") && !$product->can_be_exhibit_to_amazon_jp) {
+                    // 出品可能商品を表示
+                    if ($product->can_be_exhibit_to_amazon_jp && !$request->input("show_product_can_exhibit")) {
+                        continue;
+                    }
+                    // 出品不可商品を表示
+                    if (!$product->can_be_exhibit_to_amazon_jp && !$request->input("show_product_cannot_exhibit")){
                         continue;
                     }
                     // AmazonJP希望利益額
@@ -322,7 +328,12 @@ class ExhibitHistoryController extends Controller
                     $product->can_be_exhibit_to_yahoo_jp = $canBeExhibitToYahooJP["canBeExhibit"];
                     $product->can_be_exhibit_to_yahoo_jp_message = $canBeExhibitToYahooJP["message"];
                     $product->can_be_exhibit_to_yahoo_jp_price = $canBeExhibitToYahooJP["exhibitPrice"];
-                    if ($request->input("donot_show_product_cannot_exhibit") && !$product->can_be_exhibit_to_yahoo_jp) {
+                    // 出品可能商品を表示
+                    if ($product->can_be_exhibit_to_yahoo_jp && !$request->input("show_product_can_exhibit")) {
+                        continue;
+                    }
+                    // 出品不可商品を表示
+                    if (!$product->can_be_exhibit_to_yahoo_jp && !$request->input("show_product_cannot_exhibit")){
                         continue;
                     }
                     // YahooJP最低利益額

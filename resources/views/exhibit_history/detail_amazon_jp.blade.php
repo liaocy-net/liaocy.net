@@ -64,6 +64,13 @@
                                     <option value="desc">高い順</option>
                                 </select>
                             </div>
+                            <div class="col-6 col-sm-3 mb-2">
+                                <label class="form-label" for="search_sort_order">商品表示</label>
+                                <div>
+                                    <input type="checkbox" id="showProductCanExhibit" name="showProductCanExhibit" class="form-check-input" checked onchange="refresh()" /> 出品可能商品を表示
+                                    <input type="checkbox" id="showProductCannotExhibit" name="showProductCannotExhibit" class="form-check-input" onchange="refresh()" /> 出品不可商品を表示
+                                </div>
+                            </div>
                             <div class="col-6 col-sm-3 mb-2 d-inline-flex align-items-end">
                                 <button type="button" class="btn btn-primary waves-effect waves-light" onclick="refresh()"><i class="fas fa-refresh me-1"></i>更新</button>
                             </div>
@@ -73,7 +80,6 @@
                 <form id="formProductsList" class="mb-3" action="{{route('exhibit_history.process_products')}}" method="POST">
                     <div class="">
                         <h5 class="fw-bold">商品一覧</h5>
-                        <input type="checkbox" id="donotShowProductCannotExhibit" name="donotShowProductCannotExhibit" class="form-check-input" checked onchange="refresh()" /> 出品可能商品のみ表示
                         <div id="tab_products" class="table-responsive text-nowrap">
                             <table id="tableProductsList" class="table table-bordered dataTable table-striped text-center text-wrap" style="font-size:9px">
                                 <thead class="table-light">
@@ -210,7 +216,8 @@
             title: $('#search_file_title').val(),
             search_sort_column: $('#search_sort_column').val(),
             search_sort_order: $('#search_sort_order').val(),
-            donot_show_product_cannot_exhibit: $('#donotShowProductCannotExhibit').prop('checked') ? 1 : 0,
+            show_product_can_exhibit: $('#showProductCanExhibit').prop('checked') ? 1 : 0,
+            show_product_cannot_exhibit: $('#showProductCannotExhibit').prop('checked') ? 1 : 0,
         }, function(data) {
             let html = '';
             data.data.forEach(product => {
