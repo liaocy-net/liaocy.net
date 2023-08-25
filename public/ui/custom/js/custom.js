@@ -157,6 +157,9 @@ var getNavigator = function(data, refreshFunctionName){
   var html = "";
   html += '<nav aria-label="Page navigation">';
   html += '<ul class="pagination justify-content-center pagination-info">';
+  if (data.product_batches != null) { 
+    data = data.product_batches;
+  }
   if (data.current_page == 1) {
     html += '<li class="page-item first disabled">';
     html += '  <botton class="page-link waves-effect" href="javascript:void(0);"><i class="ti ti-chevrons-left ti-xs"></i></botton>';
