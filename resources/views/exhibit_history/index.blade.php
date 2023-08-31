@@ -189,7 +189,7 @@
             if (history.action == 'exhibit_to_amazon_jp') {
                 html += "-";
             } else if (history.patch_status == '取得停止') {
-                html += '取得停止済み';
+                html += '取得停止';
             } else {
                 html += history.total_jobs ? (history.total_jobs - history.pending_jobs) : "-";
             }
@@ -215,17 +215,21 @@
             // 詳細
             html += '<td>';
             if (platform == "amazon"){
-                if (history.action == 'extract_amazon_info_for_exhibit' && history.end_at && history.patch_status != "ASINファイル処理失敗") {
-                    html += '<a href="{{route("exhibit_history.detail_amazon_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a>';
-                } else if (history.action == 'exhibit_to_amazon_jp' && history.end_at && history.patch_status != "ASINファイル処理失敗"){
-                    html += '<a href="{{route("exhibit_history.detail_amazon_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a>';
-                } 
+                if (history.end_at && history.patch_status != "ASINファイル処理失敗" && history.patch_status != "取得停止") {
+                    if (history.action == 'extract_amazon_info_for_exhibit') {
+                        html += '<a href="{{route("exhibit_history.detail_amazon_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a>';
+                    } else if (history.action == 'exhibit_to_amazon_jp'){
+                        html += '<a href="{{route("exhibit_history.detail_amazon_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a>';
+                    } 
+                }
             }
             if (platform == "yahoo"){
-                if (history.action == 'extract_amazon_info_for_exhibit' && history.end_at && history.patch_status != "ASINファイル処理失敗") {
-                    html += '<a href="{{route("exhibit_history.detail_yahoo_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a>';
-                } else if (history.action == 'exhibit_to_yahoo_jp' && history.end_at && history.patch_status != "ASINファイル処理失敗"){
-                    html += '<a href="{{route("exhibit_history.detail_yahoo_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a>';
+                if (history.end_at && history.patch_status != "ASINファイル処理失敗" && history.patch_status != "取得停止") {
+                    if (history.action == 'extract_amazon_info_for_exhibit') {
+                        html += '<a href="{{route("exhibit_history.detail_yahoo_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a>';
+                    } else if (history.action == 'exhibit_to_yahoo_jp'){
+                        html += '<a href="{{route("exhibit_history.detail_yahoo_jp")}}?product_batch_id=' + history.product_batch_id + '" class="btn btn-icon btn-sm btn-primary"><i class="fas fa-file"></i></a>';
+                    }
                 }
             }
             html += '</td>';

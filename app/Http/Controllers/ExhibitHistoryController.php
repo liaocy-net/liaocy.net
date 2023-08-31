@@ -233,13 +233,7 @@ class ExhibitHistoryController extends Controller
             $page = $request->input('page');
             $my = User::find(auth()->id());
 
-            $where = [
-                ["is_amazon_us", "=", true]
-            ];
-
-            if ($request->input('exhibit_to') == 'amazon_jp') {
-                array_push($where, ["is_amazon_jp", "=", true]);
-            }
+            $where = [];
 
             if ($request->input('asin')) {
                 array_push($where, ['asin', 'like', '%' . $request->input('asin') . '%']);

@@ -234,7 +234,13 @@
                 html += '</td>';
                 
                 html += '<td><img style="max-width:50px;" src="' + product.img_url_01 + '" /></td>';
-                html += '<td>' + (product.title_jp ? product.title_jp : '-') + '</div></td>';
+                if (product.title_jp) {
+                    html += '<td>' + product.title_jp + '</td>';
+                } else if (product.title_us) {
+                    html += '<td>' + product.title_us + '</td>';
+                } else {
+                    html += '<td>(Amazon US 且つ JS から情報を取得できない)</td>';
+                }
                 html += '<td>' + (product.brand_us ? product.brand_us : '-') + '</div></td>';
                 html += '<td>' + product.asin + '<br />' + '<a target="_blank" href="https://www.amazon.com/dp/' + product.asin + '">US</a> <a target="_blank" href="https://www.amazon.co.jp/dp/' + product.asin + '">JP</a>' + '</td>';
 
