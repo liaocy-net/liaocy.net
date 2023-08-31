@@ -16,10 +16,11 @@ cd efs-utils/
 ./build-deb.sh
 sudo apt-get -y install ./build/amazon-efs-utils*deb
 sudo mkdir /mnt/efs
-sudo mount -t efs fs-0c70fb54449a22558:/ /mnt/efs
+# sudo mount -t efs fs-0c70fb54449a22558:/ /mnt/efs
+sudo mount -t efs fs-03078011c5a70e024:/ /mnt/efs
 cat /mnt/efs/touch.txt
 sudo nano /etc/fstab
-#-># fs-0c70fb54449a22558:/ /mnt/efs efs defaults,_netdev 0 0
+#-># fs-03078011c5a70e024:/ /mnt/efs efs defaults,_netdev 0 0
 sudo reboot
 cat /mnt/efs/touch.txt
 
@@ -100,6 +101,7 @@ sudo crontab -e
 
 ##################### crontab ######################
 sudo crontab -e
+# * * * * * sudo docker exec $(sudo docker ps -a -q --filter="name=stg-charing-web") php artisan schedule:run >> /dev/null 2>&1
 # * * * * * sudo docker exec $(sudo docker ps -a -q --filter="name=prd-charing-web") php artisan schedule:run >> /dev/null 2>&1
 ```
 

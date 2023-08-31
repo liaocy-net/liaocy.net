@@ -139,7 +139,7 @@ jobs:
       - build-docker-image
     concurrency: deploy-app
     env:
-      SERVER_HOST: 43.207.125.135
+      SERVER_HOST: 54.65.182.103
     steps:
       - name: Pull Docker Image
         uses: appleboy/ssh-action@v0.1.10
