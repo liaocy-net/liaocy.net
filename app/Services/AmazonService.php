@@ -279,18 +279,27 @@ class AmazonService
         if (
             !is_null($item->getPayload()->getSummary()->getBuyBoxPrices())
             && count($item->getPayload()->getSummary()->getBuyBoxPrices()) > 0
-            && strtolower($item->getPayload()->getSummary()->getBuyBoxPrices()[0]->getCondition()) === 'new'
         ) {
-            $result['cp'] = $item->getPayload()->getSummary()->getBuyBoxPrices()[0]->getLandedPrice()->getAmount();
+            foreach ($item->getPayload()->getSummary()->getBuyBoxPrices() as $buyBoxPrice) {
+                if ($buyBoxPrice->getCondition() == 'new') {
+                    $result['cp'] = $buyBoxPrice->getLandedPrice()->getAmount();
+                    break;
+                }
+            }
         }
 
         $result['np'] = null;
         if (
             !is_null($item->getPayload()->getSummary()->getLowestPrices())
             && count($item->getPayload()->getSummary()->getLowestPrices()) > 0
-            && strtolower($item->getPayload()->getSummary()->getLowestPrices()[0]->getCondition()) === 'new'
+            // && strtolower($item->getPayload()->getSummary()->getLowestPrices()[0]->getCondition()) === 'new'
         ) {
-            $result['np'] = $item->getPayload()->getSummary()->getLowestPrices()[0]->getLandedPrice()->getAmount();
+            foreach ($item->getPayload()->getSummary()->getLowestPrices() as $lowestPrice) {
+                if ($lowestPrice->getCondition() == 'new') {
+                    $result['np'] = $lowestPrice->getLandedPrice()->getAmount();
+                    break;
+                }
+            }
         }
 
         $offices = $item->getPayload()->getOffers();
