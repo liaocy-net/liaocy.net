@@ -74,6 +74,9 @@
                             <div class="col-6 col-sm-3 mb-2 d-inline-flex align-items-end">
                                 <button type="button" class="btn btn-primary waves-effect waves-light" onclick="refresh()"><i class="fas fa-refresh me-1"></i>更新</button>
                             </div>
+                            <div class="col-6 col-sm-3 mb-2 d-inline-flex align-items-end">
+                                <a class="btn btn-success waves-effect waves-light" href="/amazon_info/{{ request()->input('product_batch_id') }}"><i class="fas fa-download me-1"></i>Excelダウンロード</a>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -105,9 +108,9 @@
                                         <th style="font-size: 9px;" class="">ライバル価格(円)</th>
                                         <th style="font-size: 9px;" class="">希望利益計算価格(円)</th>
                                         <th style="font-size: 9px;" class="">最低利益計算価格(円)</th>
-                                        <th style="font-size: 9px;" class="">希望利益計算率価格(円)</th>
+                                        <th style="font-size: 9px;" class="">利益率計算価格(円)</th>
                                         <th style="font-size: 9px;" class="">最低利益計算率価格(円)</th>
-                                        <th style="font-size: 9px;" class="">最終出品価格(JPY)</th>
+                                        <th style="font-size: 9px;" class="">最低利益率計算価格(円)</th>
                                         <th style="font-size: 9px;" class="">サイズ(cm)</th>
                                         <th style="font-size: 9px;" class="">重量(kg)</th>
                                         <th style="font-size: 9px;">メッセージ</th>
@@ -275,13 +278,13 @@
                 // ライバル価格
                 html += '<td>' + (product.cp_jp ? product.cp_jp : '-') + '</td>';
                 // 希望利益計算価格(円)
-                html += '<td>' + (product.purchase_price_us ? product.hope_price_jpy : '-') + '</td>';
+                html += '<td>' + (product.amazon_jp_hope_price_jpy ? product.amazon_jp_hope_price_jpy : '-') + '</td>';
                 // 最低利益計算価格(円)
-                html += '<td>' + (product.purchase_price_us ? product.min_hope_price_jpy : '-') + '</td>';
+                html += '<td>' + (product.amazon_jp_min_hope_price_jpy ? product.amazon_jp_min_hope_price_jpy : '-') + '</td>';
                 // 希望利益計算率価格(円)
-                html += '<td>' + (product.purchase_price_us ? product.rate_price_jpy : '-') + '</td>';
+                html += '<td>' + (product.amazon_jp_rate_price_jpy ? product.amazon_jp_rate_price_jpy : '-') + '</td>';
                 // 最低利益計算率価格(円)
-                html += '<td>' + (product.purchase_price_us ? product.min_rate_price_jpy : '-') + '</td>';
+                html += '<td>' + (product.amazon_jp_min_rate_price_jpy ? product.amazon_jp_min_rate_price_jpy : '-') + '</td>';
                 // 最終出品価格(JPY)
                 if (product.can_be_exhibit_to_amazon_jp_price) {
                     html += '<td>' + product.can_be_exhibit_to_amazon_jp_price + '</td>';

@@ -62,7 +62,7 @@ class AmazonService
             env("IAM_SECRECT_KEY")
         );
         $logger = new Logger('amazon_info');
-        $logger->pushHandler(new StreamHandler(__DIR__ . '/../../../logs/sp-api-php.log', Logger::DEBUG));
+        $logger->pushHandler(new StreamHandler(__DIR__ . '/../../storage/logs/sp-api-php.log', Logger::INFO));
         $sdk = SellingPartnerSDK::create($client, $factory, $factory, $configuration, $logger);
 
         if ($this->nation == 'us') {
@@ -415,7 +415,6 @@ class AmazonService
             ];
             $tsv .= join("\t", $contents) . "\n";
         }
-        var_dump($tsv);
         return $tsv;
     }
 

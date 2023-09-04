@@ -27,7 +27,7 @@ class ExhibitToYahooJP implements ShouldQueue
      *
      * @var int
      */
-    public $tries = 5;
+    public $tries = 2;
 
     /**
      * Create a new job instance.

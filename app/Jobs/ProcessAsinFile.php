@@ -14,6 +14,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Bus;
+use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\IOFactory;
 use SplFileObject;
 use Throwable;
@@ -107,8 +108,7 @@ class ProcessAsinFile implements ShouldQueue
             $file = new SplFileObject($this->asinFileAbsolutePath);
             $file->setFlags(SplFileObject::READ_CSV);
             foreach ($file as $rowIndex => $row) {
-                if ($rowIndex === 0) {
-                } else {
+                if ($rowIndex > 0) {
                     if (empty($row[0])) {
                         continue;
                     }
@@ -164,7 +164,7 @@ class ProcessAsinFile implements ShouldQueue
     public function failed($exception)
     {
         $this->productBatch->finished_at = now();
-        $this->productBatch->message = $exception->getMessage();
+        $this->productBatch->message = mb_strimwidth($exception->getMessage(), 0, 255, "...");
         $this->productBatch->save();
         if (env('APP_DEBUG', 'false') == 'true') {
             var_dump($exception->getMessage());

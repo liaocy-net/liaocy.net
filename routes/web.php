@@ -148,42 +148,44 @@ Route::group(['middleware' => ['auth', 'check_banned']], function () {
 
     /* test */
     Route::get('/test', function () {
-        $user = User::find(auth()->id());
-        $client_id = env("AMAZON_US_CLIENT_ID");
-        $client_secret = env("AMAZON_US_CLIENT_SECRET");
-        $refresh_token = $user->amazon_us_refresh_token;
-        $product = new Product();
-        $product->asin = "B0006L0120";
-        
-        $client_id = env("AMAZON_US_CLIENT_ID");
-        $client_secret = env("AMAZON_US_CLIENT_SECRET");
-        $refresh_token = $user->amazon_us_refresh_token;
-        $amazonService = new AmazonService(
-            $client_id,
-            $client_secret,
-            $refresh_token,
-            $user,
-            "us",
-        );
-        return $amazonService->getCatalogItem($product);
-        // return $amazonService->getProductPricing($product);
-        // $feedType = FeedTypes::POST_PRODUCT_PRICING_DATA;
-        // return $amazonService->createFeed($feedType);
-        // return $amazonService->CreateFeedWithFile();
-
         // $user = User::find(auth()->id());
-        // $client_id = env("AMAZON_JP_CLIENT_ID");
-        // $client_secret = env("AMAZON_JP_CLIENT_SECRET");
-        // $refresh_token = $user->amazon_jp_refresh_token;
+        // $client_id = env("AMAZON_US_CLIENT_ID");
+        // $client_secret = env("AMAZON_US_CLIENT_SECRET");
+        // $refresh_token = $user->amazon_us_refresh_token;
+        // $product = new Product();
+        // $product->asin = "B0006L0120";
         
+        // $client_id = env("AMAZON_US_CLIENT_ID");
+        // $client_secret = env("AMAZON_US_CLIENT_SECRET");
+        // $refresh_token = $user->amazon_us_refresh_token;
         // $amazonService = new AmazonService(
         //     $client_id,
         //     $client_secret,
         //     $refresh_token,
         //     $user,
-        //     "jp",
+        //     "us",
         // );
-        // return $amazonService->getFeedDocument("50115019518")->getUrl();
+        // return $amazonService->getCatalogItem($product);
+        // return $amazonService->getProductPricing($product);
+        
+
+        $user = User::find(auth()->id());
+        $client_id = env("AMAZON_JP_CLIENT_ID");
+        $client_secret = env("AMAZON_JP_CLIENT_SECRET");
+        $refresh_token = $user->amazon_jp_refresh_token;
+        
+        $amazonService = new AmazonService(
+            $client_id,
+            $client_secret,
+            $refresh_token,
+            $user,
+            "jp",
+        );
+        $products = Product::where('id', 114664)->get();
+        $results = $amazonService->CreateFeedWithFile($products, FeedTypes::POST_FLAT_FILE_LISTINGS_DATA);
+        return response($results, 200)->header('Content-Type', 'text/plain');
+        $feedId = $results["feedResults"]->getFeedId();
+        return $feedId;
 
         // $product = Product::find(185);
         // return array(

@@ -12,6 +12,7 @@ use Illuminate\Queue\SerializesModels;
 use App\Services\AmazonService;
 use App\Services\FeedTypes;
 use App\Models\ProductBatch;
+use Exception;
 use Throwable;
 
 class ExhibitToAmazonJP implements ShouldQueue
@@ -76,11 +77,16 @@ class ExhibitToAmazonJP implements ShouldQueue
         $this->productBatch->message = "AmazonJP出品状態確認がタイムアウトしました。Amazonセーラーコンソールで確認してください。";
         $this->productBatch->save();
 
-        $url = $amazonService->getFeedDocument($feedId)->getUrl();
+        try {
+            $url = $amazonService->getFeedDocument($feedId)->getUrl();
+        } catch (Throwable $e) {
+            throw new Exception("AmazonJP出品結果ファイルがまだ作成されていません。あとリトライします。");
+        }
         $message = file_get_contents($url);
         $message = mb_convert_encoding($message,"utf-8","sjis");
         $this->productBatch->message = $message;
         $this->productBatch->save();
+        
     }
 
     /**

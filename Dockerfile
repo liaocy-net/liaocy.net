@@ -6,13 +6,14 @@ WORKDIR /var/www/html
 
 # パッケージのインストール
 RUN apt-get update \
-    && apt-get -y install git zip unzip vim zlib1g-dev libzip-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev
+    && apt-get -y install git zip unzip vim zlib1g-dev libzip-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev libonig-dev
 
 RUN docker-php-ext-install gd \
     && docker-php-ext-install pdo_mysql \
     && docker-php-ext-install mysqli \
     && docker-php-ext-install zip \
     && docker-php-ext-install exif \
+    && docker-php-ext-install mbstring \
     && docker-php-ext-install pdo
 
 # Install composer

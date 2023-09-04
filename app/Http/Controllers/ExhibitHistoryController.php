@@ -17,6 +17,7 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Validator;
 use Throwable;
 
@@ -267,90 +268,33 @@ class ExhibitHistoryController extends Controller
                 throw new \Exception("search_sort_column is invalid", 442);
             }
 
+            if ($request->input('exhibit_to') == 'amazon_jp') {
+                if ($request->input("show_product_can_exhibit") && !$request->input("show_product_cannot_exhibit")) {
+                    array_push($where, ['can_be_exhibit_to_amazon_jp', true]);
+                } elseif (!$request->input("show_product_can_exhibit") && $request->input("show_product_cannot_exhibit")) {
+                    array_push($where, ['can_be_exhibit_to_amazon_jp', false]);
+                }
+            }
+            if ($request->input('exhibit_to') == 'yahoo_jp') {
+                if ($request->input("show_product_can_exhibit") && !$request->input("show_product_cannot_exhibit")) {
+                    array_push($where, ['can_be_exhibit_to_yahoo_jp', true]);
+                } elseif (!$request->input("show_product_can_exhibit") && $request->input("show_product_cannot_exhibit")) {
+                    array_push($where, ['can_be_exhibit_to_yahoo_jp', false]);
+                }
+            }
+
             $products = $productBatch->products()
                 ->select('*')
                 ->where($where)
                 ->orderByRaw($orderByRaw)
                 ->limit(10000)
-                ->get();
-
-            $data = [];
-
-            foreach ($products as $product) {
-                $product->purchase_price_us = UtilityService::getPurchasePriceUS($product);
-                $product->hope_price_jpy = UtilityService::calAmazonJPHopePrice($my, $product);
-                $product->rate_price_jpy = UtilityService::calAmazonJPRatePrice($my, $product);
-                $product->min_hope_price_jpy = UtilityService::calAmazonJPMinHopePrice($my, $product);
-                $product->min_rate_price_jpy = UtilityService::calAmazonJPMinRatePrice($my, $product);
-                $product->exhibit_price = 0;
-
-                $product->yahoo_jp_min_hope_price_jpy = UtilityService::calYahooJPMinHopePrice($my, $product);
-                $product->yahoo_jp_min_rate_price_jpy = UtilityService::calYahooJPMinRatePrice($my, $product);
-
-                if ($request->input('exhibit_to') == 'amazon_jp') {
-                    $canBeExhibitToAmazonJP = UtilityService::canBeExhibitToAmazonJP($my, $product);
-                    $product->can_be_exhibit_to_amazon_jp = $canBeExhibitToAmazonJP["canBeExhibit"];
-                    $product->can_be_exhibit_to_amazon_jp_message = $canBeExhibitToAmazonJP["message"];
-                    $product->can_be_exhibit_to_amazon_jp_price = $canBeExhibitToAmazonJP["exhibitPrice"];
-                    // 出品可能商品を表示
-                    if ($product->can_be_exhibit_to_amazon_jp && !$request->input("show_product_can_exhibit")) {
-                        continue;
-                    }
-                    // 出品不可商品を表示
-                    if (!$product->can_be_exhibit_to_amazon_jp && !$request->input("show_product_cannot_exhibit")){
-                        continue;
-                    }
-                    // AmazonJP希望利益額
-                    $product->amazon_hope_profit = $my->amazon_hope_profit;
-                    // AmazonJP最低利益額
-                    $product->amazon_min_profit = $my->amazon_min_profit;
-                    // AmazonJP希望利益率
-                    $product->amazon_hope_profit_rate = $my->amazon_hope_profit_rate;
-                    // AmazonJP最低利益率
-                    $product->amazon_min_profit_rate = $my->amazon_min_profit_rate;
-                    // Amazon手数料率
-                    $product->amazon_using_sale_commission = $my->amazon_using_sale_commission;
-                    // Amazon Point比率
-                    $product->amazon_point_rate = $my->amazon_point_rate;
-                    // 値下げ額
-                    $product->amazon_price_cut = $my->amazon_price_cut;
-                    // 値上げ率
-                    $product->amazon_price_increase_rate = $my->amazon_price_increase_rate;
-                }
-                if ($request->input('exhibit_to') == 'yahoo_jp') {
-                    $canBeExhibitToYahooJP = UtilityService::canBeExhibitToYahooJP($my, $product);
-                    $product->can_be_exhibit_to_yahoo_jp = $canBeExhibitToYahooJP["canBeExhibit"];
-                    $product->can_be_exhibit_to_yahoo_jp_message = $canBeExhibitToYahooJP["message"];
-                    $product->can_be_exhibit_to_yahoo_jp_price = $canBeExhibitToYahooJP["exhibitPrice"];
-                    // 出品可能商品を表示
-                    if ($product->can_be_exhibit_to_yahoo_jp && !$request->input("show_product_can_exhibit")) {
-                        continue;
-                    }
-                    // 出品不可商品を表示
-                    if (!$product->can_be_exhibit_to_yahoo_jp && !$request->input("show_product_cannot_exhibit")){
-                        continue;
-                    }
-                    // YahooJP最低利益額
-                    $product->yahoo_min_profit = $my->yahoo_min_profit;
-                    // 利益率
-                    $product->yahoo_profit_rate = $my->yahoo_profit_rate;
-                    // 販売手数料
-                    $product->yahoo_using_sale_commission = $my->yahoo_using_sale_commission;
-                }
-                // 為替(円)
-                $product->common_currency_rate = $my->common_currency_rate;
-                // 関税消費税
-                $product->common_customs_tax = $my->common_customs_tax;
-                // 国内送料
-                $product->common_country_shipping = $my->common_country_shipping;
-                // 国際送料
-                $product->foreign_shipping = UtilityService::calForeignShippingUSD($my, $product);
-
-
-                array_push($data, $product);
-            }
-            $data = $this->paginate($data, env("PAGE_MAX_LIMIT", 50), $page);
-            return response()->json($data);
+                ->paginate(
+                    $perPage = env("PAGE_MAX_LIMIT", 50), 
+                    $columns = ['*'], 
+                    $pageName = 'page',
+                    $page = $page
+                );
+            return response()->json($products);
         } catch (\Exception $e) {
             return response($e->getMessage(), 442);
         }
@@ -428,9 +372,7 @@ class ExhibitHistoryController extends Controller
                 $exhibitToJPProductBatch->save();
 
                 foreach ($productBatch->products as $product) {
-                    $canBeExhibitToAmazonJP = UtilityService::canBeExhibitToAmazonJP($my, $product);
-
-                    if ($canBeExhibitToAmazonJP["canBeExhibit"]) {
+                    if ($product->can_be_exhibit_to_amazon_jp) {
                         $exhibitToJPProductBatch->products()->attach($product);
 
                         // 同じユーザ/SKUの商品のAmazonJP出品済みフラグをFalseにする
@@ -444,7 +386,7 @@ class ExhibitHistoryController extends Controller
                             ]);
 
                         // 出品済みフラグ/価格を保存
-                        $product->amazon_jp_latest_exhibit_price = $canBeExhibitToAmazonJP["exhibitPrice"]; //最新出品価格
+                        $product->amazon_jp_latest_exhibit_price = $product->can_be_exhibit_to_amazon_jp_price; //最新出品価格
                         $product->amazon_jp_latest_exhibit_quantity = $my->amazon_stock; //最新出品数量
                         $product->amazon_jp_has_exhibited = true; //AmazonJP出品済みフラグ
                         $product->amazon_is_in_checklist = false; //Amazon CheckList に入っているかどうか
@@ -501,9 +443,7 @@ class ExhibitHistoryController extends Controller
 
                 $exhibitToYahooJPJobs = array();
                 foreach ($productBatch->products as $product) {
-                    $canBeExhibitToYahooJP = UtilityService::canBeExhibitToYahooJP($my, $product);
-
-                    if ($canBeExhibitToYahooJP["canBeExhibit"]) {
+                    if ($product->can_be_exhibit_to_yahoo_jp) {
                         $exhibitToYahooJPProductBatch->products()->attach($product);
 
                         // 同じユーザ/SKUの商品のYahooJP出品済みフラグをFalseにする
@@ -517,7 +457,7 @@ class ExhibitHistoryController extends Controller
                             ]);
 
                         // 出品済みフラグ/価格を保存
-                        $product->yahoo_jp_latest_exhibit_price = $canBeExhibitToYahooJP["exhibitPrice"]; //最新出品価格
+                        $product->yahoo_jp_latest_exhibit_price = $product->can_be_exhibit_to_yahoo_jp_price; //最新出品価格
                         $product->yahoo_jp_latest_exhibit_quantity = $my->yahoo_stock; //最新出品数量
                         $product->yahoo_jp_has_exhibited = true; //YahooJP出品済みフラグ
                         $product->yahoo_is_in_checklist = false; //Yahoo CheckList に入っているかどうか
@@ -527,41 +467,42 @@ class ExhibitHistoryController extends Controller
 
                         array_push($exhibitToYahooJPJobs, new ExhibitToYahooJP($product, $exhibitToYahooJPProductBatch->id));
                     }
-
-                    $batch = Bus::batch($exhibitToYahooJPJobs)->name("exhibit_to_yahoo_jp")->then(function (Batch $batch) {
-                        // すべてのジョブが正常に完了
-                    })->catch(function (Batch $batch, Throwable $e) {
-                        // バッチジョブの失敗をはじめて検出
-                    })->finally(function (Batch $batch) {
-                        // バッチジョブの完了
-                        $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
-
-                        // debug: Attempt to read property "user_id" on null
-                        if (is_null($productBatch)) {
-                            return;
-                        }
-
-                        $user = User::find($productBatch->user_id);
-                        $yahooService = new YahooService($user);
-                        
-                        // setStock
-                        sleep(10);
-                        $products = $productBatch->products->all();
-                        $yahooService->setStock($products);
-
-                        // reservePublish
-                        sleep(10);
-                        $yahooService->reservePublish();
-
-                        // save product batch
-                        $productBatch->finished_at = now();
-                        $productBatch->save();
-
-                    })->onQueue('exhibit_to_yahoo_jp_' . $my->getJobSuffix())->allowFailures()->dispatch();
-
-                    $exhibitToYahooJPProductBatch->job_batch_id = $batch->id;
-                    $exhibitToYahooJPProductBatch->save();
                 }
+
+                $batch = Bus::batch($exhibitToYahooJPJobs)->name("exhibit_to_yahoo_jp")->then(function (Batch $batch) {
+                    // すべてのジョブが正常に完了
+                })->catch(function (Batch $batch, Throwable $e) {
+                    // バッチジョブの失敗をはじめて検出
+                })->finally(function (Batch $batch) {
+                    // バッチジョブの完了
+                    $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
+
+                    // debug: Attempt to read property "user_id" on null
+                    if (is_null($productBatch)) {
+                        return;
+                    }
+
+                    $user = User::find($productBatch->user_id);
+                    $yahooService = new YahooService($user);
+                    
+                    // setStock
+                    sleep(10);
+                    $products = $productBatch->products->all();
+                    $yahooService->setStock($products);
+
+                    // reservePublish
+                    sleep(10);
+                    $yahooService->reservePublish();
+
+                    // save product batch
+                    $productBatch->finished_at = now();
+                    $productBatch->save();
+
+                })->onQueue('exhibit_to_yahoo_jp_' . $my->getJobSuffix())->allowFailures()->dispatch();
+
+                $exhibitToYahooJPProductBatch->job_batch_id = $batch->id;
+                $exhibitToYahooJPProductBatch->save();
+                
 
             } else {
                 throw new \Exception("act is invalid", 442);

@@ -74,6 +74,9 @@
                             <div class="col-6 col-sm-3 mb-2 d-inline-flex align-items-end">
                                 <button type="button" class="btn btn-primary waves-effect waves-light" onclick="refresh()"><i class="fas fa-refresh me-1"></i>更新</button>
                             </div>
+                            <div class="col-6 col-sm-3 mb-2 d-inline-flex align-items-end">
+                                <a class="btn btn-success waves-effect waves-light" href="/amazon_info/{{ request()->input('product_batch_id') }}"><i class="fas fa-download me-1"></i>Excelダウンロード</a>
+                            </div>
                         </div>
                     </form>
                 </div>
@@ -98,7 +101,7 @@
                                         <th style="font-size: 9px;" class="">国際送料($)</th>
                                         <th style="font-size: 9px;" class="">手数料率(%)</th>
                                         <th style="font-size: 9px;" class="">最低利益計算価格(円)</th>
-                                        <th style="font-size: 9px;" class="">最低利益計算率価格(円)</th>
+                                        <th style="font-size: 9px;" class="">最低利益率計算価格(円)</th>
                                         <th style="font-size: 9px;" class="">最終出品価格(JPY)</th>
                                         <th style="font-size: 9px;" class="">サイズ(cm)</th>
                                         <th style="font-size: 9px;" class="">重量(kg)</th>

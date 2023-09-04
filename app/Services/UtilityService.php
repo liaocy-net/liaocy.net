@@ -136,6 +136,18 @@ class UtilityService
             "weight_us",
             "availability_type_us",
             "availability_type_jp",
+            "AmazonJP希望利益計算価格(円)",
+            "AmazonJP最低利益計算価格(円)",
+            "AmazonJP利益率計算価格(円)",
+            "AmazonJP最低利益率計算価格(円)",
+            "AmazonJP出品可否",
+            "AmazonJP出品可否メッセージ",
+            "AmazonJP出品価格(円)",
+            "YahooJP最低利益計算価格(円)",
+            "YahooJP最低利益率計算価格(円)",
+            "YahooJP出品可否",
+            "YahooJP出品可否メッセージ",
+            "YahooJP出品価格(円)",
         ];
 
         $spreadsheet = new Spreadsheet();
@@ -195,6 +207,18 @@ class UtilityService
             $sheet->setCellValue([$columnNumber++, ($index + 2)], is_null($product->weight_us) ? null : self::convertKgToLbs($product->weight_us));
             $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->availability_type_us);
             $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->availability_type_jp);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->amazon_jp_hope_price_jpy);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->amazon_jp_min_hope_price_jpy);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->amazon_jp_rate_price_jpy);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->amazon_jp_min_rate_price_jpy);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->can_be_exhibit_to_amazon_jp ? "出品可能" : "出品不可");
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->can_be_exhibit_to_amazon_jp_message);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->can_be_exhibit_to_amazon_jp_price);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->yahoo_jp_min_hope_price_jpy);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->yahoo_jp_min_rate_price_jpy);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->can_be_exhibit_to_yahoo_jp ? "出品可能" : "出品不可");
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->can_be_exhibit_to_yahoo_jp_message);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->can_be_exhibit_to_yahoo_jp_price);
         }
         return $spreadsheet;
     }
