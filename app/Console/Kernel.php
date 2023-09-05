@@ -82,7 +82,7 @@ class Kernel extends ConsoleKernel
             ["yahoo_is_in_checklist", false], //チェックキューに入っていない
             ["yahoo_latest_check_at", "<", Carbon::now()->subHour(24)], //最終チェックから24時間以上経過
             ["cancel_exhibit_to_yahoo_jp", false], //削除されていない
-        ])->cursor();
+        ])->limit(1000)->cursor();
 
         foreach($products as $product) {
             $product->amazon_is_in_checklist = true; //チェックキューに入った
