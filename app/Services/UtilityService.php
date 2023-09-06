@@ -529,13 +529,23 @@ class UtilityService
         
         // ブランドがホワイトリストに入っているか
         $whiteListCount = WhiteList::where('user_id', $user->id)->count();
-        $whiteList = WhiteList::where('user_id', $user->id)->where('brand', $product->brand_us)->first();
-        if ($whiteListCount > 0 && !$whiteList) {
-            return array(
-                'canBeExhibit' => false,
-                'exhibitPrice' => null,
-                'message' => 'Amazon US ブランドがホワイトリストに入っていません'
-            );
+        $whiteListBrands = WhiteList::where('user_id', $user->id)->get();
+        if ($whiteListCount > 0) {
+            $flagNotInWhiteList = true;
+            foreach ($whiteListBrands as $whiteListBrand) {
+                if (mb_convert_kana($product->brand_us, 'kna') == mb_convert_kana($whiteListBrand->brand, 'kna')) {
+                    $flagNotInWhiteList = false;
+                    break;
+                }
+            }
+
+            if ($flagNotInWhiteList) {
+                return array(
+                    'canBeExhibit' => false,
+                    'exhibitPrice' => null,
+                    'message' => 'Amazon US ブランドがホワイトリストに入っていません'
+                );
+            }
         }
 
         // ASINがブラックリストに入っているか
@@ -547,24 +557,31 @@ class UtilityService
                 'message' => 'ASINがブラックリストにブロックされています'
             );
         }
+
         // Amazon US ブランドがブラックリストに入っているか
-        $brandBlackList = BlackList::where('user_id', $user->id)->where('platform', 'amazon')->where('on', 'brand')->where('value', $product->brand_us)->first();
-        if ($brandBlackList) {
-            return array(
-                'canBeExhibit' => false,
-                'exhibitPrice' => null,
-                'message' => 'Amazon US ブランドがブラックリストにブロックされています'
-            );
+        $brandBlackListBrands = BlackList::where('user_id', $user->id)->where('platform', 'amazon')->where('on', 'brand')->get();
+        foreach ($brandBlackListBrands as $brandBlackListBrand) {
+            if (mb_convert_kana($product->brand_us, 'kna') == mb_convert_kana($brandBlackListBrand->value, 'kna')) {
+                return array(
+                    'canBeExhibit' => false,
+                    'exhibitPrice' => null,
+                    'message' => 'Amazon US ブランドがブラックリストにブロックされています'
+                );
+            }
         }
-        // Amazon JP ブランドがブラックリストに入っているか
-        $brandBlackList = BlackList::where('user_id', $user->id)->where('platform', 'amazon')->where('on', 'brand')->where('value', $product->brand_jp)->first();
-        if ($brandBlackList) {
-            return array(
-                'canBeExhibit' => false,
-                'exhibitPrice' => null,
-                'message' => 'Amazon JP ブランドがブラックリストにブロックされています'
-            );
+
+        // Amazon US ブランドがブラックリストに入っているか
+        $brandBlackListBrands = BlackList::where('user_id', $user->id)->where('platform', 'amazon')->where('on', 'brand')->get();
+        foreach ($brandBlackListBrands as $brandBlackListBrand) {
+            if (mb_convert_kana($product->brand_jp, 'kna') == mb_convert_kana($brandBlackListBrand->value, 'kna')) {
+                return array(
+                    'canBeExhibit' => false,
+                    'exhibitPrice' => null,
+                    'message' => 'Amazon JP ブランドがブラックリストにブロックされています'
+                );
+            }
         }
+
         // Amazon US カテゴリがブラックリストにブロックされているか
         $categoryBlackList = BlackList::where('user_id', $user->id)->where('platform', 'amazon')->where('on', 'category')->where('value', $product->cate_us)->first();
         if ($categoryBlackList) {
@@ -751,14 +768,17 @@ class UtilityService
             );
         }
         // ブランドがブラックリストに入っているか
-        $brandBlackList = BlackList::where('user_id', $user->id)->where('platform', 'yahoo')->where('on', 'brand')->where('value', $product->brand_jp)->first();
-        if ($brandBlackList) {
-            return array(
-                'canBeExhibit' => false,
-                'exhibitPrice' => null,
-                'message' => 'ブランドがブラックリストにブロックされています'
-            );
+        $brandBlackListBrands = BlackList::where('user_id', $user->id)->where('platform', 'yahoo')->where('on', 'brand')->get();
+        foreach ($brandBlackListBrands as $brandBlackListBrand) {
+            if (mb_convert_kana($product->brand_us, 'kna') == mb_convert_kana($brandBlackListBrand->value, 'kna')) {
+                return array(
+                    'canBeExhibit' => false,
+                    'exhibitPrice' => null,
+                    'message' => 'Amazon US ブランドがブラックリストにブロックされています'
+                );
+            }
         }
+        
         // カテゴリがブラックリストに入っているか
         $categoryBlackList = BlackList::where('user_id', $user->id)->where('platform', 'yahoo')->where('on', 'category')->where('value', $product->cate_us)->first();
         if ($categoryBlackList) {
