@@ -392,6 +392,7 @@ class ExhibitHistoryController extends Controller
                         $product->amazon_is_in_checklist = false; //Amazon CheckList に入っているかどうか
                         $product->amazon_latest_check_at = Carbon::now(); //最新チェック日時
 
+                        // プライムリードタイムを設定
                         $product->amazon_jp_leadtime_to_ship = $my->amazon_lead_time_prime;
                         if ($product->maximum_hours_us && $product->maximum_hours_us > $my->amazon_lead_time_more) {
                             $product->amazon_jp_leadtime_to_ship = $my->amazon_lead_time_more;
@@ -399,6 +400,16 @@ class ExhibitHistoryController extends Controller
                         if ($product->maximum_hours_us && $product->maximum_hours_us < $product->amazon_lead_time_less) {
                             $product->amazon_jp_leadtime_to_ship = $my->amazon_lead_time_less;
                         }
+                        // maximumHours_usが24の倍数以外のものが表示されている場合で、pp_usで数字が入っているものに関してはプライムリードタイムを採用
+                        // 24の倍数以外のものが表示されている場合で、PP_USに数字が入っていないものに関しては、リードタイム(○日未満の場合)（短い方）を採用
+                        if ($product->maximum_hours_us % 24 != 0) {
+                            if ($product->pp_us) {
+                                $product->amazon_jp_leadtime_to_ship = $my->amazon_lead_time_prime;
+                            } else {
+                                $product->amazon_jp_leadtime_to_ship = $my->amazon_lead_time_less;
+                            }
+                        }
+                        
 
                         $product->save();
                     }

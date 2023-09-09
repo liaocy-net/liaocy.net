@@ -464,42 +464,6 @@ class UtilityService
             );
         }
 
-        // minimumHours_usが0の場合は出品不可
-        if($product->minimum_hours_us == 0){
-            return array(
-                'canBeExhibit' => false,
-                'exhibitPrice' => null,
-                'message' => 'minimumHours_usが0のため出品不可'
-            );
-        }
-
-        // maximumHours_usが0の場合は出品不可
-        if($product->maximum_hours_us == 0){
-            return array(
-                'canBeExhibit' => false,
-                'exhibitPrice' => null,
-                'message' => 'maximumHours_usが0のため出品不可'
-            );
-        }
-
-        // minimumHours_usが24の倍数ではない場合は出品不可
-        if($product->minimum_hours_us % 24 != 0){
-            return array(
-                'canBeExhibit' => false,
-                'exhibitPrice' => null,
-                'message' => 'minimumHours_usが24の倍数ではないため出品不可'
-            );
-        }
-
-        // maximumHours_usが24の倍数ではない場合は出品不可
-        if($product->maximum_hours_us % 24 != 0){
-            return array(
-                'canBeExhibit' => false,
-                'exhibitPrice' => null,
-                'message' => 'maximumHours_usが24の倍数ではないため出品不可'
-            );
-        }
-
         // maximumHours_usが360以上の数値の場合は出品不可
         if($product->maximum_hours_us >= 360){
             return array(
@@ -701,42 +665,6 @@ class UtilityService
                 'canBeExhibit' => false,
                 'exhibitPrice' => null,
                 'message' => 'Amazon USでは現在出荷不可 (' . $product->availability_type_us . ')'
-            );
-        }
-
-        // minimumHours_usが0の場合は出品不可
-        if($product->minimum_hours_us == 0){
-            return array(
-                'canBeExhibit' => false,
-                'exhibitPrice' => null,
-                'message' => 'minimumHours_usが0のため出品不可'
-            );
-        }
-
-        // maximumHours_usが0の場合は出品不可
-        if($product->maximum_hours_us == 0){
-            return array(
-                'canBeExhibit' => false,
-                'exhibitPrice' => null,
-                'message' => 'maximumHours_usが0のため出品不可'
-            );
-        }
-
-        // minimumHours_usが24の倍数ではない場合は出品不可
-        if($product->minimum_hours_us % 24 != 0){
-            return array(
-                'canBeExhibit' => false,
-                'exhibitPrice' => null,
-                'message' => 'minimumHours_usが24の倍数ではないため出品不可'
-            );
-        }
-
-        // maximumHours_usが24の倍数ではない場合は出品不可
-        if($product->maximum_hours_us % 24 != 0){
-            return array(
-                'canBeExhibit' => false,
-                'exhibitPrice' => null,
-                'message' => 'maximumHours_usが24の倍数ではないため出品不可'
             );
         }
 
