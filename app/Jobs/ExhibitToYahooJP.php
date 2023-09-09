@@ -54,11 +54,20 @@ class ExhibitToYahooJP implements ShouldQueue
         $user = $this->product->user;
 
         $yahooService = new YahooService($user);
-        $editItemResult = $yahooService->editItem($this->product);
+        
         $productBatch = ProductBatch::where('id', $this->productBatchId)->first();
         if (!isset($productBatch->message)) {
             $productBatch->message = "";
-        } 
+        }
+
+        try {
+            $editItemResult = $yahooService->editItem($this->product);
+        } catch (Throwable $e) {
+            $productBatch->message .= $e->getMessage();
+            $productBatch->save();
+            throw $e;
+        }
+
         $productBatch->message .= $this->product->asin . ": " . $editItemResult . "\n";
         $productBatch->save();
 

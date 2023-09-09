@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use AmazonPHP\SellingPartner\Model\Feeds\Feed;
+use AmazonPHP\SellingPartner\Model\MerchantFulfillment\Length;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -51,12 +52,23 @@ class UpdateYahooJPExhibit implements ShouldQueue
         $user = $this->productBatch->user;        
         $products = $this->productBatch->products->all();
         
+        $resultStr = '';
         $yahooService = new YahooService($user);
-        $yahooService->updateItemsPrice($products);
-        $yahooService->setStock($products);
-        
 
-        var_dump('UpdateYahooJPExhibit: ' . $this->productBatch->id);
+        try {
+            $resultStr .= "価格改定結果: \n";
+            $resultStr .= $yahooService->updateItemsPrice($products) . "\n";
+            $resultStr .= "在庫改定結果: \n";
+        $resultStr .= $yahooService->setStock($products);
+        } catch (Throwable $e) {
+            $resultStr .= "Yahoo JP 価格改定・在庫数改定 API エラー: \n";
+            $resultStr .= $e->getMessage() . "\n";
+            throw $e;
+        } finally {
+            $this->productBatch->update([
+                'message' => $resultStr
+            ]);
+        }
     }
 
     /**

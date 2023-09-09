@@ -391,24 +391,12 @@ class YahooService
             $err = curl_error($ch);
             curl_close($ch);
             if ($httpcode == 200 || $httpcode == 400) {
-                $xml = simplexml_load_string($result, 'SimpleXMLElement', LIBXML_NOCDATA);
-                if ($xml->Status == "OK") {
-                    $returnStr = "OK";
-                } else {
-                    $returnStr = array();
-                    $resultarray = json_decode(json_encode($xml), TRUE);
-                    foreach ($resultarray as $resultitem) {
-                        foreach ((array)$resultitem as $tempitem) {
-                            if (array_key_exists('ErrorKey', (array)$tempitem)) {
-                                $returnStr[] = $tempitem['ErrorKey'];
-                            }
-                        }
-                    }
-                }
+                $returnStr .= $result . "\n";
             } else {
-                throw new \Exception("Yahoo deleteItem API Error Code: " . $httpcode . "; ERROR: " . $err);
+                throw new \Exception("Yahoo updateItems API Error. Code: " . $httpcode . "; ERROR: " . $err);
             }
         }
+        return $returnStr;
     }
 
     public function setStock($products)
@@ -456,16 +444,12 @@ class YahooService
             $err = curl_error($ch);
             curl_close($ch);
             if ($httpcode == 200) {
-                $xml = simplexml_load_string($result, 'SimpleXMLElement', LIBXML_NOCDATA);
-                if (isset($xml['ok']) && intval($xml['ok']) > 0) {
-                    $returnStr = "OK";
-                } else {
-                    throw new \Exception("Yahoo setStock API Error Result: " . $xml);
-                }
+                $returnStr .= $result . "\n";
             } else {
                 throw new \Exception("Yahoo setStock API Error Code: " . $httpcode . "; ERROR: " . $err);
             }
         }
+        return $returnStr;
     }
 
     public static function getCategoryList($sellerid, $yahooAccessToken, $page_key = "")
