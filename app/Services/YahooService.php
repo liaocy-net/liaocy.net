@@ -169,6 +169,16 @@ class YahooService
         return "HFAY" . $itemCode . "K";
     }
 
+    public function getProductName($product)
+    {
+        $name = $product->title_jp ? $product->title_jp : $product->title_us;
+        if (mb_strpos($name, "???") !== false) {
+            $name = $product->title_us;
+        }   
+        return $name;
+        // return (mb_strlen($title) > 65 ? mb_substr($title, 0, 65) : $title) . " 並行輸入品";
+    }
+
     public function editItem($product)
     {
         //API DOC: https://developer.yahoo.co.jp/webapi/shopping/editItem.html
@@ -189,7 +199,7 @@ class YahooService
             'price' => $product->yahoo_jp_latest_exhibit_price,
         );
         // 商品名
-        $name = $product->title_jp ? $product->title_jp : $product->title_us;
+        $name = $this->getProductName($product);
         $params["name"] = (mb_strlen($name) > 65 ? mb_substr($name, 0, 65) : $name) . " 並行輸入品";
         // caption 商品説明
         $brand = $product->brand_jp ? $product->brand_jp : $product->brand_us;
