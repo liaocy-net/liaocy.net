@@ -59,15 +59,14 @@ class UpdateYahooJPExhibit implements ShouldQueue
             $resultStr .= "価格改定結果: \n";
             $resultStr .= $yahooService->updateItemsPrice($products) . "\n";
             $resultStr .= "在庫改定結果: \n";
-        $resultStr .= $yahooService->setStock($products);
+            $resultStr .= $yahooService->setStock($products);
         } catch (Throwable $e) {
             $resultStr .= "Yahoo JP 価格改定・在庫数改定 API エラー: \n";
             $resultStr .= $e->getMessage() . "\n";
             throw $e;
         } finally {
-            $this->productBatch->update([
-                'message' => $resultStr
-            ]);
+            $this->productBatch->message = $resultStr;
+            $this->productBatch->save();
         }
     }
 

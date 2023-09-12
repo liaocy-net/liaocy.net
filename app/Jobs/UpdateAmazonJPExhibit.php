@@ -13,6 +13,7 @@ use App\Services\AmazonService;
 use App\Services\FeedTypes;
 use App\Models\ProductBatch;
 use Throwable;
+use Exception;
 
 class UpdateAmazonJPExhibit implements ShouldQueue
 {
@@ -70,17 +71,19 @@ class UpdateAmazonJPExhibit implements ShouldQueue
             $this->productBatch->feed_id = $feedId;
             $this->productBatch->feed_document = $results["feedDocument"];
             $this->productBatch->save();
-            var_dump($this->productBatch->feed_id);
         }
 
         $feedId = $this->productBatch->feed_id;
         $this->productBatch->message = "AmazonJP価格改定状態確認がタイムアウトしました。Amazonセーラーコンソールで確認してください。";
         $this->productBatch->save();
 
-        $url = $amazonService->getFeedDocument($feedId)->getUrl();
+        try {
+            $url = $amazonService->getFeedDocument($feedId)->getUrl();
+        } catch (Throwable $e) {
+            throw new Exception("AmazonJP出品結果ファイルがまだ作成されていません。あとリトライします。");
+        }
         $message = file_get_contents($url);
         $message = mb_convert_encoding($message,"utf-8","sjis");
-        var_dump($message);
         $this->productBatch->message = $message;
         $this->productBatch->save();
     }

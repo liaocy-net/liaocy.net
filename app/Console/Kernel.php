@@ -209,7 +209,12 @@ class Kernel extends ConsoleKernel
 
                 // reservePublish
                 sleep(10);
-                $yahooService->reservePublish();
+                try {
+                    $yahooService->reservePublish();
+                } catch (Throwable $e) {
+                    Log::error($e->getMessage());
+                    $productBatch->message .= "\n" . $e->getMessage();
+                }
 
                 $productBatch->finished_at = now();
                 $productBatch->save();

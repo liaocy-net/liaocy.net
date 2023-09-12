@@ -328,7 +328,7 @@ class YahooService
         if ($httpcode == 200) {
             $returnStr = "OK";
         } else {
-            throw new \Exception("Yahoo reservePublish API Error Code: " . $httpcode . "; ERROR: " . $err);
+            throw new \Exception("Yahoo reservePublish API Error Code: " . $httpcode . "; RESULT: " . $result . "; ERROR: " . $err);
         }
 
         return $returnStr;
@@ -361,7 +361,7 @@ class YahooService
         if ($httpcode == 200) {
             $returnStr = "OK";
         } else {
-            throw new \Exception("Yahoo deleteItem API Error Code: " . $httpcode . "; ERROR: " . $err);
+            throw new \Exception("Yahoo deleteItem API Error Code: " . $httpcode . "; Result: " . $result . "; ERROR: " . $err);
         }
         return $returnStr;
     }
