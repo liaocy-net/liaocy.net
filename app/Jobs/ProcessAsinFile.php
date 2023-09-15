@@ -137,6 +137,7 @@ class ProcessAsinFile implements ShouldQueue
                 $product->user_id = $this->my->id;
                 $product->asin = $asin;
                 $product->sku = UtilityService::genSKU($product);
+                $product->item_code = UtilityService::genItemCode($product);
                 if ($this->yahooJpCategory) {
                     $product->yahoo_jp_product_category = $this->yahooJpCategory->product_category;
                     $product->yahoo_jp_path = $this->yahooJpCategory->path;

@@ -60,7 +60,8 @@
                                     <button type="submit" class="btn btn-primary waves-effect waves-light"><i class="fas fa-remove me-1"></i>Amazon JP 出品中から削除</button>
                                 </div>
                             </div>
-                        </form>
+                            <p class="text-muted">SKUの一覧ファイルをアップロードしてください。1行目は「sku」としてください。</p>
+                        </form> 
                         <table class="table table-bordered table-striped text-center">
                             <thead class="table-light">
                                 <tr>
@@ -105,6 +106,7 @@
                                     <button type="submit" class="btn btn-primary waves-effect waves-light"><i class="fas fa-remove me-1"></i>Yahoo JP 出品中から削除</button>
                                 </div>
                             </div>
+                            <p class="text-muted">Item Codeの一覧ファイルをアップロードしてください。1行目は「item_code」としてください。</p>
                         </form>
                         <table class="table table-bordered table-striped text-center">
                             <thead class="table-light">

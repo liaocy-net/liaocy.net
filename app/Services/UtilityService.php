@@ -92,6 +92,8 @@ class UtilityService
     public static function getProductsExcel($products) {
         $headers = [
             "asin",
+            "sku",
+            "item_code",
             "ap_jp",
             "title_jp",
             "title_us",
@@ -163,6 +165,8 @@ class UtilityService
         foreach($products as $index => $product){
             $columnNumber = 1;
             $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->asin);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->sku);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->item_code);
             $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->ap_jp);
             $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->title_jp);
             $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->title_us);
@@ -953,6 +957,16 @@ class UtilityService
     public static function genSKU(Product $product)
     {
         return "MZ-" . $product->asin;
+    }
+
+    // YahooJP商品管理番号生成
+    public static function genItemCode(Product $product)
+    {
+        $itemCode = $product->asin;
+        if (empty($itemCode)) {
+            throw new \Exception("Yahoo itemCode is empty");
+        }
+        return "HFAY" . $itemCode . "K";
     }
 
     public static function updateUSAmazonInfo($product)

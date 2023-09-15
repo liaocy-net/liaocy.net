@@ -131,15 +131,15 @@ class UpdateHistoryController extends Controller
 
             $file = new SplFileObject($request->asin_file);
             $file->setFlags(SplFileObject::READ_CSV);
-            $asins = [];
+            $codes = [];
             foreach ($file as $rowIndex => $row) {
                 if ($rowIndex === 0) {
                 } else {
                     if (empty($row[0])) {
                         continue;
                     }
-                    if (!in_array($row[0], $asins)) {
-                        array_push($asins, $row[0]);
+                    if (!in_array($row[0], $codes)) {
+                        array_push($codes, $row[0]);
                     }
                 }
             }
@@ -149,7 +149,7 @@ class UpdateHistoryController extends Controller
                 $my->products()->where([
                     ["amazon_jp_has_exhibited", true], //AmazonJPへ出品済み
                     ["cancel_exhibit_to_amazon_jp", "=", false], //削除されていない
-                ])->whereIn('asin', $asins)->update([
+                ])->whereIn('sku', $codes)->update([
                     "cancel_exhibit_to_amazon_jp" => true,
                 ]);
                 return redirect()->route('update_history.index')->with('success', 'Amazon JP 出品中から削除しました。');
@@ -157,7 +157,7 @@ class UpdateHistoryController extends Controller
                 $my->products()->where([
                     ["yahoo_jp_has_exhibited", true], //YahooJPへ出品済み
                     ["cancel_exhibit_to_yahoo_jp", "=", false], //削除されていない
-                ])->whereIn('asin', $asins)->update([
+                ])->whereIn('item_code', $codes)->update([
                     "cancel_exhibit_to_yahoo_jp" => true,
                 ]);
                 return redirect()->route('update_history.index')->with('success', 'Yahoo JP 出品中から削除しました。');

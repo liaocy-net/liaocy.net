@@ -48,11 +48,11 @@ class PrepareExhibitToYahooJP implements ShouldQueue
             if ($product->can_be_exhibit_to_yahoo_jp) {
                 $this->exhibitToYahooJPProductBatch->products()->attach($product);
 
-                // 同じユーザ/SKUの商品のYahooJP出品済みフラグをFalseにする
+                // 同じユーザ/ItemCodeの商品のYahooJP出品済みフラグをFalseにする
                 DB::table('products')
                     ->where([
                         ['user_id', $this->my->id],
-                        ['sku', $product->sku]
+                        ['item_code', $product->item_code]
                     ])
                     ->update([
                         'yahoo_jp_has_exhibited' => false,
@@ -64,6 +64,7 @@ class PrepareExhibitToYahooJP implements ShouldQueue
                 $product->yahoo_jp_has_exhibited = true; //YahooJP出品済みフラグ
                 $product->yahoo_is_in_checklist = false; //Yahoo CheckList に入っているかどうか
                 $product->yahoo_latest_check_at = Carbon::now(); //最新チェック日時
+                $product->yahoo_jp_has_edit_item_done = false; //YahooJP商品編集済みフラグ
 
                 $product->save();
 

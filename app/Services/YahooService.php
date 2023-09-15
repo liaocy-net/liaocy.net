@@ -74,9 +74,9 @@ class YahooService
         for ($i = 0; $i < count($productImageURLs); $i++) {
             $productImageURL = $productImageURLs[$i];
             if ($i == 0) {
-                $filename = $this->getItemCode($product) . ".jpg";
+                $filename = $product->item_code . ".jpg";
             } else {
-                $filename = $this->getItemCode($product) . "_" . $i . ".jpg";
+                $filename = $product->item_code . "_" . $i . ".jpg";
             }
             $path = AmazonProductImage::getPathByURL($productImageURL);
             
@@ -104,7 +104,7 @@ class YahooService
         $zipFileFolder = storage_path() . "/app/yahoo_product_images/";
         if(!File::isDirectory($zipFileFolder))
             File::makeDirectory($zipFileFolder, 0777, true, true);
-        $zipFileName = $zipFileFolder . $this->getItemCode($product) . ".zip";
+        $zipFileName = $zipFileFolder . $product->item_code . ".zip";
         $zip = new ZipArchive();
         $result = $zip->open($zipFileName, ZipArchive::CREATE);
         if($result === true)
@@ -112,9 +112,9 @@ class YahooService
             for ($i = 0; $i < count($productImageURLs); $i++) {
                 $productImageURL = $productImageURLs[$i];
                 if ($i == 0) {
-                    $filename = $this->getItemCode($product) . ".jpg";
+                    $filename = $product->item_code . ".jpg";
                 } else {
-                    $filename = $this->getItemCode($product) . "_" . $i . ".jpg";
+                    $filename = $product->item_code . "_" . $i . ".jpg";
                 }
                 $path = AmazonProductImage::getPathByURL($productImageURL);
                 
@@ -158,16 +158,6 @@ class YahooService
         //}
         return $returnStr;
     }
-    
-    // YahooJP商品管理番号生成
-    private function getItemCode($product)
-    {
-        $itemCode = $product->asin;
-        if (empty($itemCode)) {
-            throw new \Exception("Yahoo itemCode is empty");
-        }
-        return "HFAY" . $itemCode . "K";
-    }
 
     public function getProductName($product)
     {
@@ -193,7 +183,7 @@ class YahooService
         $params = array(
             'access_token' => $yahooAccessToken,
             'seller_id' => $this->user->yahoo_store_account,
-            'item_code' => $this->getItemCode($product),
+            'item_code' => $product->item_code,
             'path' => $product->yahoo_jp_path,
             'product_category' => $product->yahoo_jp_product_category,
             'price' => $product->yahoo_jp_latest_exhibit_price,
@@ -220,7 +210,7 @@ class YahooService
         if (!empty($product->weight_us)) {
             $caption .= "重量: " . round($product->weight_us * 1000) . "g<br />";
         }
-        $caption .= "商品番号: " . $this->getItemCode($product) . "<br />";
+        $caption .= "商品番号: " . $product->item_code . "<br />";
         if (!empty($product->color_us)) {
             $caption .= "色: " . $product->color_us . "<br />";
         }
@@ -246,7 +236,7 @@ class YahooService
         if (!empty($product->weight_us)) {
             $explanation .= "重量: " . round($product->weight_us * 1000) . "g\n";
         }
-        $explanation .= "商品番号: " . $this->getItemCode($product) . "\n";
+        $explanation .= "商品番号: " . $product->item_code . "\n";
         if (!empty($product->color_us)) {
             $explanation .= "色: " . $product->color_us . "\n";
         }
@@ -387,7 +377,7 @@ class YahooService
             $count = 0;
             foreach ($partProduct as $product) {
                 $count = $count + 1;
-                $params['item' . $count] = 'item_code=' . $this->getItemCode($product) . '&price=' . $product->yahoo_jp_latest_exhibit_price . '&sale_price=';
+                $params['item' . $count] = 'item_code=' . $product->item_code . '&price=' . $product->yahoo_jp_latest_exhibit_price . '&sale_price=';
             }
             $ch = curl_init($api);
             curl_setopt_array($ch, array(
@@ -431,7 +421,7 @@ class YahooService
             $allowOverdrafts = array();
 
             foreach ($partProduct as $product) {
-                $itemCodes[] = $this->getItemCode($product);
+                $itemCodes[] = $product->item_code;
                 $quantities[] = $product->yahoo_jp_latest_exhibit_quantity;
                 $allowOverdrafts[] = 0;
             }
