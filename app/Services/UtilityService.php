@@ -64,7 +64,11 @@ class UtilityService
         if (!empty($jobBatch->finished_at)) {
             return "出品完了";
         } elseif ($jobBatch->total_jobs == $jobBatch->failed_jobs) {
-            return "出品完了(全て失敗)";
+            if($jobBatch->message == "出品準備中") {
+                return "出品準備中";
+            } else {
+                return "出品完了(全て失敗)";
+            }
         } elseif ($jobBatch->pending_jobs != 0 && $jobBatch->pending_jobs == $jobBatch->failed_jobs) {
             return "出品完了(部分成功)";
         } else {

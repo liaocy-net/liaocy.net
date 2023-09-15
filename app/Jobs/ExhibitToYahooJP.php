@@ -27,7 +27,7 @@ class ExhibitToYahooJP implements ShouldQueue
      *
      * @var int
      */
-    public $tries = 2;
+    public $tries = 5;
 
     /**
      * Create a new job instance.
@@ -60,19 +60,30 @@ class ExhibitToYahooJP implements ShouldQueue
             $productBatch->message = "";
         }
 
-        try {
-            $editItemResult = $yahooService->editItem($this->product);
-        } catch (Throwable $e) {
-            $productBatch->message .= $e->getMessage();
+        $editItemResult = "";
+        if ($this->product->yahoo_jp_has_edit_item_done == false) {
+            try {
+                $editItemResult = $yahooService->editItem($this->product);
+            } catch (Throwable $e) {
+                $productBatch->message .= "\n" . $this->product->asin . ": " . $e->getMessage();
+                $productBatch->save();
+                throw $e;
+            }
+            $productBatch->message .= "\n" . $this->product->asin . " editItem: " . $editItemResult;
             $productBatch->save();
-            throw $e;
+
+            $this->product->yahoo_jp_has_edit_item_done = true;
+            $this->product->save();
         }
 
-        $productBatch->message .= $this->product->asin . ": " . $editItemResult . "\n";
-        $productBatch->save();
-
         if ($editItemResult == 'OK') {
-            $yahooService->uploadItemImagePack($this->product);
+            try {
+                $yahooService->uploadItemImagePack($this->product);
+            } catch (Throwable $e) {
+                $productBatch->message .= "\n" . $this->product->asin . " uploadItemImagePack: " . $e->getMessage();
+                $productBatch->save();
+                throw $e;
+            }
         }
     }
 
@@ -90,6 +101,12 @@ class ExhibitToYahooJP implements ShouldQueue
     {
         if (env('APP_DEBUG', 'false') == 'true') {
             var_dump($exception->getMessage());
+        }
+
+        if ($this->attempts() >= $this->tries) {
+            $productBatch = ProductBatch::where('id', $this->productBatchId)->first();
+            $productBatch->message .= "\n" . $this->product->asin . " [出品失敗]:" . $exception->getMessage();
+            $productBatch->save();
         }
     }
 }

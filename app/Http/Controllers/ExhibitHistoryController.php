@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Jobs\ExhibitToAmazonJP;
 use App\Jobs\ExhibitToYahooJP;
+use App\Jobs\PrepareExhibitToYahooJP;
+use App\Jobs\PrepareExhibitToAmazonJP;
 use App\Models\Product;
 use App\Models\ProductBatch;
 use App\Models\User;
@@ -364,75 +366,15 @@ class ExhibitHistoryController extends Controller
                     throw new \Exception('Already exhibited', 442);
                 }
 
-                $exhibitToJPProductBatch = new ProductBatch();
-                $exhibitToJPProductBatch->user_id = $my->id;
-                $exhibitToJPProductBatch->filename = $productBatch->filename;
-                $exhibitToJPProductBatch->action = "exhibit_to_amazon_jp";
-                $exhibitToJPProductBatch->is_exhibit_to_amazon = true;
-                $exhibitToJPProductBatch->save();
+                $exhibitToAmazonJPProductBatch = new ProductBatch();
+                $exhibitToAmazonJPProductBatch->user_id = $my->id;
+                $exhibitToAmazonJPProductBatch->filename = $productBatch->filename;
+                $exhibitToAmazonJPProductBatch->action = "exhibit_to_amazon_jp";
+                $exhibitToAmazonJPProductBatch->is_exhibit_to_amazon = true;
+                $exhibitToAmazonJPProductBatch->message = "出品準備中";
+                $exhibitToAmazonJPProductBatch->save();
 
-                foreach ($productBatch->products as $product) {
-                    if ($product->can_be_exhibit_to_amazon_jp) {
-                        $exhibitToJPProductBatch->products()->attach($product);
-
-                        // 同じユーザ/SKUの商品のAmazonJP出品済みフラグをFalseにする
-                        DB::table('products')
-                            ->where([
-                                ['user_id', $my->id],
-                                ['sku', $product->sku]
-                            ])
-                            ->update([
-                                'amazon_jp_has_exhibited' => false,
-                            ]);
-
-                        // 出品済みフラグ/価格を保存
-                        $product->amazon_jp_latest_exhibit_price = $product->can_be_exhibit_to_amazon_jp_price; //最新出品価格
-                        $product->amazon_jp_latest_exhibit_quantity = $my->amazon_stock; //最新出品数量
-                        $product->amazon_jp_has_exhibited = true; //AmazonJP出品済みフラグ
-                        $product->amazon_is_in_checklist = false; //Amazon CheckList に入っているかどうか
-                        $product->amazon_latest_check_at = Carbon::now(); //最新チェック日時
-
-                        // プライムリードタイムを設定
-                        $product->amazon_jp_leadtime_to_ship = $my->amazon_lead_time_prime;
-                        if ($product->maximum_hours_us && $product->maximum_hours_us > $my->amazon_lead_time_more) {
-                            $product->amazon_jp_leadtime_to_ship = $my->amazon_lead_time_more;
-                        }
-                        if ($product->maximum_hours_us && $product->maximum_hours_us < $product->amazon_lead_time_less) {
-                            $product->amazon_jp_leadtime_to_ship = $my->amazon_lead_time_less;
-                        }
-                        // maximumHours_usが24の倍数以外のものが表示されている場合で、pp_usで数字が入っているものに関してはプライムリードタイムを採用
-                        // 24の倍数以外のものが表示されている場合で、PP_USに数字が入っていないものに関しては、リードタイム(○日未満の場合)（短い方）を採用
-                        if ($product->maximum_hours_us % 24 != 0) {
-                            if ($product->pp_us) {
-                                $product->amazon_jp_leadtime_to_ship = $my->amazon_lead_time_prime;
-                            } else {
-                                $product->amazon_jp_leadtime_to_ship = $my->amazon_lead_time_less;
-                            }
-                        }
-                        
-
-                        $product->save();
-                    }
-                }
-                
-
-                $exhibitToAmazonJPJobs = array();
-                array_push($exhibitToAmazonJPJobs, new ExhibitToAmazonJP($exhibitToJPProductBatch));
-
-                $batch = Bus::batch($exhibitToAmazonJPJobs)->name("exhibit_to_amazon_jp_" . $my->getJobSuffix())->then(function (Batch $batch) {
-                    // すべてのジョブが正常に完了
-                })->catch(function (Batch $batch, Throwable $e) {
-                    // バッチジョブの失敗をはじめて検出
-                })->finally(function (Batch $batch) {
-                    // バッチジョブの完了
-                    $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
-                    $productBatch->finished_at = now();
-                    $productBatch->save();
-                })->onQueue('exhibit_to_amazon_jp_' . $my->getJobSuffix())->allowFailures()->dispatch();
-
-                
-                $exhibitToJPProductBatch->job_batch_id = $batch->id;
-                $exhibitToJPProductBatch->save();
+                PrepareExhibitToAmazonJP::dispatch($exhibitToAmazonJPProductBatch, $productBatch, $my)->onQueue('exhibit_to_amazon_jp_' . $my->getJobSuffix());
 
             } else if($params["act"] == "exhibit_to_yahoo_jp"){ //Yahoo JPに出品
                 $productBatch = ProductBatch::find($params['product_batch_id']);
@@ -450,69 +392,10 @@ class ExhibitHistoryController extends Controller
                 $exhibitToYahooJPProductBatch->filename = $productBatch->filename;
                 $exhibitToYahooJPProductBatch->action = "exhibit_to_yahoo_jp";
                 $exhibitToYahooJPProductBatch->is_exhibit_to_yahoo = true;
+                $exhibitToYahooJPProductBatch->message = "出品準備中";
                 $exhibitToYahooJPProductBatch->save();
 
-                $exhibitToYahooJPJobs = array();
-                foreach ($productBatch->products as $product) {
-                    if ($product->can_be_exhibit_to_yahoo_jp) {
-                        $exhibitToYahooJPProductBatch->products()->attach($product);
-
-                        // 同じユーザ/SKUの商品のYahooJP出品済みフラグをFalseにする
-                        DB::table('products')
-                            ->where([
-                                ['user_id', $my->id],
-                                ['sku', $product->sku]
-                            ])
-                            ->update([
-                                'yahoo_jp_has_exhibited' => false,
-                            ]);
-
-                        // 出品済みフラグ/価格を保存
-                        $product->yahoo_jp_latest_exhibit_price = $product->can_be_exhibit_to_yahoo_jp_price; //最新出品価格
-                        $product->yahoo_jp_latest_exhibit_quantity = $my->yahoo_stock; //最新出品数量
-                        $product->yahoo_jp_has_exhibited = true; //YahooJP出品済みフラグ
-                        $product->yahoo_is_in_checklist = false; //Yahoo CheckList に入っているかどうか
-                        $product->yahoo_latest_check_at = Carbon::now(); //最新チェック日時
-
-                        $product->save();
-
-                        array_push($exhibitToYahooJPJobs, new ExhibitToYahooJP($product, $exhibitToYahooJPProductBatch->id));
-                    }
-                }
-
-                $batch = Bus::batch($exhibitToYahooJPJobs)->name("exhibit_to_yahoo_jp")->then(function (Batch $batch) {
-                    // すべてのジョブが正常に完了
-                })->catch(function (Batch $batch, Throwable $e) {
-                    // バッチジョブの失敗をはじめて検出
-                })->finally(function (Batch $batch) {
-                    // バッチジョブの完了
-                    $productBatch = ProductBatch::where('job_batch_id', $batch->id)->first();
-
-                    // debug: Attempt to read property "user_id" on null
-                    if (is_null($productBatch)) {
-                        return;
-                    }
-
-                    $user = User::find($productBatch->user_id);
-                    $yahooService = new YahooService($user);
-                    
-                    // setStock
-                    sleep(10);
-                    $products = $productBatch->products->all();
-                    $yahooService->setStock($products);
-
-                    // reservePublish
-                    sleep(10);
-                    $yahooService->reservePublish();
-
-                    // save product batch
-                    $productBatch->finished_at = now();
-                    $productBatch->save();
-
-                })->onQueue('exhibit_to_yahoo_jp_' . $my->getJobSuffix())->allowFailures()->dispatch();
-
-                $exhibitToYahooJPProductBatch->job_batch_id = $batch->id;
-                $exhibitToYahooJPProductBatch->save();
+                PrepareExhibitToYahooJP::dispatch($exhibitToYahooJPProductBatch, $productBatch, $my)->onQueue('exhibit_to_yahoo_jp_' . $my->getJobSuffix());
                 
 
             } else {

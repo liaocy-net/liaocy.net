@@ -6,7 +6,7 @@ WORKDIR /var/www/html
 
 # パッケージのインストール
 RUN apt-get update \
-    && apt-get -y install git zip unzip vim zlib1g-dev libzip-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev libonig-dev
+    && apt-get -y install git zip unzip vim zlib1g-dev libzip-dev libfreetype6-dev libjpeg62-turbo-dev libpng-dev libonig-dev nginx
 
 RUN docker-php-ext-install gd \
     && docker-php-ext-install pdo_mysql \
@@ -20,10 +20,19 @@ RUN docker-php-ext-install gd \
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # copy php.ini
-COPY ./php.ini /usr/local/etc/php/php.ini
+COPY ./conf/php.ini /usr/local/etc/php/php.ini
 
+# copy nginx.conf
+COPY conf/nginx.conf /etc/nginx/sites-enabled/default
+
+# copy source
 COPY . /var/www/html
+
+# set permission
+RUN chmod -R 777 /var/www/html/storage
 
 # Install composer packages
 RUN composer install --no-interaction --no-dev --prefer-dist --optimize-autoloader
 
+# Runable entrypoint.sh
+RUN chmod +x /var/www/html/conf/entrypoint.sh

@@ -130,9 +130,9 @@ sudo mount -a
 ### Build and Replace
 
 ```bash
-$ docker build -f DockerfileWeb -t dev-charing:latest .
+$ sudo docker build -f Dockerfile -t dev-charing:latest .
 $ docker ps -a -q --filter="name=dev-charing" | xargs docker stop | xargs docker rm
-$ docker run -p 5000:8000 -d --name dev-charing --restart=always dev-charing:latest
+$ sudo docker run -p 5000:80 -d --name dev-charing --restart=always dev-charing:latest /var/www/html/conf/entrypoint.sh
 $ docker rmi $(docker images -f "dangling=true" -q)
 $ docker logs -f dev-charing
 

@@ -205,7 +205,7 @@
             if (history.has_feed_document) {
                 html += '<a href="{{route("exhibit_history.download_batch_feed_document_tsv")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">出品ファイル</a><br />';
             }
-            if (history.has_message && history.patch_status != '出品中') {
+            if (history.has_message) {
                 html += '<a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">';
                 html += 'メッセージ';
                 html += '</a>';
