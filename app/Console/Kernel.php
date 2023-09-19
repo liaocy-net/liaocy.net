@@ -82,7 +82,7 @@ class Kernel extends ConsoleKernel
             ["yahoo_is_in_checklist", false], //チェックキューに入っていない
             ["yahoo_latest_check_at", "<", Carbon::now()->subHour(24)], //最終チェックから24時間以上経過
             ["cancel_exhibit_to_yahoo_jp", false], //削除されていない
-        ])->limit(1000)->cursor();
+        ])->cursor();
 
         foreach($products as $product) {
             $product->amazon_is_in_checklist = true; //チェックキューに入った
@@ -118,7 +118,7 @@ class Kernel extends ConsoleKernel
             $products = Product::where([
                 ["user_id", $product_user->user_id],
                 ["amazon_jp_need_update_exhibit_info", true],
-            ])->limit(1000)->cursor();
+            ])->limit(5000)->cursor();
 
             $productBatch = new ProductBatch();
             $productBatch->user_id = $product_user->user_id;

@@ -2,17 +2,15 @@
 
 namespace App\Jobs;
 
+use App\Models\Product;
+use App\Services\UtilityService;
+use Carbon\Carbon;
 use Illuminate\Bus\Batchable;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Services\AmazonService;
-use App\Models\Product;
-use AmazonPHP\SellingPartner\Exception\ApiException;
-use App\Services\UtilityService;
-use Carbon\Carbon;
 
 class UpdateAmazonInfo implements ShouldQueue
 {
@@ -51,7 +49,25 @@ class UpdateAmazonInfo implements ShouldQueue
      */
     public function handle()
     {
+        if ($this->batch()->cancelled()) {
+            return;
+        }
+
         try {
+            $this->product->refresh(); //最新のDB情報を取得する
+
+            if ($this->product->amazon_is_in_checklist) {
+                if ($this->product->amazon_jp_has_exhibited == false || $this->product->cancel_exhibit_to_amazon_jp == true) { // AmazonJPから削除した場合は、チェックしない
+                    return;
+                }
+            }
+
+            if ($this->product->yahoo_is_in_checklist) {
+                if ($this->product->yahoo_jp_has_exhibited == false || $this->product->cancel_exhibit_to_yahoo_jp == true) { // YahooJPから削除した場合は、チェックしない
+                    return;
+                }
+            }
+
             $user = $this->product->user;
 
             UtilityService::updateUSAmazonInfo($this->product); //どの場合でも、USAmazonの情報を更新する
@@ -82,7 +98,7 @@ class UpdateAmazonInfo implements ShouldQueue
                 }
             }
 
-            if($this->product->amazon_is_in_checklist) {
+            if ($this->product->amazon_is_in_checklist) {
                 $this->product->amazon_latest_check_at = Carbon::now(); //最新チェック日時
                 $this->product->amazon_is_in_checklist = false;
                 $this->product->save();
@@ -108,8 +124,6 @@ class UpdateAmazonInfo implements ShouldQueue
                     }
                 }
             }
-
-            
         } catch (\Exception $e) {
             if ($this->attempts() < $this->tries) {
                 $this->release(10);
