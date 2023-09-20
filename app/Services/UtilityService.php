@@ -154,6 +154,8 @@ class UtilityService
             "YahooJP出品可否",
             "YahooJP出品可否メッセージ",
             "YahooJP出品価格(円)",
+            "AmazonJP価格改定理由",
+            "YahooJP価格改定理由",
         ];
 
         $spreadsheet = new Spreadsheet();
@@ -227,6 +229,8 @@ class UtilityService
             $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->can_be_exhibit_to_yahoo_jp ? "出品可能" : "出品不可");
             $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->can_be_exhibit_to_yahoo_jp_message);
             $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->can_be_exhibit_to_yahoo_jp_price);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->amazon_jp_need_update_exhibit_info_reason);
+            $sheet->setCellValue([$columnNumber++, ($index + 2)], $product->yahoo_jp_need_update_exhibit_info_reason);
         }
         return $spreadsheet;
     }
@@ -1092,7 +1096,8 @@ class UtilityService
         try {
             sleep(env("AMAZON_API_SLEEP_BEFORE_GET_PRODUCT_PRICING", 0.8));
             // https://developer-docs.amazon.com/sp-api/docs/product-pricing-api-v0-reference
-            $productPricing = $amazonService->getProductPricing($product);
+            $skipSellerId = $user->amazon_jp_selling_partner_id;
+            $productPricing = $amazonService->getProductPricing($product, $skipSellerId);
         } catch (ApiException $e) {
             $product->is_amazon_jp = false;
             $product->save();

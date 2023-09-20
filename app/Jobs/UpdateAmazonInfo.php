@@ -87,12 +87,14 @@ class UpdateAmazonInfo implements ShouldQueue
                             $this->product->yahoo_jp_latest_exhibit_price = $newPrice;
                             $this->product->yahoo_jp_latest_exhibit_quantity = $user->yahoo_stock;
                             $this->product->yahoo_jp_need_update_exhibit_info = true;
+                            $this->product->yahoo_jp_need_update_exhibit_info_reason = "価格改定: " . $canBeExhibitToYahooJP["message"];
                             $this->product->save();
                         }
                     } else {
                         //出品できない場合は、在庫を0にする
                         $this->product->yahoo_jp_latest_exhibit_quantity = 0;
                         $this->product->yahoo_jp_need_update_exhibit_info = true;
+                        $this->product->yahoo_jp_need_update_exhibit_info_reason = "在庫切れ: " . $canBeExhibitToYahooJP["message"];
                         $this->product->save();
                     }
                 }
@@ -112,14 +114,16 @@ class UpdateAmazonInfo implements ShouldQueue
                         if ($newPrice != $this->product->amazon_jp_latest_exhibit_price) {
                             //出品価格が変更されている場合は、出品価格を更新する
                             $this->product->amazon_jp_latest_exhibit_price = $newPrice;
-                            $this->product->yahoo_jp_latest_exhibit_quantity = $user->amazon_stock;
+                            $this->product->amazon_jp_latest_exhibit_quantity = $user->amazon_stock;
                             $this->product->amazon_jp_need_update_exhibit_info = true;
+                            $this->product->amazon_jp_need_update_exhibit_info_reason = "価格改定: " . $canBeExhibitToAmazonJP["message"];
                             $this->product->save();
                         }
                     } else {
                         //出品できない場合は、在庫を0にする
                         $this->product->amazon_jp_latest_exhibit_quantity = 0;
                         $this->product->amazon_jp_need_update_exhibit_info = true;
+                        $this->product->amazon_jp_need_update_exhibit_info_reason = "在庫切れ: " . $canBeExhibitToAmazonJP["message"];
                         $this->product->save();
                     }
                 }
@@ -131,8 +135,10 @@ class UpdateAmazonInfo implements ShouldQueue
                 //異常が起こした場合は、在庫を0にする
                 $this->product->amazon_jp_latest_exhibit_quantity = 0;
                 $this->product->amazon_jp_need_update_exhibit_info = true;
+                $this->product->amazon_jp_need_update_exhibit_info_reason = "異常: " . $e->getMessage();
                 $this->product->yahoo_jp_latest_exhibit_quantity = 0;
                 $this->product->yahoo_jp_need_update_exhibit_info = true;
+                $this->product->yahoo_jp_need_update_exhibit_info_reason = "異常: " . $e->getMessage();
                 $this->product->save();
                 throw $e;
             }

@@ -123,6 +123,7 @@ class Kernel extends ConsoleKernel
             $productBatch = new ProductBatch();
             $productBatch->user_id = $product_user->user_id;
             $productBatch->action = "update_amazon_jp_exhibit";
+            $productBatch->filename = '価格改定';
             $productBatch->save();
 
             
@@ -180,6 +181,7 @@ class Kernel extends ConsoleKernel
             $productBatch = new ProductBatch();
             $productBatch->user_id = $product_user->user_id;
             $productBatch->action = "update_yahoo_jp_exhibit";
+            $productBatch->filename = '価格改定';
             $productBatch->save();
 
             

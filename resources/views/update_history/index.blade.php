@@ -65,6 +65,7 @@
                         <table class="table table-bordered table-striped text-center">
                             <thead class="table-light">
                                 <tr>
+                                    <th>Excel</th>
                                     <th>変更日時</th>
                                     <th>ステータス</th>
                                     <th>価格改定件数</th>
@@ -111,6 +112,7 @@
                         <table class="table table-bordered table-striped text-center">
                             <thead class="table-light">
                                 <tr>
+                                    <th>Excel</th>
                                     <th>変更日時</th>
                                     <th>ステータス</th>
                                     <th>価格改定件数</th>
@@ -171,6 +173,7 @@
             let html = '';
             data.product_batches.data.forEach(history => {
                 html += '<tr>';
+                html += '<td><a href="/amazon_info/' + history.product_batch_id + '"><i class="fa-regular fa-circle-down"></i></a></td>';
                 html += '<td>' + (history.start_at ? history.start_at : '-') + '</td>';
                 html += '<td>' + history.patch_status + '</td>';
                 html += '<td>' + history.products_count + '</td>';
@@ -180,7 +183,7 @@
                     html += '<a href="{{route("exhibit_history.download_batch_feed_document_tsv")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">改定ファイル</a> ';
                 }
                 if (history.has_message && history.end_at) {
-                    html += '<a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">詳細</a>';
+                    html += '<a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">履歴</a>';
                 }
                 html += '</td>';
 
@@ -210,6 +213,7 @@
             let html = '';
             data.product_batches.data.forEach(history => {
                 html += '<tr>';
+                html += '<td><a href="/amazon_info/' + history.product_batch_id + '"><i class="fa-regular fa-circle-down"></i></a></td>';
                 html += '<td>' + (history.start_at ? history.start_at : '-') + '</td>';
                 html += '<td>' + history.patch_status + '</td>';
                 html += '<td>' + history.products_count + '</td>';
@@ -221,6 +225,7 @@
                 if (history.has_message && history.end_at) {
                     html += '<a href="{{route("exhibit_history.product_batch_message")}}?product_batch_id=' + history.product_batch_id + '" target="_blank">詳細</a>';
                 }
+
                 html += '</td>';
 
                 html += '</tr>';
