@@ -396,11 +396,11 @@
                                     <span class="input-group-text col-5">Yahoo JP 価格自動改定</span>
                                     <div class="col-form-label input-group-text col-7">
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="yahoo_jp_should_update_price" id="yahoo_jp_should_update_price_on" value="0" @if ($my->yahoo_jp_should_update_price == true) checked @endif>
+                                            <input class="form-check-input" type="radio" name="yahoo_jp_should_update_price" id="yahoo_jp_should_update_price_on" value="1" @if ($my->yahoo_jp_should_update_price == true) checked @endif>
                                             <label class="form-check-label" for="yahoo_jp_should_update_price_on">ON</label>
                                         </div>
                                         <div class="form-check form-check-inline">
-                                            <input class="form-check-input" type="radio" name="yahoo_jp_should_update_price" id="yahoo_jp_should_update_price_off" value="1" @if ($my->yahoo_jp_should_update_price == false) checked @endif>
+                                            <input class="form-check-input" type="radio" name="yahoo_jp_should_update_price" id="yahoo_jp_should_update_price_off" value="0" @if ($my->yahoo_jp_should_update_price == false) checked @endif>
                                             <label class="form-check-label" for="yahoo_jp_should_update_price_off">OFF</label>
                                         </div>
                                     </div>
