@@ -337,6 +337,7 @@ class ExhibitHistoryController extends Controller
                         throw new \Exception("product not found", 442);
                     }
                     $product->cancel_exhibit_to_amazon_jp = true;
+                    $product->refreshAdditionalInfo();
                     $product->save();
                 }
             } else if($params["act"] == "cancel_exhibit_to_yahoo_jp") {
@@ -353,6 +354,7 @@ class ExhibitHistoryController extends Controller
                         throw new \Exception("product not found", 442);
                     }
                     $product->cancel_exhibit_to_yahoo_jp = true;
+                    $product->refreshAdditionalInfo();
                     $product->save();
                 }
             } else if($params["act"] == "exhibit_to_amazon_jp"){ //Amazon JPに出品
