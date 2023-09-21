@@ -2,21 +2,22 @@
 
 namespace App\Console;
 
-use Illuminate\Console\Scheduling\Schedule;
-use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 use App\Jobs\RefreshYahooAPIAuth;
-use App\Models\Product;
-use App\Models\User;
-use Illuminate\Support\Facades\Log;
-use Carbon\Carbon;
 use App\Jobs\UpdateAmazonInfo;
-use Illuminate\Bus\Batch;
-use Illuminate\Support\Facades\Bus;
-use App\Models\ProductBatch;
 use App\Jobs\UpdateAmazonJPExhibit;
 use App\Jobs\UpdateYahooJPExhibit;
+use App\Models\AmazonProductImage;
+use App\Models\Product;
+use App\Models\ProductBatch;
+use App\Models\User;
 use App\Services\YahooService;
+use Carbon\Carbon;
+use Illuminate\Bus\Batch;
+use Illuminate\Console\Scheduling\Schedule;
+use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
+use Illuminate\Support\Facades\Bus;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 
@@ -49,6 +50,11 @@ class Kernel extends ConsoleKernel
         // Probably due to a worker crash.
         $schedule->call(function () {
             $this->releaseAllReservedJobs();
+        })->hourlyAt(0);
+
+        // Remove old product images
+        $schedule->call(function () {
+            $this->removeOldProductImages();
         })->hourlyAt(0);
     }
 
@@ -238,6 +244,13 @@ class Kernel extends ConsoleKernel
         foreach($jobs as $job) {
             Log::info("releaseAllReservedJobs: " . $job->id);
             DB::table('jobs')->where('id', $job->id)->update(['reserved_at' => null]);
+        }
+    }
+
+    protected function removeOldProductImages() {
+        $images = AmazonProductImage::where("created_at", "<", now()->subDay(7))->get();
+        foreach($images as $image) {
+            $image->removeRecordAndFile();
         }
     }
 }

@@ -147,6 +147,8 @@ class YahooService
         $httpcode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         $err = curl_error($ch);
         curl_close($ch);
+        // remove zip file
+        unlink($zipFileName);
         if ($httpcode == 200) {
             $returnStr = "OK";
         } elseif ($httpcode == 503) {

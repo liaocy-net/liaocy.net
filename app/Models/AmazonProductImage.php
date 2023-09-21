@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class AmazonProductImage extends Model
@@ -37,5 +38,21 @@ class AmazonProductImage extends Model
             }
         }
         return null;
+    }
+
+    public function removeRecordAndFile() 
+    {
+        $image = AmazonProductImage::where("url", $this->url)->first();
+        if ($image) {
+            try {
+                $name = md5($this->url) . '.' . substr($this->url, strrpos($this->url, '.') + 1);
+                $path = "amazon_product_images/" . $name;
+                Storage::delete($path);
+            } catch (\Exception $e) {
+                Log::warning("Remove image " . $this->url . " failed: " . $e->getMessage());
+            }
+            
+            $image->delete();
+        }
     }
 }
