@@ -236,7 +236,7 @@
                 }
                 html += '</td>';
                 
-                html += '<td><img style="max-width:50px;" src="' + product.img_url_01 + '" /></td>';
+                html += '<td><a href="' + product.img_url_01 + '" target="_blank"><img style="max-width:50px;" src="' + product.img_url_01 + '" /></a></td>';
                 if (product.title_jp) {
                     html += '<td>' + product.title_jp + '</td>';
                 } else if (product.title_us) {
