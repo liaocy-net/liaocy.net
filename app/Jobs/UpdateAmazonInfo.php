@@ -49,20 +49,23 @@ class UpdateAmazonInfo implements ShouldQueue
      */
     public function handle()
     {
-        if ($this->batch()->cancelled()) {
-            return;
-        }
 
         try {
             $this->product->refresh(); //最新のDB情報を取得する
 
             if ($this->product->amazon_is_in_checklist) {
+                $this->product->amazon_latest_check_at = Carbon::now(); //最新チェック日時
+                $this->product->amazon_is_in_checklist = false;
+                $this->product->save();
                 if ($this->product->amazon_jp_has_exhibited == false || $this->product->cancel_exhibit_to_amazon_jp == true) { // AmazonJPから削除した場合は、チェックしない
                     return;
                 }
             }
 
             if ($this->product->yahoo_is_in_checklist) {
+                $this->product->yahoo_latest_check_at = Carbon::now(); //最新チェック日時
+                $this->product->yahoo_is_in_checklist = false;
+                $this->product->save();
                 if ($this->product->yahoo_jp_has_exhibited == false || $this->product->cancel_exhibit_to_yahoo_jp == true) { // YahooJPから削除した場合は、チェックしない
                     return;
                 }
@@ -72,10 +75,6 @@ class UpdateAmazonInfo implements ShouldQueue
 
             UtilityService::updateUSAmazonInfo($this->product); //どの場合でも、USAmazonの情報を更新する
             if ($this->product->yahoo_is_in_checklist) {
-                $this->product->yahoo_latest_check_at = Carbon::now(); //最新チェック日時
-                $this->product->yahoo_is_in_checklist = false;
-                $this->product->save();
-
                 if ($user->yahoo_jp_should_update_price) {
                     //YahooJP出品可能かどうかをチェックする
                     $canBeExhibitToYahooJP = UtilityService::canBeExhibitToYahooJP($user, $this->product);
@@ -101,10 +100,6 @@ class UpdateAmazonInfo implements ShouldQueue
             }
 
             if ($this->product->amazon_is_in_checklist) {
-                $this->product->amazon_latest_check_at = Carbon::now(); //最新チェック日時
-                $this->product->amazon_is_in_checklist = false;
-                $this->product->save();
-
                 if ($user->amazon_jp_should_update_price) {
                     UtilityService::updateJPAmazonInfo($this->product); //AmazonJP更新要の場合のみ、AmazonJPの情報を更新する
                     //AmazonJP出品可能かどうかをチェックする
