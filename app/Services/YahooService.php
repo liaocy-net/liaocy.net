@@ -7,6 +7,7 @@ require_once(__DIR__ . "/../../vendor/autoload.php");
 use App\Models\AmazonProductImage;
 use App\Models\Product;
 use CURLFile;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use YConnect\Credential\ClientCredential;
@@ -219,9 +220,10 @@ class YahooService
         if (!empty($product->material_type_us)) {
             $caption .= "素材: " . $product->material_type_us . "<br />";
         }
+        $caption .= Carbon::now()->rawFormat('Ymd');
         $params["caption"] = $caption;
         // explanation 商品説明
-        $explanation = $name . "\n";
+        $explanation = "商品名: " . $product->title_jp . " " . $product->title_us . "\n";
         $explanation .= "ブランド: " . $brand . "\n";
         if (!empty($product->size_us)) {
             $explanation .= "商品サイズ: " . $product->size_us . "\n";
@@ -238,7 +240,7 @@ class YahooService
         if (!empty($product->weight_us)) {
             $explanation .= "重量: " . round($product->weight_us * 1000) . "g\n";
         }
-        $explanation .= "商品番号: " . $product->item_code . "\n";
+        $explanation .= "商品番号: " . $product->model_us . "\n";
         if (!empty($product->color_us)) {
             $explanation .= "色: " . $product->color_us . "\n";
         }
