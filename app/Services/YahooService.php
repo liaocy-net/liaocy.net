@@ -252,7 +252,7 @@ class YahooService
         $explanation = mb_strlen($explanation) > 500 ? mb_substr($explanation, 0, 500) : $explanation;
         $params["explanation"] = $explanation;
         // headline キャッチコピー
-        $headline = "送料無料!" . $product->title_jp . $product->title_us . "\n";
+        $headline = "送料無料!" . $product->brand_us . $product->model_us . "\n";
         $headline = mb_strlen($headline) > 30 ? mb_substr($headline, 0, 30) : $headline;
         $params["headline"] = $headline;
         // abstract 商品説明
