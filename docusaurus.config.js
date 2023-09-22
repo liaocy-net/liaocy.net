@@ -33,7 +33,31 @@ const config = {
   // may want to replace "en" with "zh-Hans".
   i18n: {
     defaultLocale: 'en',
-    locales: ['ja'],
+    locales: ['en', 'ja', 'zh'],
+    path: 'i18n',
+    localeConfigs: {
+      en: {
+        label: 'English',
+        direction: 'ltr',
+        htmlLang: 'en',
+        calendar: 'gregory',
+        path: 'en',
+      },
+      ja: {
+        label: '日本語',
+        direction: 'ltr',
+        htmlLang: 'ja',
+        calendar: 'gregory',
+        path: 'jp',
+      },
+      zh: {
+        label: '简体中文',
+        direction: 'ltr',
+        htmlLang: 'zh',
+        calendar: 'gregory',
+        path: 'zh',
+      }
+    },
   },
 
   presets: [
@@ -78,9 +102,17 @@ const config = {
             type: 'docSidebar',
             sidebarId: 'tutorialSidebar',
             position: 'left',
-            label: 'Tutorial',
+            label: 'Docs',
           },
-          {to: '/blog', label: 'Blog', position: 'left'},
+          {
+            to: '/blog',
+            label: 'Blog',
+            position: 'left',
+          },
+          {
+            type: 'localeDropdown',
+            position: 'right',
+          },
           {
             href: 'https://github.com/liaocy-net/liaocy.net',
             label: 'GitHub',
@@ -131,7 +163,6 @@ const config = {
         respectPrefersColorScheme: false,
       },
     }),
-  
 };
 
 module.exports = config;
