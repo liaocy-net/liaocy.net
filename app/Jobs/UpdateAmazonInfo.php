@@ -59,7 +59,7 @@ class UpdateAmazonInfo implements ShouldQueue
                 $this->product->amazon_is_in_checklist = false;
                 $this->product->save();
                 if ($this->product->amazon_jp_has_exhibited == 0 || $this->product->cancel_exhibit_to_amazon_jp == 1) { // AmazonJPから削除した場合は、チェックしない
-                    Log::debug("Skip UpdateAmazonInfo for Amazon JP product ", $this->product->sku . " " . $this->product->amazon_jp_has_exhibited . " " . $this->product->cancel_exhibit_to_amazon_jp);
+                    Log::debug("Skip UpdateAmazonInfo for Amazon JP product " . $this->product->sku . " " . $this->product->amazon_jp_has_exhibited . " " . $this->product->cancel_exhibit_to_amazon_jp);
                     return;
                 }
             }
