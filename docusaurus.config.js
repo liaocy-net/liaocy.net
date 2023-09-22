@@ -48,7 +48,7 @@ const config = {
         direction: 'ltr',
         htmlLang: 'ja',
         calendar: 'gregory',
-        path: 'jp',
+        path: 'ja',
       },
       zh: {
         label: '简体中文',

@@ -1,4 +1,5 @@
 {
+  "license": "UNLICENSED",
   "name": "liaocy-net",
   "version": "0.0.0",
   "private": true,
@@ -42,6 +43,5 @@
   },
   "engines": {
     "node": ">=16.14"
-  },
-  "license": "MIT"
+  }
 }
