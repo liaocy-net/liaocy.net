@@ -91,8 +91,12 @@ class Kernel extends ConsoleKernel
         ])->cursor();
 
         foreach($products as $product) {
-            $product->amazon_is_in_checklist = true; //チェックキューに入った
-            $product->yahoo_is_in_checklist = true; //チェックキューに入った
+            if ($product->amazon_jp_has_exhibited) {
+                $product->amazon_is_in_checklist = true; //チェックキューに入った
+            }
+            if ($product->yahoo_jp_has_exhibited) {
+                $product->yahoo_is_in_checklist = true; //チェックキューに入った
+            }
             $product->save();
 
             $user = User::find($product->user_id);
