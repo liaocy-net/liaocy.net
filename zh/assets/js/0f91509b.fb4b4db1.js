@@ -1,0 +1,1 @@
+"use strict";(self.webpackChunkliaocy_net=self.webpackChunkliaocy_net||[]).push([[5849],{451:a=>{a.exports=JSON.parse('{"label":"hola","permalink":"/zh/blog/tags/hola","allTagsPath":"/zh/blog/tags","count":1,"unlisted":false}')}}]);
