@@ -21,7 +21,7 @@ const config = {
 
   // GitHub pages deployment config.
   // If you aren't using GitHub pages, you don't need these.
-  organizationName: 'net.liaocy', // Usually your GitHub org/user name.
+  organizationName: 'liaocy-net', // Usually your GitHub org/user name.
   projectName: 'liaocy-net', // Usually your repo name.
 
   onBrokenLinks: 'throw',
