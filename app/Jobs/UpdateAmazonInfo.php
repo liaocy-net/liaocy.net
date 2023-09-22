@@ -77,7 +77,7 @@ class UpdateAmazonInfo implements ShouldQueue
             $user = $this->product->user;
 
             UtilityService::updateUSAmazonInfo($this->product); //どの場合でも、USAmazonの情報を更新する
-            if ($this->product->yahoo_is_in_checklist) {
+            if ($this->product->yahoo_jp_has_exhibited) {
                 if ($user->yahoo_jp_should_update_price) {
                     //YahooJP出品可能かどうかをチェックする
                     $canBeExhibitToYahooJP = UtilityService::canBeExhibitToYahooJP($user, $this->product);
@@ -102,7 +102,7 @@ class UpdateAmazonInfo implements ShouldQueue
                 }
             }
 
-            if ($this->product->amazon_is_in_checklist) {
+            if ($this->product->amazon_jp_has_exhibited) {
                 if ($user->amazon_jp_should_update_price) {
                     UtilityService::updateJPAmazonInfo($this->product); //AmazonJP更新要の場合のみ、AmazonJPの情報を更新する
                     //AmazonJP出品可能かどうかをチェックする
