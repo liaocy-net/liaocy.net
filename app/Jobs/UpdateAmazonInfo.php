@@ -79,6 +79,7 @@ class UpdateAmazonInfo implements ShouldQueue
             UtilityService::updateUSAmazonInfo($this->product); //どの場合でも、USAmazonの情報を更新する
             if ($this->product->yahoo_jp_has_exhibited) {
                 if ($user->yahoo_jp_should_update_price) {
+                    Log::debug("Check UpdateAmazonInfo for Yahoo JP product " . $this->product->item_code);
                     //YahooJP出品可能かどうかをチェックする
                     $canBeExhibitToYahooJP = UtilityService::canBeExhibitToYahooJP($user, $this->product);
                     if ($canBeExhibitToYahooJP["canBeExhibit"]) {
@@ -104,6 +105,7 @@ class UpdateAmazonInfo implements ShouldQueue
 
             if ($this->product->amazon_jp_has_exhibited) {
                 if ($user->amazon_jp_should_update_price) {
+                    Log::debug("Check UpdateAmazonInfo for Amazon JP product " . $this->product->sku);
                     UtilityService::updateJPAmazonInfo($this->product); //AmazonJP更新要の場合のみ、AmazonJPの情報を更新する
                     //AmazonJP出品可能かどうかをチェックする
                     $canBeExhibitToAmazonJP = UtilityService::canBeExhibitToAmazonJP($user, $this->product);
