@@ -81,12 +81,12 @@ class Kernel extends ConsoleKernel
         $products = Product::where([
             ["amazon_jp_has_exhibited", true], //AmazonJPへ出品済み
             ["amazon_is_in_checklist", false], //チェックキューに入っていない
-            ["amazon_latest_check_at", "<", Carbon::now()->subHour(24)], //最終チェックから24時間以上経過
+            ["amazon_latest_check_at", "<", Carbon::now()->subHour(0)], //最終チェックから24時間以上経過
             ["cancel_exhibit_to_amazon_jp", false], //削除されていない
         ])->orWhere([
             ["yahoo_jp_has_exhibited", true], //YahooJPへ出品済み
             ["yahoo_is_in_checklist", false], //チェックキューに入っていない
-            ["yahoo_latest_check_at", "<", Carbon::now()->subHour(24)], //最終チェックから24時間以上経過
+            ["yahoo_latest_check_at", "<", Carbon::now()->subHour(0)], //最終チェックから24時間以上経過
             ["cancel_exhibit_to_yahoo_jp", false], //削除されていない
         ])->cursor();
 
