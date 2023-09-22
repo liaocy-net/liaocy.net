@@ -11,6 +11,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 class UpdateAmazonInfo implements ShouldQueue
 {
@@ -58,6 +59,7 @@ class UpdateAmazonInfo implements ShouldQueue
                 $this->product->amazon_is_in_checklist = false;
                 $this->product->save();
                 if ($this->product->amazon_jp_has_exhibited == false || $this->product->cancel_exhibit_to_amazon_jp == true) { // AmazonJPから削除した場合は、チェックしない
+                    Log::info("Skip UpdateAmazonInfo for Amazon JP product " . $this->product->sku);
                     return;
                 }
             }
@@ -67,6 +69,7 @@ class UpdateAmazonInfo implements ShouldQueue
                 $this->product->yahoo_is_in_checklist = false;
                 $this->product->save();
                 if ($this->product->yahoo_jp_has_exhibited == false || $this->product->cancel_exhibit_to_yahoo_jp == true) { // YahooJPから削除した場合は、チェックしない
+                    Log::info("Skip UpdateAmazonInfo for Yahoo JP product " . $this->product->item_code);
                     return;
                 }
             }
