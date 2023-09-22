@@ -83,14 +83,15 @@ class UpdateAmazonInfo implements ShouldQueue
                     //YahooJP出品可能かどうかをチェックする
                     $canBeExhibitToYahooJP = UtilityService::canBeExhibitToYahooJP($user, $this->product);
                     if ($canBeExhibitToYahooJP["canBeExhibit"]) {
+                        $oldPrice = $this->product->yahoo_jp_latest_exhibit_price;
                         $newPrice = $canBeExhibitToYahooJP["exhibitPrice"]; //最新出品価格
 
-                        if ($newPrice != $this->product->yahoo_jp_latest_exhibit_price) {
+                        if ($newPrice != $oldPrice) {
                             //出品価格が変更されている場合は、出品価格を更新する
                             $this->product->yahoo_jp_latest_exhibit_price = $newPrice;
                             $this->product->yahoo_jp_latest_exhibit_quantity = $user->yahoo_stock;
                             $this->product->yahoo_jp_need_update_exhibit_info = true;
-                            $this->product->yahoo_jp_need_update_exhibit_info_reason = "価格改定: " . $canBeExhibitToYahooJP["message"];
+                            $this->product->yahoo_jp_need_update_exhibit_info_reason = "価格改定: " . $oldPrice . "->" . $newPrice . " " . $canBeExhibitToYahooJP["message"];
                             $this->product->save();
                         }
                     } else {
@@ -110,13 +111,14 @@ class UpdateAmazonInfo implements ShouldQueue
                     //AmazonJP出品可能かどうかをチェックする
                     $canBeExhibitToAmazonJP = UtilityService::canBeExhibitToAmazonJP($user, $this->product);
                     if ($canBeExhibitToAmazonJP["canBeExhibit"]) {
+                        $oldPrice = $this->product->amazon_jp_latest_exhibit_price;
                         $newPrice = $canBeExhibitToAmazonJP["exhibitPrice"]; //最新出品価格
-                        if ($newPrice != $this->product->amazon_jp_latest_exhibit_price) {
+                        if ($newPrice != $oldPrice) {
                             //出品価格が変更されている場合は、出品価格を更新する
                             $this->product->amazon_jp_latest_exhibit_price = $newPrice;
                             $this->product->amazon_jp_latest_exhibit_quantity = $user->amazon_stock;
                             $this->product->amazon_jp_need_update_exhibit_info = true;
-                            $this->product->amazon_jp_need_update_exhibit_info_reason = "価格改定: " . $canBeExhibitToAmazonJP["message"];
+                            $this->product->amazon_jp_need_update_exhibit_info_reason = "価格改定: " . $oldPrice . "->" . $newPrice . " " . $canBeExhibitToAmazonJP["message"];
                             $this->product->save();
                         }
                     } else {
