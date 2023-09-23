@@ -24,7 +24,7 @@ class UpdateAmazonInfo implements ShouldQueue
      *
      * @var int
      */
-    public $tries = 2;
+    public $tries = 5;
 
     /**
      * The number of seconds to wait before retrying the job.
@@ -145,6 +145,16 @@ class UpdateAmazonInfo implements ShouldQueue
                 throw $e;
             }
         }
+    }
+
+    /**
+     * ジョブを再試行する前に待機する秒数を計算
+     *
+     * @return array
+     */
+    public function backoff()
+    {
+        return [1 * 60, 2 * 60, 5 * 60, 10 * 60, 20 * 60, 40 * 60, 60 * 60];
     }
 
     public function failed($exception)
