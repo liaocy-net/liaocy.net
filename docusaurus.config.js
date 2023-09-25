@@ -102,7 +102,7 @@ const config = {
         title: 'Jackie Liao',
         logo: {
           alt: 'Jackie Liao',
-          src: 'img/logo.svg',
+          src: 'img/logo.png',
         },
         items: [
           {
