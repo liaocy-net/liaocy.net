@@ -167,6 +167,21 @@ const config = {
         respectPrefersColorScheme: false,
       },
     }),
+  plugins: [
+    [
+      require.resolve("@cmfcmf/docusaurus-search-local"),
+      {
+        indexDocs: true,
+        indexDocSidebarParentCategories: 0,
+        indexBlog: true,
+        indexPages: false,
+        language: ['en', 'ja', 'zh'],
+        lunr: {
+            tokenizerSeparator: /[\s\-\u{3000}-\u{301C}\u{3041}-\u{3093}\u{309B}-\u{309E}]+/gu
+        }
+      },
+    ],
+  ],
 };
 
 module.exports = config;
