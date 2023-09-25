@@ -1,7 +1,7 @@
 import clsx from 'clsx';
 import Heading from '@theme/Heading';
 import styles from './styles.module.css';
-import WorkTimeLine from '@site/src/components/TimeLine';
+import ResumeTimeLine from '@site/src/components/TimeLine';
 
 type FeatureItem = {
   title: string;
@@ -66,7 +66,7 @@ export default function HomepageFeatures(): JSX.Element {
           ))}
         </div>
         <div className="row">
-          <WorkTimeLine />
+          <ResumeTimeLine />
         </div>
       </div>
     </section>
