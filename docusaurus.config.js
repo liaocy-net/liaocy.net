@@ -60,9 +60,9 @@ const config = {
     },
   },
 
-  plugins: [[ require.resolve('docusaurus-lunr-search'), {
-    languages: ['en', 'ja', 'zh'] // language codes
-  }]],
+  // plugins: [[ require.resolve('docusaurus-lunr-search'), {
+    // languages: ['en', 'ja', 'zh'] // language codes
+  // }]],
 
   presets: [
     [
