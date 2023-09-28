@@ -2,6 +2,7 @@ import clsx from 'clsx';
 import Heading from '@theme/Heading';
 import styles from './styles.module.css';
 import ResumeTimeLine from '@site/src/components/TimeLine';
+import SkillWordCloud from '@site/src/components/SkillWordCloud';
 
 type FeatureItem = {
   title: string;
@@ -60,10 +61,13 @@ export default function HomepageFeatures(): JSX.Element {
   return (
     <section className={styles.features}>
       <div className="container">
-        <div className="row">
+        <div className="row" style={{"display": "none"}}>
           {FeatureList.map((props, idx) => (
             <Feature key={idx} {...props} />
           ))}
+        </div>
+        <div className="row">
+          <SkillWordCloud />
         </div>
         <div className="row">
           <ResumeTimeLine />
