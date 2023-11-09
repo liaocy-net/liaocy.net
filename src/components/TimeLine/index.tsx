@@ -40,18 +40,18 @@ const ResumeList: ResumeItem[] = [
     description: '',
   },
   {
+    type: Type.Certification,
+    date: 'Issued November 2022',
+    title: 'Applied Information Technology Engineer Examination',
+    subtitle: 'IPA (Information-technology Promotion Agency)',
+    description: 'Credential ID: AP-2022-10-02822',
+  },
+  {
     type: Type.Work,
     date: 'April 2019 - September 2021',
     title: 'System Engineer',
     subtitle: 'Softbank Corp.',
     description: '',
-  },
-  {
-    type: Type.Certification,
-    date: 'Issued November 2019',
-    title: 'Applied Information Technology Engineer Examination',
-    subtitle: 'IPA (Information-technology Promotion Agency)',
-    description: 'Credential ID: AP-2022-10-02822',
   },
   {
     type: Type.Certification,
