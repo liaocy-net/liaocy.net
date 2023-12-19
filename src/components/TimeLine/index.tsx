@@ -20,8 +20,8 @@ type ResumeItem = {
 const ResumeList: ResumeItem[] = [
   {
     type: Type.Work,
-    date: 'December 2023 - Present',
-    title: 'Senior System Engineer',
+    date: 'November 2023 - Present',
+    title: 'System Engineer, Assistant Manager',
     subtitle: 'Toyota Motor Corporation',
     description: 'Tokyo, Japan',
   },
