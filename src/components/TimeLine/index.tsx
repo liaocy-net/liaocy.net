@@ -26,6 +26,13 @@ const ResumeList: ResumeItem[] = [
     description: 'Tokyo, Japan',
   },
   {
+    type: Type.Certification,
+    date: 'December 2023',
+    title: 'AWS Certified Solutions Architect - Associate',
+    subtitle: 'AWS Training & Certification',
+    description: '5ZX6BRRLSMEQ17SZ',
+  },
+  {
     type: Type.Work,
     date: 'October 2021 - October 2023',
     title: 'Data Engineer',
