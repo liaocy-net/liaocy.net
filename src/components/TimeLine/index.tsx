@@ -27,6 +27,13 @@ const ResumeList: ResumeItem[] = [
   },
   {
     type: Type.Certification,
+    date: 'April 2024',
+    title: 'AWS Certified SysOps Administrator – Associate',
+    subtitle: 'AWS Training & Certification',
+    description: 'https://www.credly.com/badges/c0d83ccc-c2ad-427e-90b3-e36defb54af7/linked_in_profile',
+  },
+  {
+    type: Type.Certification,
     date: 'February 2024',
     title: 'AWS Certified Developer – Associate',
     subtitle: 'AWS Training & Certification',
