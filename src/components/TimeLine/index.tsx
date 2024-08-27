@@ -27,6 +27,13 @@ const ResumeList: ResumeItem[] = [
   },
   {
     type: Type.Certification,
+    date: 'June 2024',
+    title: 'Associate Cloud Engineer Certification',
+    subtitle: 'Google Cloud',
+    description: 'https://www.credly.com/badges/042526ea-3636-44bc-a259-5949ba12b031',
+  },
+  {
+    type: Type.Certification,
     date: 'April 2024',
     title: 'AWS Certified SysOps Administrator – Associate',
     subtitle: 'AWS Training & Certification',
