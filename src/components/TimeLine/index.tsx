@@ -27,6 +27,13 @@ const ResumeList: ResumeItem[] = [
   },
   {
     type: Type.Certification,
+    date: 'Oct 2024',
+    title: 'AWS Certified DevOps Engineer – Professional',
+    subtitle: 'AWS Training & Certification',
+    description: 'https://www.credly.com/badges/d0e47829-aedd-4587-937e-07edab01d92e/linked_in_profile',
+  },
+  {
+    type: Type.Certification,
     date: 'June 2024',
     title: 'Associate Cloud Engineer Certification',
     subtitle: 'Google Cloud',
